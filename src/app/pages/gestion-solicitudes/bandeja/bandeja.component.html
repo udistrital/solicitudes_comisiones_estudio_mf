@@ -1,0 +1,26 @@
+<mat-card style="margin: 16px;">
+  <div style="display:flex; gap: 16px; align-items:center; flex-wrap: wrap;">
+    <div style="flex: 1 1 auto;">
+      <h2 style="margin:0;">{{ title }}</h2>
+      <p style="margin: 4px 0 0; opacity: .75;">
+        Seleciona un rol para ver las acciones permitidas (demo).
+      </p>
+    </div>
+
+    <mat-form-field appearance="outline" style="min-width: 320px;">
+      <mat-label>Rol (demo)</mat-label>
+      <mat-select [value]="selectedRole" (selectionChange)="onRoleChange($event.value)">
+        <mat-option *ngFor="let r of roleOptions" [value]="r.value">
+          {{ r.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</mat-card>
+
+<app-dynamic-table
+  [rows]="rows"
+  [columns]="columnDefs"
+  [actions]="actions"
+  (actionClick)="onAction($event.action, $event.row)">
+</app-dynamic-table>

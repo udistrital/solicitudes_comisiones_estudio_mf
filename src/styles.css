@@ -1,1 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Chips de estado (usados en bandejas/tablas) */
+mat-chip.st-borrador { opacity: .8; }
+mat-chip.st-radicada { font-weight: 600; }
+mat-chip.st-revision { font-weight: 600; }
+mat-chip.st-subsanar { font-weight: 600; }
+mat-chip.st-avalada  { font-weight: 600; }
+mat-chip.st-rechazada{ font-weight: 600; }

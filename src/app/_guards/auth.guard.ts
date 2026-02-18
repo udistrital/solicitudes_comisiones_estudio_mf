@@ -4,7 +4,7 @@ import { CanActivate } from '@angular/router';
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
   canActivate(): boolean {
-    // DEMO: aquí luego validas token/sesión real
+    // DEMO: aquí luego se validaria token/sesión real
     return true;
   }
 }

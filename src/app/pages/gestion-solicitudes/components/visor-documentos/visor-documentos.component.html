@@ -1,1 +1,15 @@
-<p>Visor de documentos (placeholder). Aquí luego listaras/visualizarás documentos por solicitud.</p>
+<h2 mat-dialog-title>Visualizar documento</h2>
+
+<div mat-dialog-content>
+  <p><b>Nombre:</b> {{ data.nombre }}</p>
+  <p><b>Autor:</b> {{ data.autor || '-' }}</p>
+  <p><b>Estado:</b> {{ data.estado }}</p>
+
+  <mat-card style="margin-top: 12px; padding: 12px; opacity: .8;">
+    Placeholder visor: aquí luego deberia verse un pdf.
+  </mat-card>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-flat-button color="primary" mat-dialog-close>Aceptar</button>
+</div>

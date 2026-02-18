@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { ROLE_OPTIONS, Role } from '../../../models/roles.model';
 import { SolicitudRow } from '../../../models/solicitud.model';
 import { ColumnDef, TableAction } from '../../../shared/dynamic-table/dynamic-table.types';
-import { BANDEJA_ACTION_DEFS, BandejaActionKey, ROLE_TABLE_CONFIGS } from './bandeja.table-config';
+import { BandejaActionKey, ROLE_TABLE_CONFIGS } from './bandeja.table-config';
+import { PopUpManager } from '../../../managers/popup.manager';
 
 @Component({
   selector: 'app-bandeja',
@@ -13,7 +15,6 @@ export class BandejaComponent {
   roleOptions = ROLE_OPTIONS;
   selectedRole: Role = 'DOCENTE';
 
-  // DEMO (luego se conecta con SolicitudesService)
   rows: SolicitudRow[] = [
     { id: 101, radicado: 'SOL-2026-0001', docente: 'María Pérez', proyecto: 'Ingeniería de Sistemas', estado: 'BORRADOR', fecha: '2026-02-01' },
     { id: 102, radicado: 'SOL-2026-0002', docente: 'Juan Gómez', proyecto: 'Matemáticas', estado: 'RADICADA', fecha: '2026-02-02' },
@@ -21,6 +22,8 @@ export class BandejaComponent {
     { id: 104, radicado: 'SOL-2026-0004', docente: 'Carlos Ruiz', proyecto: 'Electrónica', estado: 'EN_REVISION', fecha: '2026-02-04' },
     { id: 105, radicado: 'SOL-2026-0005', docente: 'Ana Torres', proyecto: 'Sistemas', estado: 'AVALADA', fecha: '2026-02-05' },
   ];
+
+  constructor(private router: Router, private popup: PopUpManager) {}
 
   get title(): string {
     return ROLE_TABLE_CONFIGS[this.selectedRole].title;
@@ -31,57 +34,50 @@ export class BandejaComponent {
   }
 
   get actions(): TableAction<SolicitudRow>[] {
-    return BANDEJA_ACTION_DEFS.map((def) => ({
-      key: def.key,
-      label: def.label,
-      variant: def.variant,
-      visible: (row) => this.can(def.key, row),
-    }));
+    if (this.selectedRole === 'DOCENTE') {
+      return [
+        { key: 'EDITAR', label: 'Editar', variant: 'stroked' },
+        { key: 'ELIMINAR', label: 'Eliminar', variant: 'stroked' },
+        { key: 'ENVIAR', label: 'Enviar', variant: 'flat' },
+      ];
+    }
+
+    return [{ key: 'GESTIONAR', label: 'Gestionar', variant: 'stroked' }];
   }
 
   onRoleChange(role: Role) {
     this.selectedRole = role;
   }
 
-  can(action: BandejaActionKey, row: SolicitudRow): boolean {
-    const role = this.selectedRole;
-    const st = row.estado;
-
-    if (action === 'VER') return true;
-
-    if (role === 'DOCENTE') {
-      if (action === 'EDITAR') return st === 'BORRADOR' || st === 'POR_SUBSANAR';
-      if (action === 'ENVIAR') return st === 'BORRADOR' || st === 'POR_SUBSANAR';
-      return false;
-    }
-
-    if (role === 'COORDINACION') {
-      if (action === 'REVISAR') return st === 'RADICADA' || st === 'EN_REVISION';
-      if (action === 'RETORNAR') return st === 'EN_REVISION';
-      if (action === 'AVALAR') return st === 'EN_REVISION';
-      return false;
-    }
-
-    if (role === 'SECRETARIA_ACADEMICA') {
-      if (action === 'REVISAR') return st === 'AVALADA';
-      if (action === 'RETORNAR') return st === 'AVALADA';
-      if (action === 'AVALAR') return st === 'AVALADA';
-      return false;
-    }
-
-    if (role === 'SUPERVISION') {
-      if (action === 'REVISAR') return st === 'AVALADA';
-      if (action === 'AVALAR') return st === 'AVALADA';
-      if (action === 'RETORNAR') return st === 'AVALADA';
-      return false;
-    }
-
-    return false;
-  }
-
   onAction(action: string, row: SolicitudRow) {
     const a = action as BandejaActionKey;
-    console.log(`[${this.selectedRole}] Acción: ${a}`, row);
-    alert(`[${this.selectedRole}] Acción: ${a}\nRadicado: ${row.radicado}\nEstado: ${row.estado}`);
+
+    if (a === 'EDITAR') {
+      this.router.navigate(['/solicitudes', row.id], {
+        queryParams: { role: this.selectedRole, mode: 'EDITAR' },
+      });
+      return;
+    }
+
+    if (a === 'GESTIONAR') {
+      this.router.navigate(['/solicitudes', row.id], {
+        queryParams: { role: this.selectedRole, mode: 'GESTIONAR' },
+      });
+      return;
+    }
+
+    if (a === 'ELIMINAR') {
+      // hardcodeado: elimina visualmente
+      this.rows = this.rows.filter((x) => x.id !== row.id);
+      this.popup.success(`Solicitud ${row.radicado} eliminada (demo)`);
+      return;
+    }
+
+    if (a === 'ENVIAR') {
+      // hardcodeado: cambia estado
+      row.estado = 'RADICADA';
+      this.popup.success(`Solicitud ${row.radicado} enviada (demo)`);
+      return;
+    }
   }
 }

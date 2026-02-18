@@ -23,6 +23,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialogModule } from '@angular/material/dialog';
+
 
 @NgModule({
   declarations: [
@@ -53,6 +58,11 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     MatIconModule,
     MatChipsModule,
     MatSnackBarModule,
+    FormsModule,
+    MatInputModule,
+    MatCheckboxModule,
+    MatDialogModule,
+
   ],
   bootstrap: [AppComponent],
 })

@@ -4,7 +4,7 @@ import { Role } from '../models/roles.model';
 
 @Injectable({ providedIn: 'root' })
 export class RoleGuard implements CanActivate {
-  // DEMO: luego lo conectas con auth real (rol del usuario)
+  // DEMO: luego se conecta con auth real (rol del usuario)
   currentRole: Role = 'DOCENTE';
 
   canActivate(route: ActivatedRouteSnapshot): boolean {

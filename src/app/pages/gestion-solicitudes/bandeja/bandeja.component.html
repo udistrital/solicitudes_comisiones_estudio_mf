@@ -22,5 +22,6 @@
   [rows]="rows"
   [columns]="columnDefs"
   [actions]="actions"
+  [enableColumnFilters]="selectedRole !== 'DOCENTE'"
   (actionClick)="onAction($event.action, $event.row)">
 </app-dynamic-table>

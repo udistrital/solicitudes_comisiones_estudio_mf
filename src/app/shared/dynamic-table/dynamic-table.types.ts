@@ -14,3 +14,15 @@ export interface TableAction<T> {
   variant?: 'stroked' | 'flat';
   visible?: (row: T) => boolean;
 }
+
+export interface ColumnDef<T> {
+  key: string;
+  header: string;
+  cell: (row: T) => string;
+  renderAs?: CellRender;
+  chipClass?: (row: T) => string;
+
+  //filtros por columna
+  filterable?: boolean;          // default true
+  filterPlaceholder?: string;    // default "Buscar..."
+}

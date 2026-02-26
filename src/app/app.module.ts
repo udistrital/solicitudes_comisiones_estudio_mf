@@ -27,6 +27,8 @@ import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
+import { ReactiveFormsModule } from '@angular/forms';
+import { Fr010FormComponent } from './pages/gestion-solicitudes/components/fr010-form/fr010-form.component';
 
 
 @NgModule({
@@ -42,6 +44,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 
     // Shared
     DynamicTableComponent,
+     Fr010FormComponent,
   ],
   imports: [
     BrowserModule,
@@ -62,6 +65,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatInputModule,
     MatCheckboxModule,
     MatDialogModule,
+    ReactiveFormsModule,
 
   ],
   bootstrap: [AppComponent],

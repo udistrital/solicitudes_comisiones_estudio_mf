@@ -12,7 +12,7 @@
 </mat-card>
 
 <!-- =========================
-     VISTA DOCENTE 
+     VISTA DOCENTE
 ========================== -->
 <ng-container *ngIf="isDocente; else revisorView">
 
@@ -22,21 +22,46 @@
     <div style="display:flex; gap: 12px; flex-wrap: wrap; align-items:flex-end;">
       <mat-form-field appearance="outline" style="min-width: 320px; flex: 1 1 320px;">
         <mat-label>Documento requerido</mat-label>
+
+        <!-- ahora requiredDocs son objetos -->
         <mat-select [(value)]="selectedRequiredDoc">
-          <mat-option *ngFor="let d of requiredDocs" [value]="d">{{ d }}</mat-option>
+          <mat-option *ngFor="let d of requiredDocs" [value]="d">
+            {{ d.name }}
+          </mat-option>
         </mat-select>
       </mat-form-field>
 
-      <button mat-stroked-button (click)="adjuntarDocumento()">
+      <!-- Si es FR010: se guarda el formulario digital -->
+      <button
+        *ngIf="isFR010Selected()"
+        mat-flat-button
+        color="primary"
+        (click)="guardarFR010()">
+        Guardar formulario
+      </button>
+
+      <!-- Si NO es FR010: adjuntar documento (archivo) -->
+      <button
+        *ngIf="!isFR010Selected()"
+        mat-stroked-button
+        (click)="adjuntarDocumento()">
         Adjuntar documento
       </button>
 
-      <button mat-flat-button color="primary" (click)="guardarDocente()">
+      <!-- Botón “Guardar” general del detalle (obs/docente, etc.) -->
+      <button mat-stroked-button (click)="guardarDocente()">
         Guardar
       </button>
     </div>
   </mat-card>
 
+  <!-- ✅ FR-010 DIGITAL: SOLO aparece para DOCENTE y cuando el select está en FR010 -->
+  <app-fr010-form
+    *ngIf="isFR010Selected()"
+    (saved)="onFr010Saved($event)">
+  </app-fr010-form>
+
+  <!-- Tabla de documentos (se muestra siempre) -->
   <mat-card style="margin: 16px; overflow:auto;">
     <table mat-table [dataSource]="documentos" class="mat-elevation-z1" style="width: 100%; min-width: 900px;">
 
@@ -100,7 +125,7 @@
 </ng-container>
 
 <!-- =========================
-     VISTA REVISOR 
+     VISTA REVISOR
 ========================== -->
 <ng-template #revisorView>
 

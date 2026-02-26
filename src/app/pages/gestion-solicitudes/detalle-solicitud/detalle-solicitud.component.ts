@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+
 import { Role } from '../../../models/roles.model';
 import { EstadoSolicitud } from '../../../models/estados.model';
 import { PopUpManager } from '../../../managers/popup.manager';
+
 import { ModalAccionComponent } from '../components/modal-accion/modal-accion.component';
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
+import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
 
 type DocumentoEstado = 'PENDIENTE' | 'ADJUNTO' | 'VALIDO' | 'NO_VALIDO';
 
@@ -23,12 +26,22 @@ interface ObservacionItem {
   texto: string;
 }
 
+type RequiredDocKind = 'FORM' | 'FILE';
+interface RequiredDocOption {
+  code: 'FR010' | 'CARTA' | 'PLAN' | 'AVAL';
+  name: string;
+  kind: RequiredDocKind;
+}
+
 @Component({
   selector: 'app-detalle-solicitud',
   templateUrl: './detalle-solicitud.component.html',
   styleUrls: ['./detalle-solicitud.component.css'],
 })
 export class DetalleSolicitudComponent implements OnInit {
+  // Referencia al componente del formulario (solo existe si DOCENTE + FR010 seleccionado)
+  @ViewChild(Fr010FormComponent) fr010Comp?: Fr010FormComponent;
+
   // Params
   id!: number;
   role: Role = 'DOCENTE';
@@ -40,18 +53,20 @@ export class DetalleSolicitudComponent implements OnInit {
   docenteNombre = 'María Pérez';
   proyecto = 'Ingeniería de Sistemas';
 
-  // Docs (demo)
-  requiredDocs = [
-    'FR-010 Formulario de solicitud inicial',
-    'Carta de motivación',
-    'Plan de trabajo',
-    'Aval del proyecto curricular',
+  // Docs requeridos (para el desplegable)
+  requiredDocs: RequiredDocOption[] = [
+    { code: 'FR010', name: 'FR-010 Formulario de solicitud inicial', kind: 'FORM' },
+    { code: 'CARTA', name: 'Carta de motivación', kind: 'FILE' },
+    { code: 'PLAN', name: 'Plan de trabajo', kind: 'FILE' },
+    { code: 'AVAL', name: 'Aval del proyecto curricular', kind: 'FILE' },
   ];
 
-  selectedRequiredDoc = this.requiredDocs[0];
+  // Por defecto FR010
+  selectedRequiredDoc: RequiredDocOption = this.requiredDocs[0];
 
+  // Tabla docs (demo)
   documentos: DocumentoItem[] = [
-    { id: 1, nombre: 'FR-010 Formulario de solicitud inicial', autorSoporte: 'Docente', estado: 'ADJUNTO', checked: false },
+    { id: 1, nombre: 'FR-010 Formulario de solicitud inicial', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false },
     { id: 2, nombre: 'Carta de motivación', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false },
     { id: 3, nombre: 'Plan de trabajo', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false },
     { id: 4, nombre: 'Aval del proyecto curricular', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false },
@@ -65,6 +80,9 @@ export class DetalleSolicitudComponent implements OnInit {
     { fecha: '2026-02-10 10:00', autor: 'COORDINACION', texto: 'Falta anexar plan de trabajo.' },
     { fecha: '2026-02-11 08:30', autor: 'SECRETARIA_ACADEMICA', texto: 'Verificar formato del FR-010.' },
   ];
+
+  // Aquí se guarda el JSON completo del FR-010 (demo) cuando se guarda
+  fr010Json: any = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -80,18 +98,13 @@ export class DetalleSolicitudComponent implements OnInit {
     this.role = (qp.get('role') as Role) || 'DOCENTE';
     this.mode = (qp.get('mode') as any) || 'GESTIONAR';
 
-    // si llega por EDITAR del docente: abre modal de acción (demo)
-    if (this.role === 'DOCENTE' && this.mode === 'EDITAR') {
-      this.dialog.open(ModalAccionComponent, {
-        width: '520px',
-        data: { action: 'Editar solicitud', radicado: this.radicado },
-      });
-    }
-
     // si es revisor (no docente), simula que ya está en revisión
     if (this.role !== 'DOCENTE') {
       this.estadoSolicitud = 'EN_REVISION';
     }
+
+    // asegura default FR010
+    this.selectedRequiredDoc = this.requiredDocs[0];
   }
 
   // ========== Helpers de UI ==========
@@ -117,20 +130,32 @@ export class DetalleSolicitudComponent implements OnInit {
     }
   }
 
+  isFR010Selected(): boolean {
+    return this.selectedRequiredDoc?.code === 'FR010';
+  }
+
   // ========== Acciones docente ==========
   guardarDocente() {
     this.popup.success('Guardado (demo)');
   }
 
   enviarDocente() {
-    // demo: enviar solicitud => radicada
     this.estadoSolicitud = 'RADICADA';
     this.popup.success('Solicitud enviada (demo)');
     this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
   }
 
+  // Adjuntar solo aplica a FILE (no FR010)
   adjuntarDocumento() {
-    const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc);
+    if (!this.selectedRequiredDoc) return;
+
+    if (this.selectedRequiredDoc.kind === 'FORM') {
+      // FR010 se “guarda” por el formulario, no como archivo
+      this.popup.error('Para FR-010 usa "Guardar formulario". (demo)');
+      return;
+    }
+
+    const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
     if (!doc) return;
 
     doc.estado = 'ADJUNTO';
@@ -149,6 +174,29 @@ export class DetalleSolicitudComponent implements OnInit {
       width: '720px',
       data: { nombre: doc.nombre, estado: doc.estado, autor: doc.autorSoporte },
     });
+  }
+
+  // FR010: guardar formulario => genera JSON y marca doc como ADJUNTO (demo)
+  guardarFR010() {
+    if (!this.fr010Comp) {
+      this.popup.error('El formulario FR-010 no está listo para guardarse');
+      return;
+    }
+    this.fr010Comp.save();
+  }
+
+  onFr010Saved(payload: any) {
+    this.fr010Json = payload;
+    console.log('[FR-010 JSON]', payload);
+
+    // marcar FR010 como adjunto en la tabla
+    const fr = this.documentos.find((d) => d.nombre.startsWith('FR-010'));
+    if (fr) {
+      fr.estado = 'ADJUNTO';
+      fr.autorSoporte = 'Docente';
+    }
+
+    this.popup.success('FR-010 guardado (demo)');
   }
 
   // ========== Acciones revisor ==========
@@ -184,14 +232,12 @@ export class DetalleSolicitudComponent implements OnInit {
 
   enviarRevisor() {
     if (!this.allDocsChecked) {
-      // caso “no válido”
       this.popup.error('Alguno de los documentos no es válido. Retorna la solicitud para subsanación. (demo)');
       return;
     }
 
-    // caso “todo ok”
     this.estadoSolicitud = 'AVALADA';
-    this.popup.success('Todos los documentos están avalados. Flujo continúa (demo).');
+    this.popup.success('Todos los documentos están avalados (demo).');
     this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
   }
 

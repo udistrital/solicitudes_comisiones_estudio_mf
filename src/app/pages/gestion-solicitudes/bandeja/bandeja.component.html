@@ -1,27 +1,31 @@
-<mat-card style="margin: 16px;">
-  <div style="display:flex; gap: 16px; align-items:center; flex-wrap: wrap;">
-    <div style="flex: 1 1 auto;">
-      <h2 style="margin:0;">{{ title }}</h2>
-      <p style="margin: 4px 0 0; opacity: .75;">
-        Seleciona un rol para ver la bandeja y acciones (demo).
-      </p>
-    </div>
+<section class="sga-page">
+  <div class="sga-page__content">
+    <mat-card class="sga-card sga-card--header">
+      <div class="sga-header">
+        <div class="sga-header__title">
+          <h2 class="sga-title">{{ title }}</h2>
+          <p class="sga-subtitle">
+            Seleciona un rol para ver la bandeja y acciones (demo).
+          </p>
+        </div>
 
-    <mat-form-field appearance="outline" style="min-width: 320px;">
-      <mat-label>Rol (demo)</mat-label>
-      <mat-select [value]="selectedRole" (selectionChange)="onRoleChange($event.value)">
-        <mat-option *ngFor="let r of roleOptions" [value]="r.value">
-          {{ r.label }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+        <mat-form-field class="sga-header__role" appearance="outline">
+          <mat-label>Rol (demo)</mat-label>
+          <mat-select [value]="selectedRole" (selectionChange)="onRoleChange($event.value)">
+            <mat-option *ngFor="let r of roleOptions" [value]="r.value">
+              {{ r.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card>
+
+    <app-dynamic-table
+      [rows]="rows"
+      [columns]="columnDefs"
+      [actions]="actions"
+      [enableColumnFilters]="selectedRole !== 'DOCENTE'"
+      (actionClick)="onAction($event.action, $event.row)">
+    </app-dynamic-table>
   </div>
-</mat-card>
-
-<app-dynamic-table
-  [rows]="rows"
-  [columns]="columnDefs"
-  [actions]="actions"
-  [enableColumnFilters]="selectedRole !== 'DOCENTE'"
-  (actionClick)="onAction($event.action, $event.row)">
-</app-dynamic-table>
+</section>

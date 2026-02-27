@@ -1,15 +1,49 @@
-<h2 mat-dialog-title>Visualizar documento</h2>
+<h2 mat-dialog-title class="sga-dialog__title">
+  Visualizar documento
+</h2>
 
-<div mat-dialog-content>
-  <p><b>Nombre:</b> {{ data.nombre }}</p>
-  <p><b>Autor:</b> {{ data.autor || '-' }}</p>
-  <p><b>Estado:</b> {{ data.estado }}</p>
+<div mat-dialog-content class="sga-dialog__content">
+  <section class="sga-panel sga-dialog__panel">
+    <header class="sga-panel__head">
+      <div class="sga-panel__title">Información del documento</div>
+      <div class="sga-panel__hint">Detalle</div>
+    </header>
 
-  <mat-card style="margin-top: 12px; padding: 12px; opacity: .8;">
-    Placeholder visor: aquí luego deberia verse un pdf.
-  </mat-card>
+    <div class="sga-panel__body sga-doc-meta">
+      <div class="sga-doc-meta__row">
+        <span class="sga-doc-meta__label">Nombre:</span>
+        <span class="sga-doc-meta__value">{{ data.nombre }}</span>
+      </div>
+      <div class="sga-doc-meta__row">
+        <span class="sga-doc-meta__label">Autor:</span>
+        <span class="sga-doc-meta__value">{{ data.autor || '-' }}</span>
+      </div>
+      <div class="sga-doc-meta__row">
+        <span class="sga-doc-meta__label">Estado:</span>
+        <span class="sga-doc-meta__value">{{ data.estado }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sga-panel sga-panel--soft sga-dialog__panel">
+    <header class="sga-panel__head">
+      <div class="sga-panel__title">Visor</div>
+      <div class="sga-panel__hint">PDF (pendiente)</div>
+    </header>
+
+    <div class="sga-panel__body">
+      <div class="sga-doc-viewer">
+        <mat-icon class="sga-doc-viewer__icon">picture_as_pdf</mat-icon>
+        <div class="sga-doc-viewer__text">
+          Placeholder visor: aquí luego debería verse un PDF.
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
-<div mat-dialog-actions align="end">
-  <button mat-flat-button color="primary" mat-dialog-close>Aceptar</button>
+<div mat-dialog-actions class="sga-dialog__actions" align="end">
+  <button mat-flat-button color="primary" class="sga-btn sga-btn--primary" mat-dialog-close>
+    Aceptar
+  </button>
 </div>

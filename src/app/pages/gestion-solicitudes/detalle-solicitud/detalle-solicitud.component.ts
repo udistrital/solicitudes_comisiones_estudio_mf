@@ -6,7 +6,6 @@ import { Role } from '../../../models/roles.model';
 import { EstadoSolicitud } from '../../../models/estados.model';
 import { PopUpManager } from '../../../managers/popup.manager';
 
-import { ModalAccionComponent } from '../components/modal-accion/modal-accion.component';
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
 import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
 

@@ -9,7 +9,6 @@ import { EmptyRouteComponent } from './empty-route/empty-route.component';
 
 import { BandejaComponent } from './pages/gestion-solicitudes/bandeja/bandeja.component';
 import { DetalleSolicitudComponent } from './pages/gestion-solicitudes/detalle-solicitud/detalle-solicitud.component';
-import { ModalAccionComponent } from './pages/gestion-solicitudes/components/modal-accion/modal-accion.component';
 import { VisorDocumentosComponent } from './pages/gestion-solicitudes/components/visor-documentos/visor-documentos.component';
 
 import { DynamicTableComponent } from './shared/dynamic-table/dynamic-table.component';
@@ -39,7 +38,6 @@ import { Fr010FormComponent } from './pages/gestion-solicitudes/components/fr010
     // Pages Fase 1
     BandejaComponent,
     DetalleSolicitudComponent,
-    ModalAccionComponent,
     VisorDocumentosComponent,
 
     // Shared

@@ -37,7 +37,12 @@ export class BandejaComponent {
     if (this.selectedRole === 'DOCENTE') {
       return [
         { key: 'EDITAR', label: 'Editar', variant: 'stroked' },
-        { key: 'ELIMINAR', label: 'Eliminar', variant: 'stroked' },
+        {
+          key: 'ELIMINAR',
+          label: 'Eliminar',
+          variant: 'stroked',
+          visible: (row) => row.estado === 'BORRADOR',
+        },
         { key: 'ENVIAR', label: 'Enviar', variant: 'flat' },
       ];
     }

@@ -1,58 +1,69 @@
-<mat-card class="sga-card sga-card--table">
-  <div class="sga-table-frame">
-    <div class="sga-table-bar" aria-hidden="true"></div>
+<mat-card class="p-3 rounded-xl border border-black/10 bg-white">
+  <!-- Marco SGA -->
+  <div class="rounded-xl border-2 border-sga overflow-hidden bg-white">
+    <!-- Barra superior -->
+    <div class="h-3 bg-gradient-to-r from-sga to-sga/60" aria-hidden="true"></div>
 
-    <table mat-table [dataSource]="filteredRows" class="sga-table mat-elevation-z0">
+    <table
+      mat-table
+      [dataSource]="filteredRows"
+      class="w-full min-w-0 table-fixed border-separate border-spacing-0 bg-white">
 
       <!-- Columnas dinámicas -->
       <ng-container *ngFor="let col of columns" [matColumnDef]="col.key">
         <th
           mat-header-cell
           *matHeaderCellDef
-          class="sga-th"
-          [class]="'sga-th col-' + col.key">
+          class="align-top text-center text-sga px-3 pb-4 border-b border-sga/30"
+          [class]="'col-' + col.key">
 
-          <div class="sga-th__content">
-            <div class="sga-th__label">{{ col.header }}</div>
+          <!-- Spacer superior para que el título no quede pegado al borde -->
+          <div class="pt-3"></div>
+
+          <div class="flex flex-col items-center gap-4">
+            <div class="w-full text-center leading-snug font-semibold">
+              {{ col.header }}
+            </div>
 
             <!-- Filtro por columna -->
-            <mat-form-field
-              *ngIf="enableColumnFilters && isFilterable(col)"
-              class="sga-th__filter"
-              appearance="outline"
-              subscriptSizing="dynamic">
+            <div *ngIf="enableColumnFilters && isFilterable(col)" class="relative w-full py-1">
               <input
-                matInput
+                type="text"
+                class="w-full h-10 rounded-md border border-black/30 bg-white px-3 pr-10 text-sm text-black/80
+                       placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-sga/20 focus:border-sga"
                 [placeholder]="col.filterPlaceholder || 'Buscar...'"
                 [(ngModel)]="filters[col.key]" />
+
               <button
-                mat-icon-button
-                matSuffix
                 type="button"
                 aria-label="Limpiar"
                 *ngIf="filters[col.key]"
-                (click)="clearFilter(col.key)">
-                <mat-icon>close</mat-icon>
+                (click)="clearFilter(col.key)"
+                class="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center w-8 h-8 rounded-md
+                       text-black/60 hover:text-black/80 hover:bg-black/5">
+                <mat-icon class="text-[20px]">close</mat-icon>
               </button>
-            </mat-form-field>
+            </div>
           </div>
         </th>
 
         <td
           mat-cell
           *matCellDef="let row"
-          class="sga-td"
-          [class]="'sga-td col-' + col.key">
+          class="align-middle text-center px-3 py-3 border-b border-r border-sga/30 text-black/75"
+          [class]="'col-' + col.key">
 
           <ng-container [ngSwitch]="col.renderAs || 'text'">
-            <mat-chip
-              *ngSwitchCase="'chip'"
-              class="sga-chip"
-              [ngClass]="col.chipClass ? col.chipClass(row) : ''">
-              {{ col.cell(row) }}
-            </mat-chip>
+            <!-- Estado centrado: wrapper flex -->
+            <div *ngSwitchCase="'chip'" class="flex justify-center">
+              <mat-chip
+                class="!rounded-full !border !border-black/10 !bg-black/5 !px-2.5 !py-0.5 !text-black/80"
+                [ngClass]="col.chipClass ? col.chipClass(row) : ''">
+                {{ col.cell(row) }}
+              </mat-chip>
+            </div>
 
-            <span *ngSwitchDefault class="sga-cell-text">
+            <span *ngSwitchDefault class="block break-words text-center">
               {{ col.cell(row) }}
             </span>
           </ng-container>
@@ -61,17 +72,28 @@
 
       <!-- Columna de acciones -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef class="sga-th sga-th--actions col-acciones">
-          Acciones
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          class="align-top text-center text-sga px-3 pb-4 border-b border-sga/30 col-acciones">
+
+          <!-- Spacer superior -->
+          <div class="pt-3"></div>
+
+          <div class="w-full text-center leading-snug font-semibold">Acciones</div>
         </th>
 
-        <td mat-cell *matCellDef="let row" class="sga-td sga-td--actions col-acciones">
-          <div class="sga-actions">
+        <td
+          mat-cell
+          *matCellDef="let row"
+          class="align-middle text-center px-3 py-3 border-b border-r border-sga/30 col-acciones">
+
+          <div class="flex items-center justify-center flex-wrap gap-2 min-h-[44px]">
             <ng-container *ngFor="let a of actions">
               <button
                 *ngIf="isVisible(a, row) && (a.variant !== 'flat')"
                 mat-stroked-button
-                class="sga-btn sga-btn--stroked"
+                class="h-9 px-3.5 rounded-lg border-black/20"
                 (click)="emit(a.key, row)">
                 {{ a.label }}
               </button>
@@ -80,7 +102,7 @@
                 *ngIf="isVisible(a, row) && (a.variant === 'flat')"
                 mat-flat-button
                 color="primary"
-                class="sga-btn sga-btn--flat"
+                class="h-9 px-3.5 rounded-lg"
                 (click)="emit(a.key, row)">
                 {{ a.label }}
               </button>

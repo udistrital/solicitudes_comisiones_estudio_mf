@@ -1,82 +1,123 @@
-<form [formGroup]="form" class="fr010">
+<form [formGroup]="form" class="block space-y-4">
 
   <!-- ===== IDENTIFICACIÓN DEL SOLICITANTE ===== -->
-  <mat-card class="sga-card sga-card--section">
-    <section class="sga-panel">
-      <header class="sga-panel__head">
-        <div class="sga-panel__title">IDENTIFICACIÓN DEL SOLICITANTE</div>
-        <div class="sga-panel__hint">Preguntas 1–12 provienen de terceros</div>
+  <mat-card class="bg-white border border-black/10 rounded-xl p-4">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold">IDENTIFICACIÓN DEL SOLICITANTE</div>
+        <div class="text-xs text-black/60">Preguntas 1–12 provienen de terceros</div>
       </header>
 
-      <div class="sga-panel__body">
-        <div class="fr010-grid" formGroupName="solicitante">
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>1. Fecha</mat-label>
-            <input matInput formControlName="q1_fecha" />
-          </mat-form-field>
+      <div class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="solicitante">
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>2. Facultad</mat-label>
-            <input matInput formControlName="q2_facultad" />
-          </mat-form-field>
+          <!-- 1 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">1. Fecha</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q1_fecha" placeholder="dd/mm/aaaa" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>3. Nombres y Apellidos</mat-label>
-            <input matInput formControlName="q3_nombres_apellidos" />
-          </mat-form-field>
+          <!-- 2 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">2. Facultad</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q2_facultad" placeholder="Facultad" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>4. Documento de Identificación</mat-label>
-            <input matInput formControlName="q4_documento_identificacion" />
-          </mat-form-field>
+          <!-- 3 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">3. Nombres y Apellidos</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q3_nombres_apellidos" placeholder="Nombres y apellidos" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>5. Edad</mat-label>
-            <input matInput formControlName="q5_edad" />
-          </mat-form-field>
+          <!-- 4 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">4. Documento de Identificación</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q4_documento_identificacion" placeholder="Documento" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>6. Correo Electrónico</mat-label>
-            <input matInput formControlName="q6_correo" />
-          </mat-form-field>
+          <!-- 5 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">5. Edad</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q5_edad" placeholder="Edad" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>7. Proyecto Curricular al que pertenece</mat-label>
-            <input matInput formControlName="q7_proyecto" />
-          </mat-form-field>
+          <!-- 6 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">6. Correo Electrónico</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q6_correo" placeholder="correo@udistrital.edu.co" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>8. N° de teléfono</mat-label>
-            <input matInput formControlName="q8_telefono" />
-          </mat-form-field>
+          <!-- 7 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">7. Proyecto Curricular al que pertenece</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q7_proyecto" placeholder="Proyecto curricular" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>9. N° de Celular</mat-label>
-            <input matInput formControlName="q9_celular" />
-          </mat-form-field>
+          <!-- 8 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">8. N° de teléfono</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q8_telefono" placeholder="Teléfono" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>10. Fecha ingreso a la UD</mat-label>
-            <input matInput formControlName="q10_fecha_ingreso_universidad" />
-          </mat-form-field>
+          <!-- 9 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">9. N° de Celular</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q9_celular" placeholder="Celular" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>10. N° resolución RH</mat-label>
-            <input matInput formControlName="q10_resolucion_rh" />
-          </mat-form-field>
+          <!-- 10 fecha ingreso -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">10. Fecha ingreso a la UD</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q10_fecha_ingreso_universidad" placeholder="dd/mm/aaaa" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>11. Categoría de Ingreso</mat-label>
-            <input matInput formControlName="q11_categoria_ingreso" />
-          </mat-form-field>
+          <!-- 10 resolución -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">10. N° resolución RH</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q10_resolucion_rh" placeholder="Resolución" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>12. Categoría actual</mat-label>
-            <input matInput formControlName="q12_categoria_actual" />
-          </mat-form-field>
+          <!-- 11 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">11. Categoría de Ingreso</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q11_categoria_ingreso" placeholder="Categoría" />
+            </mat-form-field>
+          </div>
+
+          <!-- 12 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">12. Categoría actual</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q12_categoria_actual" placeholder="Categoría" />
+            </mat-form-field>
+          </div>
+
         </div>
 
-        <div class="sga-note">
+        <div class="mt-3 p-3 rounded-xl border border-dashed border-sga/40 bg-sga/5 text-xs text-black/70">
           * Preguntas 1–12 provienen de terceros (por ahora están quemadas y se guardan dentro del JSON).
         </div>
       </div>
@@ -84,232 +125,308 @@
   </mat-card>
 
   <!-- ===== IDENTIFICACIÓN DE LA SOLICITUD ===== -->
-  <mat-card class="sga-card sga-card--section">
-    <section class="sga-panel">
-      <header class="sga-panel__head">
-        <div class="sga-panel__title">IDENTIFICACIÓN DE LA SOLICITUD</div>
-        <div class="sga-panel__hint">Preguntas 13–26</div>
+  <mat-card class="bg-white border border-black/10 rounded-xl p-4">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold">IDENTIFICACIÓN DE LA SOLICITUD</div>
+        <div class="text-xs text-black/60">Preguntas 13–26</div>
       </header>
 
-      <div class="sga-panel__body">
-        <div class="fr010-grid" formGroupName="solicitud">
+      <div class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="solicitud">
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>13. Tipo de estudio (selector múltiple)</mat-label>
-            <mat-select formControlName="q13_tipo_estudio" multiple>
-              <mat-option *ngFor="let o of tipoEstudioOptions" [value]="o">{{ o }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+          <!-- 13 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">13. Tipo de estudio (selector múltiple)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <mat-select formControlName="q13_tipo_estudio" multiple>
+                <mat-option *ngFor="let o of tipoEstudioOptions" [value]="o">{{ o }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>14. Nombre del programa</mat-label>
-            <input matInput formControlName="q14_nombre_programa" />
-          </mat-form-field>
+          <!-- 14 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">14. Nombre del programa</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q14_nombre_programa" placeholder="Nombre del programa" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>15. Título al que aspira</mat-label>
-            <input matInput formControlName="q15_titulo_aspira" />
-          </mat-form-field>
+          <!-- 15 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">15. Título al que aspira</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q15_titulo_aspira" placeholder="Título" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>16. Universidad</mat-label>
-            <input matInput formControlName="q16_universidad" />
-          </mat-form-field>
+          <!-- 16 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">16. Universidad</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q16_universidad" placeholder="Universidad" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>17. País</mat-label>
-            <input matInput formControlName="q17_pais" />
-          </mat-form-field>
+          <!-- 17 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">17. País</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q17_pais" placeholder="País" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>18. Ciudad</mat-label>
-            <input matInput formControlName="q18_ciudad" />
-          </mat-form-field>
+          <!-- 18 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">18. Ciudad</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q18_ciudad" placeholder="Ciudad" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>19. Fecha de aceptación</mat-label>
-            <input matInput placeholder="dd/mm/aa" formControlName="q19_fecha_aceptacion" />
-          </mat-form-field>
+          <!-- 19 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">19. Fecha de aceptación</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput placeholder="dd/mm/aa" formControlName="q19_fecha_aceptacion" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>20. N° de semestres</mat-label>
-            <input matInput formControlName="q20_num_semestres" />
-          </mat-form-field>
+          <!-- 20 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">20. N° de semestres</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q20_num_semestres" placeholder="Semestres" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>22. Tipo de apoyo requerido (selector múltiple)</mat-label>
-            <mat-select formControlName="q22_tipo_apoyo_requerido" multiple>
-              <mat-option *ngFor="let o of tipoApoyoOptions" [value]="o">{{ o }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+          <!-- 22 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">22. Tipo de apoyo requerido (selector múltiple)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <mat-select formControlName="q22_tipo_apoyo_requerido" multiple>
+                <mat-option *ngFor="let o of tipoApoyoOptions" [value]="o">{{ o }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>23. Fecha de inicio de estudios</mat-label>
-            <input matInput placeholder="dd/mm/aaaa" formControlName="q23_fecha_inicio_estudios" />
-          </mat-form-field>
+          <!-- 23 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">23. Fecha de inicio de estudios</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput placeholder="dd/mm/aaaa" formControlName="q23_fecha_inicio_estudios" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>24. Fecha de culminación</mat-label>
-            <input matInput placeholder="dd/mm/aaaa" formControlName="q24_fecha_culminacion_estudios" />
-          </mat-form-field>
+          <!-- 24 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">24. Fecha de culminación</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput placeholder="dd/mm/aaaa" formControlName="q24_fecha_culminacion_estudios" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>25. Tiempo requerido para culminación (con título)</mat-label>
-            <input matInput placeholder="dd/mm/aaaa" formControlName="q25_tiempo_requerido_culminacion" />
-          </mat-form-field>
+          <!-- 25 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">25. Tiempo requerido para culminación (con título)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput placeholder="dd/mm/aaaa" formControlName="q25_tiempo_requerido_culminacion" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>26. Costo total requerido</mat-label>
-            <input matInput formControlName="q26_costo_total_requerido" />
-          </mat-form-field>
+          <!-- 26 (span2) -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">26. Costo total requerido</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q26_costo_total_requerido" placeholder="Costo" />
+            </mat-form-field>
+          </div>
+
         </div>
       </div>
     </section>
   </mat-card>
 
   <!-- ===== FINANCIACIÓN COLOMBIA ===== -->
-  <mat-card class="sga-card sga-card--section">
-    <section class="sga-panel">
-      <header class="sga-panel__head">
-        <div class="sga-panel__title">FINANCIACIÓN Y COSTOS REQUERIDOS</div>
-        <div class="sga-panel__hint">Comisiones en Bogotá/Colombia fuera/Modalidad semipresencial (27–32)</div>
+  <mat-card class="bg-white border border-black/10 rounded-xl p-4">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold">FINANCIACIÓN Y COSTOS REQUERIDOS</div>
+        <div class="text-xs text-black/60">Comisiones en Colombia (27–32)</div>
       </header>
 
-      <div class="sga-panel__body">
-        <div class="fr010-grid" formGroupName="financiacion_colombia">
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>27. Pago Matrícula (valor semestral o anual)</mat-label>
-            <input matInput formControlName="q27_pago_matricula_valor" />
-          </mat-form-field>
+      <div class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="financiacion_colombia">
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>28. Pago Matrícula (suma total)</mat-label>
-            <input matInput formControlName="q28_pago_matricula_total" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">27. Pago Matrícula (valor semestral o anual)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q27_pago_matricula_valor" placeholder="Valor" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>29. Tiquetes (una sola vez ida y vuelta)</mat-label>
-            <input matInput formControlName="q29_tiquetes" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">28. Pago Matrícula (suma total)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q28_pago_matricula_total" placeholder="Total" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>30. Descarga Académica (horas)</mat-label>
-            <input matInput formControlName="q30_descarga_academica_horas" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">29. Tiquetes (una sola vez ida y vuelta)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q29_tiquetes" placeholder="Valor" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>31. Descarga Académica (valor total) — Certificación RH</mat-label>
-            <input matInput formControlName="q31_descarga_academica_valor_total" />
-          </mat-form-field>
+          <div>
+            <div class="text-xs text-black/60 mb-1">30. Descarga Académica (horas)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q30_descarga_academica_horas" placeholder="Horas" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>32. Costo reemplazo docente — Certificación RH</mat-label>
-            <input matInput formControlName="q32_costo_reemplazo_docente" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">31. Descarga Académica (valor total) — Certificación RH</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q31_descarga_academica_valor_total" placeholder="Valor total" />
+            </mat-form-field>
+          </div>
+
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">32. Costo reemplazo docente — Certificación RH</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q32_costo_reemplazo_docente" placeholder="Costo" />
+            </mat-form-field>
+          </div>
+
         </div>
       </div>
     </section>
   </mat-card>
 
   <!-- ===== FINANCIACIÓN EXTERIOR ===== -->
-  <mat-card class="sga-card sga-card--section">
-    <section class="sga-panel">
-      <header class="sga-panel__head">
-        <div class="sga-panel__title">FINANCIACIÓN Y COSTOS REQUERIDOS</div>
-        <div class="sga-panel__hint">Comisiones de Estudios en el Exterior (33–39)</div>
+  <mat-card class="bg-white border border-black/10 rounded-xl p-4">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold">FINANCIACIÓN Y COSTOS REQUERIDOS</div>
+        <div class="text-xs text-black/60">Comisiones en el Exterior (33–39)</div>
       </header>
 
-      <div class="sga-panel__body">
-        <div class="fr010-grid" formGroupName="financiacion_exterior">
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>33. Valor salario tiempo comisión (Certificación RH)</mat-label>
-            <input matInput formControlName="q33_valor_salario_tiempo_comision" />
-          </mat-form-field>
+      <div class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="financiacion_exterior">
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>34. Pago Matrícula (valor semestral o anual)</mat-label>
-            <input matInput formControlName="q34_pago_matricula_valor" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">33. Valor salario tiempo comisión (Certificación RH)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q33_valor_salario_tiempo_comision" placeholder="Valor" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>35. Pago total matrícula (suma total duración)</mat-label>
-            <input matInput formControlName="q35_pago_total_matricula" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">34. Pago Matrícula (valor semestral o anual)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q34_pago_matricula_valor" placeholder="Valor" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>36. Tiquetes (una sola vez ida y vuelta)</mat-label>
-            <input matInput formControlName="q36_tiquetes" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">35. Pago total matrícula (suma total duración)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q35_pago_total_matricula" placeholder="Total" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>37. Seguro médico (hasta US 800, proporcional)</mat-label>
-            <input matInput formControlName="q37_seguro_medico" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">36. Tiquetes (una sola vez ida y vuelta)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q36_tiquetes" placeholder="Valor" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>38. Gastos por instalación (hasta 15 SMLV)</mat-label>
-            <input matInput formControlName="q38_gastos_instalacion" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">37. Seguro médico (hasta US 800, proporcional)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q37_seguro_medico" placeholder="Valor" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>39. Costo reemplazo docente — Certificación RH</mat-label>
-            <input matInput formControlName="q39_costo_reemplazo_docente" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">38. Gastos por instalación (hasta 15 SMLV)</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q38_gastos_instalacion" placeholder="Valor" />
+            </mat-form-field>
+          </div>
+
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">39. Costo reemplazo docente — Certificación RH</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q39_costo_reemplazo_docente" placeholder="Costo" />
+            </mat-form-field>
+          </div>
+
         </div>
       </div>
     </section>
   </mat-card>
 
   <!-- ===== BECA ===== -->
-  <mat-card class="sga-card sga-card--section">
-    <section class="sga-panel">
-      <header class="sga-panel__head">
-        <div class="sga-panel__title">Diligenciar cuando se gana una beca</div>
-        <div class="sga-panel__hint">Preguntas 40–43</div>
+  <mat-card class="bg-white border border-black/10 rounded-xl p-4">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold">Diligenciar cuando se gana una beca</div>
+        <div class="text-xs text-black/60">Preguntas 40–43</div>
       </header>
 
-      <div class="sga-panel__body">
-        <div class="fr010-grid" formGroupName="beca">
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>40. Cubrimiento de la beca</mat-label>
-            <input matInput formControlName="q40_cubrimiento_beca" />
-          </mat-form-field>
+      <div class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="beca">
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>41. Institución que otorga la beca</mat-label>
-            <input matInput formControlName="q41_institucion_otorga" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">40. Cubrimiento de la beca</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q40_cubrimiento_beca" placeholder="Cubrimiento" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>42. Tipo de financiación y monto de la beca</mat-label>
-            <input matInput formControlName="q42_tipo_financiacion_monto" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">41. Institución que otorga la beca</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q41_institucion_otorga" placeholder="Institución" />
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="fr010-field span2" floatLabel="always" subscriptSizing="dynamic">
-            <mat-label>43. Duración de la beca</mat-label>
-            <input matInput formControlName="q43_duracion_beca" />
-          </mat-form-field>
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">42. Tipo de financiación y monto de la beca</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q42_tipo_financiacion_monto" placeholder="Monto" />
+            </mat-form-field>
+          </div>
+
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">43. Duración de la beca</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q43_duracion_beca" placeholder="Duración" />
+            </mat-form-field>
+          </div>
+
         </div>
       </div>
     </section>
   </mat-card>
 
   <!-- ===== OBSERVACIONES ===== -->
-  <mat-card class="sga-card sga-card--section">
-    <section class="sga-panel sga-panel--soft">
-      <header class="sga-panel__head">
-        <div class="sga-panel__title">Observaciones</div>
-        <div class="sga-panel__hint">Información adicional</div>
+  <mat-card class="bg-white border border-black/10 rounded-xl p-4">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white bg-gradient-to-b from-sga/5 to-white">
+      <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold">Observaciones</div>
+        <div class="text-xs text-black/60">Información adicional</div>
       </header>
 
-      <div class="sga-panel__body">
-        <mat-form-field
-          appearance="outline"
-          class="fr010-field fr010-field--full fr010-textarea"
-          floatLabel="always"
-          subscriptSizing="dynamic">
-          <mat-label>Observaciones</mat-label>
-          <textarea matInput rows="4" formControlName="observaciones"></textarea>
+      <div class="p-3">
+        <div class="text-xs text-black/60 mb-1">Observaciones</div>
+        <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
+          <textarea matInput rows="4" placeholder="Escribe aquí..." formControlName="observaciones"></textarea>
         </mat-form-field>
       </div>
     </section>

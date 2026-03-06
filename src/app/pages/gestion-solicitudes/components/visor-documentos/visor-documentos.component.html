@@ -1,49 +1,57 @@
-<h2 mat-dialog-title class="sga-dialog__title">
+<h2
+  mat-dialog-title
+  class="m-0 pl-3 border-l-[6px] border-l-sga text-[20px] font-semibold">
   Visualizar documento
 </h2>
 
-<div mat-dialog-content class="sga-dialog__content">
-  <section class="sga-panel sga-dialog__panel">
-    <header class="sga-panel__head">
-      <div class="sga-panel__title">Información del documento</div>
-      <div class="sga-panel__hint">Detalle</div>
+<div mat-dialog-content class="pt-2 grid gap-3">
+
+  <!-- Panel: Metadata -->
+  <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+    <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+      <div class="font-semibold">Información del documento</div>
+      <div class="text-xs text-black/60">Detalle</div>
     </header>
 
-    <div class="sga-panel__body sga-doc-meta">
-      <div class="sga-doc-meta__row">
-        <span class="sga-doc-meta__label">Nombre:</span>
-        <span class="sga-doc-meta__value">{{ data.nombre }}</span>
+    <div class="p-3 grid gap-2 text-black/80">
+      <div class="grid grid-cols-[90px_1fr] gap-2">
+        <span class="text-black/60">Nombre:</span>
+        <span class="break-words">{{ data.nombre }}</span>
       </div>
-      <div class="sga-doc-meta__row">
-        <span class="sga-doc-meta__label">Autor:</span>
-        <span class="sga-doc-meta__value">{{ data.autor || '-' }}</span>
+
+      <div class="grid grid-cols-[90px_1fr] gap-2">
+        <span class="text-black/60">Autor:</span>
+        <span class="break-words">{{ data.autor || '-' }}</span>
       </div>
-      <div class="sga-doc-meta__row">
-        <span class="sga-doc-meta__label">Estado:</span>
-        <span class="sga-doc-meta__value">{{ data.estado }}</span>
+
+      <div class="grid grid-cols-[90px_1fr] gap-2">
+        <span class="text-black/60">Estado:</span>
+        <span class="break-words">{{ data.estado }}</span>
       </div>
     </div>
   </section>
 
-  <section class="sga-panel sga-panel--soft sga-dialog__panel">
-    <header class="sga-panel__head">
-      <div class="sga-panel__title">Visor</div>
-      <div class="sga-panel__hint">PDF (pendiente)</div>
+  <!-- Panel: Visor -->
+  <section class="border border-black/10 rounded-xl overflow-hidden bg-gradient-to-b from-sga/5 to-white">
+    <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+      <div class="font-semibold">Visor</div>
+      <div class="text-xs text-black/60">PDF (pendiente)</div>
     </header>
 
-    <div class="sga-panel__body">
-      <div class="sga-doc-viewer">
-        <mat-icon class="sga-doc-viewer__icon">picture_as_pdf</mat-icon>
-        <div class="sga-doc-viewer__text">
+    <div class="p-3">
+      <div class="border border-dashed border-sga/40 rounded-xl bg-sga/5 p-4 flex gap-3 items-center">
+        <mat-icon class="text-sga">picture_as_pdf</mat-icon>
+        <div class="text-black/70">
           Placeholder visor: aquí luego debería verse un PDF.
         </div>
       </div>
     </div>
   </section>
+
 </div>
 
-<div mat-dialog-actions class="sga-dialog__actions" align="end">
-  <button mat-flat-button color="primary" class="sga-btn sga-btn--primary" mat-dialog-close>
+<div mat-dialog-actions align="end" class="pt-1">
+  <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg" mat-dialog-close>
     Aceptar
   </button>
 </div>

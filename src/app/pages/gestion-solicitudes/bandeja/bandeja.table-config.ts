@@ -33,6 +33,15 @@ export const ROLE_TABLE_CONFIGS: Record<Role, { title: string; columns: ColumnDe
       { key: 'fecha', header: 'Fecha', cell: (r) => r.fecha },
     ],
   },
+  SECRETARIA_GENERAL: {
+    title: 'Bandeja Secretaría General',
+    columns: [
+      { key: 'radicado', header: 'Radicado', cell: (r) => r.radicado },
+      { key: 'docente', header: 'Docente', cell: (r) => r.docente },
+      { key: 'estado', header: 'Estado', cell: (r) => r.estado, renderAs: 'chip', chipClass: (r) => estadoSolicitudClass(r.estado) },
+      { key: 'fecha', header: 'Fecha', cell: (r) => r.fecha },
+    ],
+  },
   SUPERVISION: {
     title: 'Bandeja Supervisor / Decanatura',
     columns: [

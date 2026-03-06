@@ -1,129 +1,22 @@
 :host {
-  --sga-primary: #03678F;
-  --sga-border: rgba(0, 0, 0, 0.10);
-  --sga-muted: rgba(0, 0, 0, 0.70);
-  --sga-surface: #ffffff;
+  --sga-primary-100: rgba(3, 103, 143, 0.10);
 }
 
-/* Contenedor del form */
-.fr010 {
-  display: block;
+/* Inputs/selects */
+:host ::ng-deep .sga-no-notch .mat-mdc-text-field-wrapper,
+:host ::ng-deep .sga-no-notch .mat-mdc-form-field-flex {
+  height: 44px;
+  align-items: center;
 }
 
-/* Reutiliza cards del detalle (si ya existen globalmente, puedes quitar estas reglas) */
-.sga-card {
-  background: var(--sga-surface);
-  border: 1px solid var(--sga-border);
-  border-radius: 12px;
-  margin-bottom: 16px;
+/* Textareas */
+:host ::ng-deep .sga-no-notch-textarea .mat-mdc-text-field-wrapper,
+:host ::ng-deep .sga-no-notch-textarea .mat-mdc-form-field-flex {
+  height: auto;
+  align-items: stretch;
 }
 
-.sga-card--section {
-  padding: 14px 16px;
-}
-
-/* Panel SGA: encabezado con borde azul */
-.sga-panel {
-  border: 1px solid var(--sga-border);
-  border-radius: 12px;
-  overflow: hidden;
-  background: #fff;
-}
-
-.sga-panel--soft {
-  background: linear-gradient(180deg, rgba(3, 103, 143, 0.04), #fff 60%);
-}
-
-.sga-panel__head {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  border-left: 6px solid var(--sga-primary);
-  background: rgba(3, 103, 143, 0.05);
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.sga-panel__title {
-  font-weight: 600;
-}
-
-.sga-panel__hint {
-  font-size: 12px;
-  opacity: .75;
-}
-
-.sga-panel__body {
-  padding: 12px;
-}
-
-/* Nota inferior estilo SGA */
-.sga-note {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border: 1px dashed rgba(3, 103, 143, 0.35);
-  border-radius: 10px;
-  background: rgba(3, 103, 143, 0.04);
-  color: rgba(0, 0, 0, 0.75);
-  font-size: 12px;
-}
-
-/* Grid del formulario:
-   - 2 columnas por defecto (ordenado)
-   - responsive a 1 columna en pantallas pequeñas */
-.fr010-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-@media (max-width: 980px) {
-  .fr010-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Field base */
-.fr010-field {
-  width: 100%;
-}
-
-/* Spans (ocupan 2 columnas) */
-.span2 {
-  grid-column: span 2;
-}
-
-@media (max-width: 980px) {
-  .span2 {
-    grid-column: auto;
-  }
-}
-
-/* Observaciones final ocupa todo */
-.fr010-field--full {
-  width: 100%;
-}
-
-/* Textareas: controlados y sin romper el floating label MDC */
-.fr010-textarea textarea {
-  min-height: 110px;
-  max-height: 220px;
-  resize: vertical;
-}
-
-/* Ajuste suave MDC: evita alturas raras sin afectar notch/label */
-:host ::ng-deep .fr010 .mat-mdc-text-field-wrapper {
-  padding-top: 2px;
-  padding-bottom: 2px;
-}
-
-/* Compacta un poco la separación interna del outline (sin tocar tipografía) */
-:host ::ng-deep .fr010 .mat-mdc-form-field-infix {
-  min-height: 44px;
-}
-
-/* Para que los selects múltiples no rompan el layout en altura */
-:host ::ng-deep .fr010 .mat-mdc-select-trigger {
+/* Select trigger */
+:host ::ng-deep .mat-mdc-select-trigger {
   align-items: center;
 }

@@ -1,5 +1,12 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-fr010-form',
@@ -11,10 +18,10 @@ export class Fr010FormComponent implements OnInit {
 
   form!: FormGroup;
 
-  // 13 (multi)
+  // 13
   tipoEstudioOptions = ['Maestría', 'Doctorado', 'PostDoctorado'];
 
-  // 22 (multi)
+  // 22
   tipoApoyoOptions = [
     'Comisión de Estudios en el exterior',
     'Comisión en Colombia Fuera de Bogotá',
@@ -24,7 +31,7 @@ export class Fr010FormComponent implements OnInit {
     'Apoyo Económico Representado en Descarga Académica',
   ];
 
-  // Info del docente quemada (1–12): Simula lo que vendrá de terceros.
+  // Datos externos simulados (solo lectura)
   private terceroSolicitante = {
     q1_fecha: '2026-02-16',
     q2_facultad: 'Facultad Tecnológica',
@@ -45,9 +52,6 @@ export class Fr010FormComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      // =======================
-      // IDENTIFICACIÓN SOLICITANTE (1-12) - SOLO LECTURA
-      // =======================
       solicitante: this.fb.group({
         q1_fecha: [{ value: this.terceroSolicitante.q1_fecha, disabled: true }],
         q2_facultad: [{ value: this.terceroSolicitante.q2_facultad, disabled: true }],
@@ -64,30 +68,75 @@ export class Fr010FormComponent implements OnInit {
         q12_categoria_actual: [{ value: this.terceroSolicitante.q12_categoria_actual, disabled: true }],
       }),
 
-      // =======================
-      // IDENTIFICACIÓN DE LA SOLICITUD (13-26)
-      // =======================
-      solicitud: this.fb.group({
-        q13_tipo_estudio: [[]], // multi
-        q14_nombre_programa: [''],
-        q15_titulo_aspira: [''],
-        q16_universidad: [''],
-        q17_pais: [''],
-        q18_ciudad: [''],
-        q19_fecha_aceptacion: [''],
-        q20_num_semestres: [''],
-        // (No existe la 21 en el formato)
-        q22_tipo_apoyo_requerido: [[]], // multi
-        q23_fecha_inicio_estudios: [''],
-        q24_fecha_culminacion_estudios: [''],
-        q25_tiempo_requerido_culminacion: [''],
-        q26_costo_total_requerido: [''],
-      }),
+      solicitud: this.fb.group(
+        {
+          q13_tipo_estudio: [null, [Validators.required]],
+          q14_nombre_programa: [
+            '',
+            [
+              Validators.required,
+              this.noWhitespaceValidator(),
+              Validators.minLength(5),
+              Validators.maxLength(120),
+            ],
+          ],
+          q15_titulo_aspira: [
+            '',
+            [
+              Validators.required,
+              this.noWhitespaceValidator(),
+              Validators.minLength(3),
+              Validators.maxLength(120),
+            ],
+          ],
+          q16_universidad: [
+            '',
+            [
+              Validators.required,
+              this.noWhitespaceValidator(),
+              Validators.minLength(3),
+              Validators.maxLength(120),
+            ],
+          ],
+          q17_pais: [
+            '',
+            [
+              Validators.required,
+              this.noWhitespaceValidator(),
+              this.onlyLettersValidator(),
+              Validators.minLength(3),
+              Validators.maxLength(60),
+            ],
+          ],
+          q18_ciudad: [
+            '',
+            [
+              Validators.required,
+              this.noWhitespaceValidator(),
+              this.onlyLettersValidator(),
+              Validators.minLength(3),
+              Validators.maxLength(60),
+            ],
+          ],
+          q19_fecha_aceptacion: [null, [Validators.required, this.dateValueValidator()]],
+          q20_num_semestres: ['', [Validators.required, this.integerRangeValidator(1, 4)]],
+          q22_tipo_apoyo_requerido: [null, [Validators.required]],
+          q23_fecha_inicio_estudios: [null, [Validators.required, this.dateValueValidator()]],
+          q24_fecha_culminacion_estudios: [null, [Validators.required, this.dateValueValidator()]],
+          q25_tiempo_requerido_culminacion: [
+            '',
+            [Validators.required, this.durationValidator()],
+          ],
+          q26_costo_total_requerido: [
+            '',
+            [Validators.required, this.moneyValidator()],
+          ],
+        },
+        {
+          validators: [this.solicitudDatesValidator()],
+        }
+      ),
 
-      // =======================
-      // FINANCIACIÓN Y COSTOS REQUERIDOS
-      // Comisiones Bogotá/Colombia fuera/Modalidad semipresencial (27-32)
-      // =======================
       financiacion_colombia: this.fb.group({
         q27_pago_matricula_valor: [''],
         q28_pago_matricula_total: [''],
@@ -97,9 +146,6 @@ export class Fr010FormComponent implements OnInit {
         q32_costo_reemplazo_docente: [''],
       }),
 
-      // =======================
-      // Comisiones en el Exterior (33-39)
-      // =======================
       financiacion_exterior: this.fb.group({
         q33_valor_salario_tiempo_comision: [''],
         q34_pago_matricula_valor: [''],
@@ -110,9 +156,6 @@ export class Fr010FormComponent implements OnInit {
         q39_costo_reemplazo_docente: [''],
       }),
 
-      // =======================
-      // Diligenciar cuando se gana una beca (40-43)
-      // =======================
       beca: this.fb.group({
         q40_cubrimiento_beca: [''],
         q41_institucion_otorga: [''],
@@ -120,14 +163,332 @@ export class Fr010FormComponent implements OnInit {
         q43_duracion_beca: [''],
       }),
 
-      // Observaciones (campo adicional del formato)
-      observaciones: [''],
+      observaciones: ['', [Validators.maxLength(500)]],
+    });
+
+    this.configureConditionalValidators();
+  }
+
+  private configureConditionalValidators(): void {
+    this.form.get('solicitud.q22_tipo_apoyo_requerido')?.valueChanges.subscribe(() => {
+      this.applyConditionalValidators();
+    });
+
+    this.form.get('beca')?.valueChanges.subscribe(() => {
+      this.applyBecaValidators();
+    });
+
+    this.applyConditionalValidators();
+    this.applyBecaValidators();
+  }
+
+  private applyConditionalValidators(): void {
+    const tipoApoyo = this.form.get('solicitud.q22_tipo_apoyo_requerido')?.value;
+    const isExterior = tipoApoyo === 'Comisión de Estudios en el exterior';
+    const isColombia = !!tipoApoyo && !isExterior;
+
+    const colombiaConfig: Record<string, ValidatorFn[]> = {
+      'financiacion_colombia.q27_pago_matricula_valor': [this.moneyValidator()],
+      'financiacion_colombia.q28_pago_matricula_total': [this.moneyValidator()],
+      'financiacion_colombia.q29_tiquetes': [this.moneyValidator()],
+      'financiacion_colombia.q30_descarga_academica_horas': [this.integerRangeValidator(1, 40)],
+      'financiacion_colombia.q31_descarga_academica_valor_total': [this.moneyValidator()],
+      'financiacion_colombia.q32_costo_reemplazo_docente': [this.moneyValidator()],
+    };
+
+    const exteriorConfig: Record<string, ValidatorFn[]> = {
+      'financiacion_exterior.q33_valor_salario_tiempo_comision': [this.moneyValidator()],
+      'financiacion_exterior.q34_pago_matricula_valor': [this.moneyValidator()],
+      'financiacion_exterior.q35_pago_total_matricula': [this.moneyValidator()],
+      'financiacion_exterior.q36_tiquetes': [this.moneyValidator()],
+      'financiacion_exterior.q37_seguro_medico': [this.moneyValidator()],
+      'financiacion_exterior.q38_gastos_instalacion': [this.moneyValidator()],
+      'financiacion_exterior.q39_costo_reemplazo_docente': [this.moneyValidator()],
+    };
+
+    Object.entries(colombiaConfig).forEach(([path, validators]) => {
+      this.setControlValidators(
+        path,
+        isColombia ? [Validators.required, ...validators] : validators
+      );
+    });
+
+    Object.entries(exteriorConfig).forEach(([path, validators]) => {
+      this.setControlValidators(
+        path,
+        isExterior ? [Validators.required, ...validators] : validators
+      );
     });
   }
 
-  // Se llama desde el padre (detalle)
+  private applyBecaValidators(): void {
+    const becaGroup = this.form.get('beca') as FormGroup;
+    if (!becaGroup) return;
+
+    const hasAnyValue = Object.values(becaGroup.getRawValue()).some((value) =>
+      String(value ?? '').trim().length > 0
+    );
+
+    const becaConfig: Record<string, ValidatorFn[]> = {
+      'beca.q40_cubrimiento_beca': [
+        this.noWhitespaceValidator(),
+        Validators.minLength(3),
+        Validators.maxLength(150),
+      ],
+      'beca.q41_institucion_otorga': [
+        this.noWhitespaceValidator(),
+        Validators.minLength(3),
+        Validators.maxLength(120),
+      ],
+      'beca.q42_tipo_financiacion_monto': [
+        this.noWhitespaceValidator(),
+        Validators.minLength(5),
+        Validators.maxLength(150),
+      ],
+      'beca.q43_duracion_beca': [this.durationValidator()],
+    };
+
+    Object.entries(becaConfig).forEach(([path, validators]) => {
+      this.setControlValidators(
+        path,
+        hasAnyValue ? [Validators.required, ...validators] : validators
+      );
+    });
+  }
+
+  private setControlValidators(path: string, validators: ValidatorFn[]): void {
+    const control = this.form.get(path);
+    if (!control) return;
+
+    control.setValidators(validators);
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private noWhitespaceValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value ?? '');
+      if (!value.length) return null;
+      return value.trim().length === 0 ? { whitespace: true } : null;
+    };
+  }
+
+  private onlyLettersValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value ?? '').trim();
+      if (!value) return null;
+
+      return /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'.-]+$/.test(value)
+        ? null
+        : { lettersOnly: true };
+    };
+  }
+
+  private integerRangeValidator(min: number, max: number): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value ?? '').trim();
+      if (!value) return null;
+
+      if (!/^\d+$/.test(value)) return { digitsOnly: true };
+
+      const numericValue = Number(value);
+
+      if (numericValue < min) return { minValue: { min, actual: numericValue } };
+      if (numericValue > max) return { maxValue: { max, actual: numericValue } };
+
+      return null;
+    };
+  }
+
+  private moneyValidator(max = 999999999999): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value ?? '').trim();
+      if (!value) return null;
+
+      if (!/^\d+$/.test(value)) return { digitsOnly: true };
+
+      const numericValue = Number(value);
+
+      if (numericValue <= 0) return { positiveValue: true };
+      if (numericValue > max) return { maxValue: { max, actual: numericValue } };
+
+      return null;
+    };
+  }
+
+  private durationValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value ?? '').trim();
+      if (!value) return null;
+
+      return /^\d+\s+(día|días|semana|semanas|mes|meses|año|años)$/i.test(value)
+        ? null
+        : { invalidDuration: true };
+    };
+  }
+
+  private dateValueValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const parsedDate = this.parseDateValue(control.value);
+      return parsedDate ? null : { invalidDate: true };
+    };
+  }
+
+  private solicitudDatesValidator(): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const fechaAceptacion = this.parseDateValue(group.get('q19_fecha_aceptacion')?.value);
+      const fechaInicio = this.parseDateValue(group.get('q23_fecha_inicio_estudios')?.value);
+      const fechaFin = this.parseDateValue(group.get('q24_fecha_culminacion_estudios')?.value);
+
+      const errors: Record<string, boolean> = {};
+
+      if (fechaAceptacion && fechaInicio && fechaAceptacion.getTime() > fechaInicio.getTime()) {
+        errors['acceptanceAfterStart'] = true;
+      }
+
+      if (fechaInicio && fechaFin && fechaFin.getTime() < fechaInicio.getTime()) {
+        errors['endBeforeStart'] = true;
+      }
+
+      return Object.keys(errors).length ? errors : null;
+    };
+  }
+
+  private parseDateValue(value: any): Date | null {
+    if (!value) return null;
+
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+    }
+
+    const raw = String(value).trim();
+
+    const matchDdMmYyyy = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (matchDdMmYyyy) {
+      const day = Number(matchDdMmYyyy[1]);
+      const month = Number(matchDdMmYyyy[2]);
+      const year = Number(matchDdMmYyyy[3]);
+
+      const date = new Date(year, month - 1, day);
+      const isValid =
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day;
+
+      return isValid ? date : null;
+    }
+
+    const matchIso = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (matchIso) {
+      const year = Number(matchIso[1]);
+      const month = Number(matchIso[2]);
+      const day = Number(matchIso[3]);
+
+      const date = new Date(year, month - 1, day);
+      const isValid =
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day;
+
+      return isValid ? date : null;
+    }
+
+    const genericDate = new Date(raw);
+    if (!isNaN(genericDate.getTime())) {
+      return new Date(
+        genericDate.getFullYear(),
+        genericDate.getMonth(),
+        genericDate.getDate()
+      );
+    }
+
+    return null;
+  }
+
+  private formatDate(value: any): string {
+    const date = this.parseDateValue(value);
+    if (!date) return '';
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  }
+
+  public onlyDigits(event: Event, path: string, maxLength = 12): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(/\D/g, '');
+
+    if (maxLength) {
+      value = value.slice(0, maxLength);
+    }
+
+    input.value = value;
+    this.form.get(path)?.setValue(value);
+  }
+
+  public normalizeText(path: string): void {
+    const control = this.form.get(path);
+    if (!control) return;
+
+    const normalized = String(control.value ?? '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    control.setValue(normalized, { emitEvent: false });
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  public isInvalid(path: string): boolean {
+    const control = this.form.get(path);
+    return !!control && control.invalid && (control.touched || control.dirty);
+  }
+
+  public hasSolicitudGroupError(errorKey: string): boolean {
+    const group = this.form.get('solicitud');
+    if (!group) return false;
+
+    const touched =
+      group.get('q19_fecha_aceptacion')?.touched ||
+      group.get('q23_fecha_inicio_estudios')?.touched ||
+      group.get('q24_fecha_culminacion_estudios')?.touched;
+
+    return !!group.hasError(errorKey) && !!touched;
+  }
+
+  public getError(path: string): string {
+    const control = this.form.get(path);
+    if (!control?.errors) return '';
+
+    if (control.errors['required']) return 'Este campo es obligatorio.';
+    if (control.errors['whitespace']) return 'No puede contener solo espacios.';
+    if (control.errors['lettersOnly']) return 'Solo se permiten letras y espacios.';
+    if (control.errors['invalidDate']) return 'Selecciona una fecha válida.';
+    if (control.errors['digitsOnly']) return 'Solo se permiten números.';
+    if (control.errors['positiveValue']) return 'El valor debe ser mayor que cero.';
+    if (control.errors['invalidDuration']) return 'Usa un formato como: 2 años, 6 meses o 3 semanas.';
+    if (control.errors['minlength']) {
+      return `Debe tener al menos ${control.errors['minlength'].requiredLength} caracteres.`;
+    }
+    if (control.errors['maxlength']) {
+      return `No puede superar ${control.errors['maxlength'].requiredLength} caracteres.`;
+    }
+    if (control.errors['minValue']) {
+      return `El valor mínimo permitido es ${control.errors['minValue'].min}.`;
+    }
+    if (control.errors['maxValue']) {
+      return `El valor máximo permitido es ${control.errors['maxValue'].max}.`;
+    }
+
+    return 'Campo inválido.';
+  }
+
   public save(): void {
-    // getRawValue incluye los disabled (importante para 1–12)
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
     const raw = this.form.getRawValue();
 
     const payload = {
@@ -135,7 +496,15 @@ export class Fr010FormComponent implements OnInit {
         codigo: 'GD-PR-013-FR-010',
         version: '02',
       },
-      fr010: raw,
+      fr010: {
+        ...raw,
+        solicitud: {
+          ...raw.solicitud,
+          q19_fecha_aceptacion: this.formatDate(raw.solicitud.q19_fecha_aceptacion),
+          q23_fecha_inicio_estudios: this.formatDate(raw.solicitud.q23_fecha_inicio_estudios),
+          q24_fecha_culminacion_estudios: this.formatDate(raw.solicitud.q24_fecha_culminacion_estudios),
+        },
+      },
     };
 
     console.log('[FR-010 JSON]', payload);

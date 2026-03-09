@@ -1,5 +1,5 @@
 {
-  "name": "solicitud-comision",
+  "name": "solicitudes-comisiones-estudio-mf",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,8 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build:single-spa:solicitud-comision": "ng build solicitud-comision --configuration production",
-    "serve:single-spa:solicitud-comision": "ng s --project solicitud-comision --disable-host-check --port 4224 --live-reload false"
+    "build:single-spa:solicitudes-comisiones-estudio-mf": "ng build solicitudes-comisiones-estudio-mf --configuration production",
+    "serve:single-spa:solicitudes-comisiones-estudio-mf": "ng s --project solicitudes-comisiones-estudio-mf --disable-host-check --port 4224 --live-reload false",
+    "build:prod": "ng build --progress --configuration=production",
+    "build:test": "ng build --progress --configuration=development"
   },
   "private": true,
   "dependencies": {
@@ -34,16 +36,13 @@
     "@angular/cli": "^16.2.12",
     "@angular/compiler-cli": "^16.2.0",
     "@types/jasmine": "~4.3.0",
-    "autoprefixer": "10.4.14",
     "jasmine-core": "~4.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "postcss": "8.4.31",
     "style-loader": "^3.3.1",
-    "tailwindcss": "3.4.17",
     "typescript": "~5.1.3"
   }
 }

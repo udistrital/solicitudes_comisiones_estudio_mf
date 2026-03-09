@@ -112,7 +112,7 @@ $light-theme: mat.define-light-theme((color: (primary: mat.define-palette($md-pr
 
 @include mat.all-component-themes($light-theme);
 
-.sga-sabaticos-datepicker {
+.sga-comisiones-datepicker {
   --mat-datepicker-calendar-date-selected-state-background-color: #03678f;
   --mat-datepicker-calendar-date-selected-state-text-color: #ffffff;
   --mat-datepicker-calendar-date-selected-disabled-state-background-color: rgba(3, 103, 143, 0.4);

@@ -36,7 +36,7 @@
             "scripts": [],
             "customWebpackConfig": {
               "path": "extra-webpack.config.js",
-              "libraryName": "solicitudes-sabaticos-mf",
+              "libraryName": "solicitudes-comisiones-estudio-mf",
               "libraryTarget": "umd"
             }
           },

@@ -4,7 +4,7 @@ import { ColumnDef, TableAction } from './dynamic-table.types';
 @Component({
   selector: 'app-dynamic-table',
   templateUrl: './dynamic-table.component.html',
-  styleUrls: ['./dynamic-table.component.css'],
+  styleUrls: ['./dynamic-table.component.scss'],
 })
 export class DynamicTableComponent<T extends Record<string, any>> implements OnChanges {
   @Input() rows: T[] = [];
@@ -39,6 +39,14 @@ export class DynamicTableComponent<T extends Record<string, any>> implements OnC
 
   emit(action: string, row: T) {
     this.actionClick.emit({ action, row });
+  }
+
+  trackByAction(_index: number, action: TableAction<T>): string {
+    return action.key;
+  }
+
+  trackByCol(_index: number, col: ColumnDef<T>): string {
+    return col.key;
   }
 
   isFilterable(col: ColumnDef<T>): boolean {

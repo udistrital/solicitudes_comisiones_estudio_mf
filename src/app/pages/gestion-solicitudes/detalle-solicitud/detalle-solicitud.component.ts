@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Role } from '../../../models/roles.model';
 import { EstadoSolicitud } from '../../../models/estados.model';
 import { PopUpManager } from '../../../managers/popup.manager';
+import { estadoSolicitudClass } from '../../../utils/estado-solicitud.util';
 
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
 import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
@@ -38,19 +39,22 @@ interface RequiredDocOption {
   styleUrls: ['./detalle-solicitud.component.scss'],
 })
 export class DetalleSolicitudComponent implements OnInit {
-  // Referencia al componente del formulario (solo existe si DOCENTE + FR010 seleccionado)
   @ViewChild(Fr010FormComponent) fr010Comp?: Fr010FormComponent;
 
   // Params
   id!: number;
   role: Role = 'DOCENTE';
-  mode: 'EDITAR' | 'GESTIONAR' = 'GESTIONAR';
+  mode: 'EDITAR' | 'GESTIONAR' | 'VER' = 'GESTIONAR';
 
   // Solicitud (demo)
   radicado = 'SOL-2026-0001';
   estadoSolicitud: EstadoSolicitud = 'BORRADOR';
   docenteNombre = 'María Pérez';
   proyecto = 'Ingeniería de Sistemas';
+
+  // Supervisor: fecha inicio contrato
+  fechaInicioContrato: Date | null = null;
+  tipoFechaSupervisor: 'INICIO' | 'PRORROGA' = 'INICIO';
 
   // Docs requeridos (para el desplegable)
   requiredDocs: RequiredDocOption[] = [
@@ -60,7 +64,6 @@ export class DetalleSolicitudComponent implements OnInit {
     { code: 'AVAL', name: 'Aval del proyecto curricular', kind: 'FILE' },
   ];
 
-  // Por defecto FR010
   selectedRequiredDoc: RequiredDocOption = this.requiredDocs[0];
 
   // Tabla docs (demo)
@@ -73,14 +76,13 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // Observaciones
   observacionDocente = 'Aquí el docente describe su solicitud... (demo)';
-  observacionRevision = ''; // editable para revisores
+  observacionRevision = '';
 
   observacionesSubsanacion: ObservacionItem[] = [
     { fecha: '2026-02-10 10:00', autor: 'COORDINACION', texto: 'Falta anexar plan de trabajo.' },
     { fecha: '2026-02-11 08:30', autor: 'SECRETARIA_ACADEMICA', texto: 'Verificar formato del FR-010.' },
   ];
 
-  // Aquí se guarda el JSON completo del FR-010 (demo) cuando se guarda
   fr010Json: any = null;
 
   constructor(
@@ -102,7 +104,11 @@ export class DetalleSolicitudComponent implements OnInit {
       this.estadoSolicitud = 'EN_REVISION';
     }
 
-    // asegura default FR010
+    // Docente VER → muestra estado real de la solicitud (demo: AVALADA)
+    if (this.role === 'DOCENTE' && this.mode === 'VER') {
+      this.estadoSolicitud = 'AVALADA';
+    }
+
     this.selectedRequiredDoc = this.requiredDocs[0];
   }
 
@@ -111,12 +117,45 @@ export class DetalleSolicitudComponent implements OnInit {
     return this.role === 'DOCENTE';
   }
 
+  get isReadOnly(): boolean {
+    return this.mode === 'VER';
+  }
+
+  get isSupervisor(): boolean {
+    return this.role === 'SUPERVISION';
+  }
+
+  /** Docente editable solo en BORRADOR o POR_SUBSANAR */
+  get isDocenteEditable(): boolean {
+    return this.isDocente
+      && (this.estadoSolicitud === 'BORRADOR' || this.estadoSolicitud === 'POR_SUBSANAR');
+  }
+
+  /** Docente en modo solo lectura (cualquier estado no editable) */
+  get isDocenteReadOnly(): boolean {
+    return this.isDocente && !this.isDocenteEditable;
+  }
+
   get allDocsChecked(): boolean {
     return this.documentos.every((d) => d.checked);
   }
 
   get observacionesOrdenDesc(): ObservacionItem[] {
     return [...this.observacionesSubsanacion].reverse();
+  }
+
+  get estadoClass(): string {
+    return estadoSolicitudClass(this.estadoSolicitud);
+  }
+
+  documentoChipClass(d: DocumentoItem): string {
+    const map: Record<DocumentoEstado, string> = {
+      PENDIENTE: 'doc-chip--pendiente',
+      ADJUNTO: 'doc-chip--adjunto',
+      VALIDO: 'doc-chip--valido',
+      NO_VALIDO: 'doc-chip--no_valido',
+    };
+    return map[d.estado] || '';
   }
 
   documentoChip(d: DocumentoItem): string {
@@ -133,23 +172,36 @@ export class DetalleSolicitudComponent implements OnInit {
     return this.selectedRequiredDoc?.code === 'FR010';
   }
 
+  // ========== Checkbox → estado de documento ==========
+  onDocCheckedChange(doc: DocumentoItem): void {
+    doc.estado = doc.checked ? 'VALIDO' : 'PENDIENTE';
+    // Refresh dataSource reference for mat-table
+    this.documentos = [...this.documentos];
+  }
+
   // ========== Acciones docente ==========
   guardarDocente() {
     this.popup.success('Guardado (demo)');
   }
 
   enviarDocente() {
-    this.estadoSolicitud = 'RADICADA';
-    this.popup.success('Solicitud enviada (demo)');
-    this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+    this.popup.confirm(
+      'Usted confirma que desea enviar la solicitud. Una vez enviada, no podrá editarla.',
+      'Enviar',
+      'Cancelar'
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.estadoSolicitud = 'RADICADA';
+        this.popup.success('Solicitud enviada (demo)');
+        this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+      }
+    });
   }
 
-  // Adjuntar solo aplica a FILE (no FR010)
   adjuntarDocumento() {
     if (!this.selectedRequiredDoc) return;
 
     if (this.selectedRequiredDoc.kind === 'FORM') {
-      // FR010 se “guarda” por el formulario, no como archivo
       this.popup.error('Para FR-010 usa "Guardar formulario". (demo)');
       return;
     }
@@ -159,13 +211,23 @@ export class DetalleSolicitudComponent implements OnInit {
 
     doc.estado = 'ADJUNTO';
     doc.autorSoporte = 'Docente';
+    this.documentos = [...this.documentos];
     this.popup.success(`Documento adjuntado: ${doc.nombre} (demo)`);
   }
 
   eliminarDocumento(doc: DocumentoItem) {
-    doc.estado = 'PENDIENTE';
-    doc.checked = false;
-    this.popup.success(`Documento eliminado: ${doc.nombre} (demo)`);
+    this.popup.confirm(
+      `¿Desea eliminar el documento <b>${doc.nombre}</b>?`,
+      'Eliminar',
+      'Cancelar'
+    ).then((result) => {
+      if (result.isConfirmed) {
+        doc.estado = 'PENDIENTE';
+        doc.checked = false;
+        this.documentos = [...this.documentos];
+        this.popup.success(`Documento eliminado: ${doc.nombre} (demo)`);
+      }
+    });
   }
 
   verDocumento(doc: DocumentoItem) {
@@ -175,7 +237,6 @@ export class DetalleSolicitudComponent implements OnInit {
     });
   }
 
-  // FR010: guardar formulario => genera JSON y marca doc como ADJUNTO (demo)
   guardarFR010() {
     if (!this.fr010Comp) {
       this.popup.error('El formulario FR-010 no está listo para guardarse');
@@ -188,13 +249,12 @@ export class DetalleSolicitudComponent implements OnInit {
     this.fr010Json = payload;
     console.log('[FR-010 JSON]', payload);
 
-    // marcar FR010 como adjunto en la tabla
     const fr = this.documentos.find((d) => d.nombre.startsWith('FR-010'));
     if (fr) {
       fr.estado = 'ADJUNTO';
       fr.autorSoporte = 'Docente';
     }
-
+    this.documentos = [...this.documentos];
     this.popup.success('FR-010 guardado (demo)');
   }
 
@@ -204,40 +264,83 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   retornarSolicitud() {
-    this.estadoSolicitud = 'POR_SUBSANAR';
-    if (this.observacionRevision.trim()) {
-      this.observacionesSubsanacion.push({
-        fecha: new Date().toISOString().slice(0, 16).replace('T', ' '),
-        autor: this.role,
-        texto: this.observacionRevision.trim(),
-      });
-      this.observacionRevision = '';
-    }
-    this.popup.error('Solicitud retornada para subsanación (demo)');
+    this.popup.confirm(
+      'Usted confirma que desea retornar la solicitud para subsanación.',
+      'Retornar',
+      'Cancelar'
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.estadoSolicitud = 'POR_SUBSANAR';
+        if (this.observacionRevision.trim()) {
+          this.observacionesSubsanacion.push({
+            fecha: new Date().toISOString().slice(0, 16).replace('T', ' '),
+            autor: this.role,
+            texto: this.observacionRevision.trim(),
+          });
+          this.observacionRevision = '';
+        }
+        this.popup.alertError('Solicitud retornada para subsanación (demo)');
+      }
+    });
   }
 
   rechazarSolicitud() {
-    this.estadoSolicitud = 'RECHAZADA';
-    if (this.observacionRevision.trim()) {
-      this.observacionesSubsanacion.push({
-        fecha: new Date().toISOString().slice(0, 16).replace('T', ' '),
-        autor: this.role,
-        texto: `[RECHAZO] ${this.observacionRevision.trim()}`,
-      });
-      this.observacionRevision = '';
-    }
-    this.popup.error('Solicitud rechazada (demo)');
+    this.popup.confirm(
+      'Usted confirma que desea <b>rechazar</b> esta solicitud. Esta acción no se puede deshacer.',
+      'Rechazar',
+      'Cancelar'
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.estadoSolicitud = 'RECHAZADA';
+        if (this.observacionRevision.trim()) {
+          this.observacionesSubsanacion.push({
+            fecha: new Date().toISOString().slice(0, 16).replace('T', ' '),
+            autor: this.role,
+            texto: `[RECHAZO] ${this.observacionRevision.trim()}`,
+          });
+          this.observacionRevision = '';
+        }
+        this.popup.alertError('Solicitud rechazada (demo)');
+      }
+    });
   }
 
   enviarRevisor() {
     if (!this.allDocsChecked) {
-      this.popup.error('Alguno de los documentos no es válido. Retorna la solicitud para subsanación. (demo)');
+      this.popup.alertError('Alguno de los documentos no es válido. Retorna la solicitud para subsanación. (demo)');
       return;
     }
 
-    this.estadoSolicitud = 'AVALADA';
-    this.popup.success('Todos los documentos están avalados (demo).');
-    this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+    this.popup.confirm(
+      'Usted confirma que desea avalar todos los documentos y enviar la solicitud.',
+      'Enviar',
+      'Cancelar'
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.estadoSolicitud = 'AVALADA';
+        this.popup.alertSuccess('Todos los documentos están avalados (demo).');
+        this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+      }
+    });
+  }
+
+  // ========== Acciones Supervisor / Decanatura ==========
+  darInicioComision() {
+    if (!this.fechaInicioContrato) {
+      this.popup.alertError('Debe ingresar la fecha de inicio del contrato.');
+      return;
+    }
+
+    this.popup.confirm(
+      'Usted confirma que desea dar inicio a la ejecución de la comisión.',
+      'Aceptar',
+      'Cancelar'
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.popup.alertSuccess('Inicio de comisión registrado (demo).');
+        this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+      }
+    });
   }
 
   regresar() {

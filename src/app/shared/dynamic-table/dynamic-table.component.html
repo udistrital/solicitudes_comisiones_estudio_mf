@@ -10,14 +10,13 @@
       class="w-full min-w-0 table-fixed border-separate border-spacing-0 bg-white">
 
       <!-- Columnas dinámicas -->
-      <ng-container *ngFor="let col of columns" [matColumnDef]="col.key">
+      <ng-container *ngFor="let col of columns; trackBy: trackByCol" [matColumnDef]="col.key">
         <th
           mat-header-cell
           *matHeaderCellDef
           class="align-top text-center text-sga px-3 pb-4 border-b border-sga/30"
           [class]="'col-' + col.key">
 
-          <!-- Spacer superior para que el título no quede pegado al borde -->
           <div class="pt-3"></div>
 
           <div class="flex flex-col items-center gap-4">
@@ -54,13 +53,12 @@
           [class]="'col-' + col.key">
 
           <ng-container [ngSwitch]="col.renderAs || 'text'">
-            <!-- Estado centrado: wrapper flex -->
             <div *ngSwitchCase="'chip'" class="flex justify-center">
-              <mat-chip
-                class="!rounded-full !border !border-black/10 !bg-black/5 !px-2.5 !py-0.5 !text-black/80"
+              <span
+                class="inline-block rounded-full border border-black/10 px-2.5 py-0.5 text-xs font-medium"
                 [ngClass]="col.chipClass ? col.chipClass(row) : ''">
                 {{ col.cell(row) }}
-              </mat-chip>
+              </span>
             </div>
 
             <span *ngSwitchDefault class="block break-words text-center">
@@ -76,10 +74,7 @@
           mat-header-cell
           *matHeaderCellDef
           class="align-top text-center text-sga px-3 pb-4 border-b border-sga/30 col-acciones">
-
-          <!-- Spacer superior -->
           <div class="pt-3"></div>
-
           <div class="w-full text-center leading-snug font-semibold">Acciones</div>
         </th>
 
@@ -88,21 +83,38 @@
           *matCellDef="let row"
           class="align-middle text-center px-3 py-3 border-b border-r border-sga/30 col-acciones">
 
-          <div class="flex items-center justify-center flex-wrap gap-2 min-h-[44px]">
-            <ng-container *ngFor="let a of actions">
+          <div class="flex items-center justify-center gap-1 min-h-[44px]">
+            <ng-container *ngFor="let a of actions; trackBy: trackByAction">
               <button
-                *ngIf="isVisible(a, row) && (a.variant !== 'flat')"
+                *ngIf="isVisible(a, row) && a.icon"
+                type="button"
+                class="sga-table-action"
+                [ngClass]="{
+                  'sga-table-action--warn': a.color === 'warn',
+                  'sga-table-action--primary': a.color === 'primary'
+                }"
+                [attr.aria-label]="a.tooltip || a.label"
+                [matTooltip]="a.tooltip || a.label"
+                (click)="emit(a.key, row)">
+                <mat-icon>{{ a.icon }}</mat-icon>
+              </button>
+
+              <!-- Fallback: botón de texto si no tiene icon -->
+              <button
+                *ngIf="isVisible(a, row) && !a.icon && (a.variant !== 'flat')"
                 mat-stroked-button
                 class="h-9 px-3.5 rounded-lg border-black/20"
+                [matTooltip]="a.tooltip || ''"
                 (click)="emit(a.key, row)">
                 {{ a.label }}
               </button>
 
               <button
-                *ngIf="isVisible(a, row) && (a.variant === 'flat')"
+                *ngIf="isVisible(a, row) && !a.icon && (a.variant === 'flat')"
                 mat-flat-button
                 color="primary"
                 class="h-9 px-3.5 rounded-lg"
+                [matTooltip]="a.tooltip || ''"
                 (click)="emit(a.key, row)">
                 {{ a.label }}
               </button>

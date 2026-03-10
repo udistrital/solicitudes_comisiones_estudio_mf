@@ -1,0 +1,210 @@
+// ============================================================
+// SGA Estilos Globales
+// Estilos compartidos que antes estaban duplicados en
+// componentes con ::ng-deep. Al ser globales, aplican
+// sin necesidad de ViewEncapsulation.None ni ::ng-deep.
+// ============================================================
+
+// --- Alternancia de filas en tablas Material ---
+tr.mat-mdc-row:nth-child(even) {
+  background: linear-gradient(
+    180deg,
+    var(--sga-primary-060),
+    var(--sga-primary-040)
+  );
+}
+
+tr.mat-mdc-row:hover {
+  background: var(--sga-primary-100);
+}
+
+// --- Form-field overrides MDC ---
+// Inputs/selects con altura fija (44px)
+.sga-no-notch .mat-mdc-text-field-wrapper,
+.sga-no-notch .mat-mdc-form-field-flex {
+  height: 44px;
+  align-items: center;
+}
+
+// Textareas auto-height
+.sga-no-notch-textarea .mat-mdc-text-field-wrapper,
+.sga-no-notch-textarea .mat-mdc-form-field-flex {
+  height: auto;
+  align-items: stretch;
+}
+
+// Select trigger centrado
+.mat-mdc-select-trigger {
+  align-items: center;
+}
+
+// Errores más compactos
+.mat-mdc-form-field-error {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  margin-top: 4px;
+}
+
+// --- Chips de estado de solicitud ---
+.st-borrador {
+  background-color: var(--st-borrador-bg) !important;
+  color: var(--st-borrador-text) !important;
+}
+
+.st-radicada {
+  background-color: var(--st-radicada-bg) !important;
+  color: var(--st-radicada-text) !important;
+}
+
+.st-revision {
+  background-color: var(--st-revision-bg) !important;
+  color: var(--st-revision-text) !important;
+}
+
+.st-subsanar {
+  background-color: var(--st-subsanar-bg) !important;
+  color: var(--st-subsanar-text) !important;
+}
+
+.st-avalada {
+  background-color: var(--st-avalada-bg) !important;
+  color: var(--st-avalada-text) !important;
+}
+
+.st-rechazada {
+  background-color: var(--st-rechazada-bg) !important;
+  color: var(--st-rechazada-text) !important;
+}
+
+// --- Chips de estado de documento ---
+.doc-chip--pendiente {
+  background-color: var(--doc-pendiente-bg) !important;
+  color: var(--doc-pendiente-text) !important;
+}
+
+.doc-chip--adjunto {
+  background-color: var(--doc-adjunto-bg) !important;
+  color: var(--doc-adjunto-text) !important;
+}
+
+.doc-chip--valido {
+  background-color: var(--doc-valido-bg) !important;
+  color: var(--doc-valido-text) !important;
+}
+
+.doc-chip--no_valido {
+  background-color: var(--doc-no-valido-bg) !important;
+  color: var(--doc-no-valido-text) !important;
+}
+
+// --- Botones de acción en tabla (nativos, no mat-icon-button) ---
+.sga-table-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--sga-primary-100);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sga-primary);
+    outline-offset: 2px;
+  }
+
+  mat-icon,
+  .mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  &--warn {
+    &:hover {
+      background-color: rgba(183, 28, 28, 0.08);
+    }
+
+    mat-icon,
+    .mat-icon {
+      color: #b71c1c;
+    }
+  }
+
+  &--primary {
+    &:hover {
+      background-color: rgba(3, 103, 143, 0.12);
+    }
+
+    mat-icon,
+    .mat-icon {
+      color: var(--sga-primary);
+    }
+  }
+}
+
+// --- Tablas de documentos (detalle-solicitud) ---
+.doc-table {
+  tr.mat-mdc-row:nth-child(even) {
+    background: linear-gradient(
+      180deg,
+      var(--sga-primary-060),
+      var(--sga-primary-040)
+    );
+  }
+
+  tr.mat-mdc-row:hover {
+    background: var(--sga-primary-100);
+  }
+
+  .mat-mdc-header-cell,
+  .mat-mdc-cell {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
+  }
+
+  .doc-th {
+    padding: 0.75rem;
+    text-align: center;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(3, 103, 143, 0.22);
+    border-right: 1px solid rgba(3, 103, 143, 0.22);
+  }
+
+  .doc-td {
+    padding: 0.75rem;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-right: 1px solid rgba(3, 103, 143, 0.22);
+  }
+
+  .mat-mdc-header-cell:last-child,
+  .mat-mdc-cell:last-child {
+    border-right: none;
+  }
+}
+
+// --- Quitar borde derecho última columna (tablas genéricas) ---
+.mat-mdc-header-cell:last-child,
+.mat-mdc-cell:last-child {
+  border-right: none;
+}

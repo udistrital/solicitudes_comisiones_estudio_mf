@@ -34,6 +34,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 registerLocaleData(localeEs);
 
@@ -75,6 +76,7 @@ registerLocaleData(localeEs);
     MatDialogModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatTooltipModule,
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-CO' },

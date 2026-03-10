@@ -1,68 +1,8 @@
-:host {
-  --sga-primary-100: rgba(3, 103, 143, 0.10);
-  --sga-primary-060: rgba(3, 103, 143, 0.06);
-  --sga-primary-040: rgba(3, 103, 143, 0.04);
-}
+// Detalle-solicitud specific styles.
 
-/* Alternancia + hover (Material controla <tr>) */
-:host ::ng-deep .doc-table tr.mat-mdc-row:nth-child(even) {
-  background: linear-gradient(180deg, var(--sga-primary-060), var(--sga-primary-040));
-}
-:host ::ng-deep .doc-table tr.mat-mdc-row:hover {
-  background: var(--sga-primary-100) !important;
-}
-
-/* Celdas/header: wrap y sin ellipsis */
-:host ::ng-deep .doc-table .mat-mdc-header-cell,
-:host ::ng-deep .doc-table .mat-mdc-cell {
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  word-break: break-word;
-}
-
-/* Tabla documentos: padding/bordes (Material no deja todo con Tailwind en mat-* cells) */
-:host ::ng-deep .doc-table .doc-th {
-  padding: 0.75rem;
-  text-align: center;
-  vertical-align: top;
-  border-bottom: 1px solid rgba(3, 103, 143, 0.22);
-  border-right: 1px solid rgba(3, 103, 143, 0.22);
-}
-:host ::ng-deep .doc-table .doc-td {
-  padding: 0.75rem;
-  text-align: center;
-  vertical-align: middle;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  border-right: 1px solid rgba(3, 103, 143, 0.22);
-}
-
-/* Última columna sin borde derecho */
-:host ::ng-deep .doc-table .mat-mdc-header-cell:last-child,
-:host ::ng-deep .doc-table .mat-mdc-cell:last-child {
-  border-right: none !important;
-}
-
-/* Anchos de columnas */
-.col-nombre { width: 52%; }
-.col-autor  { width: 24%; }
-.col-estado { width: 12%; }
-.col-icon   { width: 6%; }
-.col-check  { width: 6%; }
-
-/* ===========================
-   Anti-solape MDC
-   =========================== */
-
-:host ::ng-deep .sga-no-notch .mat-mdc-text-field-wrapper,
-:host ::ng-deep .sga-no-notch .mat-mdc-form-field-flex {
-  height: 44px;
-  align-items: center;
-}
-
-/* Para textareas */
-:host ::ng-deep .sga-no-notch-textarea .mat-mdc-text-field-wrapper,
-:host ::ng-deep .sga-no-notch-textarea .mat-mdc-form-field-flex {
-  height: auto;
-  align-items: stretch;
-}
+// Column widths for document tables
+.col-nombre { width: 48%; }
+.col-autor  { width: 20%; }
+.col-estado { width: 14%; }
+.col-icon   { width: 9%; }
+.col-check  { width: 9%; }

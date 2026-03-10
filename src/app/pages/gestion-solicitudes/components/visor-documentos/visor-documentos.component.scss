@@ -1,4 +1,2 @@
-/* limita el ancho del dialog */
-:host ::ng-deep .mat-mdc-dialog-content {
-  max-width: 900px;
-}
+// Visor-documentos specific styles.
+// Dialog content max-width is handled at the caller via MatDialog config.

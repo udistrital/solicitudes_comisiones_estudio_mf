@@ -35,19 +35,44 @@ export class BandejaComponent {
 
   get actions(): TableAction<SolicitudRow>[] {
     if (this.selectedRole === 'DOCENTE') {
+      const editable = (row: SolicitudRow) =>
+        row.estado === 'BORRADOR' || row.estado === 'POR_SUBSANAR';
+
       return [
-        { key: 'EDITAR', label: 'Editar', variant: 'stroked' },
+        {
+          key: 'VER',
+          label: 'Ver',
+          icon: 'visibility',
+          tooltip: 'Ver solicitud',
+          visible: (row: SolicitudRow) => !editable(row),
+        },
+        {
+          key: 'EDITAR',
+          label: 'Editar',
+          icon: 'edit',
+          tooltip: 'Editar solicitud',
+          visible: editable,
+        },
         {
           key: 'ELIMINAR',
           label: 'Eliminar',
-          variant: 'stroked',
-          visible: (row) => row.estado === 'BORRADOR',
+          icon: 'delete',
+          tooltip: 'Eliminar solicitud',
+          color: 'warn',
+          visible: (row: SolicitudRow) => row.estado === 'BORRADOR',
         },
-        { key: 'ENVIAR', label: 'Enviar', variant: 'flat' },
+        {
+          key: 'ENVIAR',
+          label: 'Enviar',
+          icon: 'send',
+          tooltip: 'Enviar solicitud',
+          color: 'primary',
+          visible: editable,
+        },
       ];
     }
 
-    return [{ key: 'GESTIONAR', label: 'Gestionar', variant: 'stroked' }];
+    return [{ key: 'GESTIONAR', label: 'Gestionar', icon: 'manage_search', tooltip: 'Gestionar solicitud' }];
   }
 
   onRoleChange(role: Role) {
@@ -56,6 +81,13 @@ export class BandejaComponent {
 
   onAction(action: string, row: SolicitudRow) {
     const a = action as BandejaActionKey;
+
+    if (a === 'VER') {
+      this.router.navigate(['/solicitudes', row.id], {
+        queryParams: { role: this.selectedRole, mode: 'VER' },
+      });
+      return;
+    }
 
     if (a === 'EDITAR') {
       this.router.navigate(['/solicitudes', row.id], {
@@ -72,16 +104,30 @@ export class BandejaComponent {
     }
 
     if (a === 'ELIMINAR') {
-      // hardcodeado: elimina visualmente
-      this.rows = this.rows.filter((x) => x.id !== row.id);
-      this.popup.success(`Solicitud ${row.radicado} eliminada (demo)`);
+      this.popup.confirm(
+        `¿Desea eliminar la solicitud <b>${row.radicado}</b>?`,
+        'Eliminar',
+        'Cancelar'
+      ).then((result) => {
+        if (result.isConfirmed) {
+          this.rows = this.rows.filter((x) => x.id !== row.id);
+          this.popup.success(`Solicitud ${row.radicado} eliminada (demo)`);
+        }
+      });
       return;
     }
 
     if (a === 'ENVIAR') {
-      // hardcodeado: cambia estado
-      row.estado = 'RADICADA';
-      this.popup.success(`Solicitud ${row.radicado} enviada (demo)`);
+      this.popup.confirm(
+        `¿Desea enviar la solicitud <b>${row.radicado}</b>? Una vez enviada, no podrá editarla.`,
+        'Enviar',
+        'Cancelar'
+      ).then((result) => {
+        if (result.isConfirmed) {
+          row.estado = 'RADICADA';
+          this.popup.success(`Solicitud ${row.radicado} enviada (demo)`);
+        }
+      });
       return;
     }
   }

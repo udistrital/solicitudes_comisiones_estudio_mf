@@ -9,7 +9,7 @@ import { PopUpManager } from '../../../managers/popup.manager';
 @Component({
   selector: 'app-bandeja',
   templateUrl: './bandeja.component.html',
-  styleUrls: ['./bandeja.component.css'],
+  styleUrls: ['./bandeja.component.scss'],
 })
 export class BandejaComponent {
   roleOptions = ROLE_OPTIONS;

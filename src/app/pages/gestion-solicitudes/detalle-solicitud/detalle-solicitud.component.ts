@@ -35,7 +35,7 @@ interface RequiredDocOption {
 @Component({
   selector: 'app-detalle-solicitud',
   templateUrl: './detalle-solicitud.component.html',
-  styleUrls: ['./detalle-solicitud.component.css'],
+  styleUrls: ['./detalle-solicitud.component.scss'],
 })
 export class DetalleSolicitudComponent implements OnInit {
   // Referencia al componente del formulario (solo existe si DOCENTE + FR010 seleccionado)

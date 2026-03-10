@@ -11,7 +11,7 @@ import {
 @Component({
   selector: 'app-fr010-form',
   templateUrl: './fr010-form.component.html',
-  styleUrls: ['./fr010-form.component.css'],
+  styleUrls: ['./fr010-form.component.scss'],
 })
 export class Fr010FormComponent implements OnInit {
   @Output() saved = new EventEmitter<any>();

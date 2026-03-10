@@ -1,3 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
-@use 'src/assets/styles/sga-theme-angular-material';
-@import 'src/assets/styles/sga-sweetalert2/sga-sweetalert2.scss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Chips de estado (usados en bandejas/tablas) */
+mat-chip.st-borrador { opacity: .8; }
+mat-chip.st-radicada { font-weight: 600; }
+mat-chip.st-revision { font-weight: 600; }
+mat-chip.st-subsanar { font-weight: 600; }
+mat-chip.st-avalada  { font-weight: 600; }
+mat-chip.st-rechazada{ font-weight: 600; }

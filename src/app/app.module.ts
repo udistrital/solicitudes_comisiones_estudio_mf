@@ -5,7 +5,7 @@ import localeEs from '@angular/common/locales/es';
 
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 import { EmptyRouteComponent } from './empty-route/empty-route.component';
@@ -19,6 +19,16 @@ import { Fr010FormComponent } from './pages/gestion-solicitudes/components/fr010
 
 // Forms
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+// i18n
+import {
+  TranslateModule,
+  TranslateLoader,
+  MissingTranslationHandler,
+  MissingTranslationHandlerParams,
+} from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { environment } from '../environments/environment';
 
 // Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -35,6 +45,26 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+
+/**
+ * Usa deployUrl del environment para resolver la ruta absoluta de los JSON.
+ * Esto evita que el loader resuelva rutas relativas al pathname del navegador
+ * (ej: /solicitud-comision/solicitudes/assets/i18n/en.json → 404).
+ * En su lugar resuelve a la raiz del microfrontend:
+ *   local  → http://localhost:4224/assets/i18n/
+ *   test   → https://pruebas....portaloas.../assets/i18n/
+ *   prod   → https://solicitudes....portaloas.../assets/i18n/
+ */
+export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
+  return new TranslateHttpLoader(http, `${environment.deployUrl}assets/i18n/`, '.json');
+}
+
+export class SgaMissingTranslationHandler implements MissingTranslationHandler {
+  handle(params: MissingTranslationHandlerParams): string {
+    console.warn(`[i18n] Missing translation: "${params.key}"`);
+    return params.key;
+  }
+}
 
 registerLocaleData(localeEs);
 
@@ -61,6 +91,20 @@ registerLocaleData(localeEs);
     // Forms
     FormsModule,
     ReactiveFormsModule,
+
+    // i18n
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient],
+      },
+      missingTranslationHandler: {
+        provide: MissingTranslationHandler,
+        useClass: SgaMissingTranslationHandler,
+      },
+      defaultLanguage: 'es',
+    }),
 
     // Material
     MatCardModule,

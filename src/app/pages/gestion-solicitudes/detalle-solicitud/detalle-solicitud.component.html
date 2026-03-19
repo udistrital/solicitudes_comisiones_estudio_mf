@@ -6,17 +6,17 @@
       <div class="flex flex-wrap items-center gap-4">
         <div class="flex-1 min-w-[280px]">
           <h2 class="m-0 text-xl leading-tight font-semibold">
-            {{ isDocenteEditable ? 'Detalle solicitud' : 'Consulta de solicitud' }}
+            {{ (isDocenteEditable ? 'DETALLE.TITLE_EDITABLE' : 'DETALLE.TITLE_READONLY') | translate }}
           </h2>
           <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-black/70">
-            <span>Radicado: <b>{{ radicado }}</b></span>
-            <span>Rol: <b>{{ role }}</b></span>
+            <span>{{ 'DETALLE.RADICADO' | translate }}: <b>{{ radicado }}</b></span>
+            <span>{{ 'DETALLE.ROL' | translate }}: <b>{{ role }}</b></span>
             <span class="inline-flex items-center gap-1.5">
-              Estado:
+              {{ 'DETALLE.ESTADO' | translate }}:
               <span
                 class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
                 [ngClass]="estadoClass">
-                {{ estadoSolicitud }}
+                {{ estadoLabel | translate }}
               </span>
             </span>
           </div>
@@ -24,7 +24,7 @@
 
         <div class="flex items-center justify-end">
           <button mat-stroked-button class="h-9 px-3.5 rounded-lg border-black/20" (click)="regresar()">
-            Regresar
+            {{ 'ACTIONS.REGRESAR' | translate }}
           </button>
         </div>
       </div>
@@ -38,12 +38,12 @@
 
       <!-- Seleccion de documento + acciones -->
       <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
-        <h3 class="m-0 mb-2 text-base leading-tight font-semibold">Formulario de solicitud inicial FR-010</h3>
+        <h3 class="m-0 mb-2 text-base leading-tight font-semibold">{{ 'DETALLE.FR010_TITLE' | translate }}</h3>
 
         <div class="flex flex-wrap items-end gap-3">
           <!-- Select -->
           <div class="flex-1 min-w-[280px]">
-            <div class="text-xs text-black/60 mb-1">Documento requerido</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'DETALLE.DOC_REQUERIDO' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <mat-select [(value)]="selectedRequiredDoc">
                 <mat-option *ngFor="let d of requiredDocs" [value]="d">
@@ -57,16 +57,16 @@
           <div class="flex flex-wrap items-center gap-2 mb-[22px]">
             <button *ngIf="isFR010Selected()" mat-flat-button color="primary" class="h-10 px-3.5 rounded-lg"
               (click)="guardarFR010()">
-              Guardar formulario
+              {{ 'ACTIONS.GUARDAR_FORM' | translate }}
             </button>
 
             <button *ngIf="!isFR010Selected()" mat-stroked-button class="h-10 px-3.5 rounded-lg border-black/20"
               (click)="adjuntarDocumento()">
-              Adjuntar documento
+              {{ 'ACTIONS.ADJUNTAR_DOC' | translate }}
             </button>
 
             <button mat-stroked-button class="h-10 px-3.5 rounded-lg border-black/20" (click)="guardarDocente()">
-              Guardar
+              {{ 'ACTIONS.GUARDAR' | translate }}
             </button>
           </div>
         </div>
@@ -86,7 +86,7 @@
 
             <ng-container matColumnDef="nombre">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-nombre">
-                <div class="text-center text-sga font-semibold">Documento</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.DOCUMENTO' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-nombre">
                 <span class="block text-left break-words">{{ d.nombre }}</span>
@@ -95,13 +95,13 @@
 
             <ng-container matColumnDef="estado">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-estado">
-                <div class="text-center text-sga font-semibold">Estado</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.ESTADO' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-estado">
                 <div class="flex justify-center">
                   <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
                     [ngClass]="documentoChipClass(d)">
-                    {{ documentoChip(d) }}
+                    {{ documentoChip(d) | translate }}
                   </span>
                 </div>
               </td>
@@ -109,11 +109,12 @@
 
             <ng-container matColumnDef="ver">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-icon">
-                <div class="text-center text-sga font-semibold">Ver</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.VER' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
-                <button type="button" class="sga-table-action" aria-label="Ver documento"
-                  matTooltip="Ver documento" (click)="verDocumento(d)">
+                <button type="button" class="sga-table-action"
+                  [attr.aria-label]="'TOOLTIPS.VER_DOCUMENTO' | translate"
+                  [matTooltip]="'TOOLTIPS.VER_DOCUMENTO' | translate" (click)="verDocumento(d)">
                   <mat-icon>visibility</mat-icon>
                 </button>
               </td>
@@ -121,11 +122,12 @@
 
             <ng-container matColumnDef="eliminar">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-icon">
-                <div class="text-center text-sga font-semibold">Eliminar</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.ELIMINAR' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
                 <button type="button" class="sga-table-action sga-table-action--warn"
-                  aria-label="Eliminar documento" matTooltip="Eliminar documento"
+                  [attr.aria-label]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
+                  [matTooltip]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
                   (click)="eliminarDocumento(d)">
                   <mat-icon>delete</mat-icon>
                 </button>
@@ -146,22 +148,22 @@
           <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
             <header
               class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-              <div class="font-semibold text-sm">Observaciones del docente</div>
-              <div class="text-xs text-black/50">Editable</div>
+              <div class="font-semibold text-sm">{{ 'DETALLE.OBS_DOCENTE' | translate }}</div>
+              <div class="text-xs text-black/50">{{ 'DETALLE.EDITABLE' | translate }}</div>
             </header>
 
             <div class="p-3">
-              <div class="text-xs text-black/60 mb-1">Escribe una observacion breve</div>
+              <div class="text-xs text-black/60 mb-1">{{ 'DETALLE.ESCRIBE_OBS' | translate }}</div>
               <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
-                <textarea matInput rows="3" placeholder="Escribe aqui..." [(ngModel)]="observacionDocente"></textarea>
+                <textarea matInput rows="3" [placeholder]="'DETALLE.PLACEHOLDER_OBS' | translate" [(ngModel)]="observacionDocente"></textarea>
               </mat-form-field>
             </div>
 
             <footer class="px-3 pb-3 flex justify-end gap-2 flex-wrap">
               <button mat-stroked-button class="h-9 px-3.5 rounded-lg border-black/20"
-                (click)="guardarDocente()">Guardar</button>
+                (click)="guardarDocente()">{{ 'ACTIONS.GUARDAR' | translate }}</button>
               <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-                (click)="enviarDocente()">Enviar</button>
+                (click)="enviarDocente()">{{ 'ACTIONS.ENVIAR' | translate }}</button>
             </footer>
           </section>
 
@@ -169,8 +171,8 @@
           <section class="border border-black/10 rounded-xl overflow-hidden bg-white bg-gradient-to-b from-sga/5 to-white">
             <header
               class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-              <div class="font-semibold text-sm">Observaciones de subsanacion</div>
-              <div class="text-xs text-black/50">Solo lectura</div>
+              <div class="font-semibold text-sm">{{ 'DETALLE.OBS_SUBSANACION' | translate }}</div>
+              <div class="text-xs text-black/50">{{ 'DETALLE.SOLO_LECTURA' | translate }}</div>
             </header>
 
             <div class="p-3">
@@ -207,7 +209,7 @@
 
             <ng-container matColumnDef="nombre">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-nombre">
-                <div class="text-center text-sga font-semibold">Documento</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.DOCUMENTO' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-nombre">
                 <span class="block text-left break-words">{{ d.nombre }}</span>
@@ -216,7 +218,7 @@
 
             <ng-container matColumnDef="autor">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-autor">
-                <div class="text-center text-sga font-semibold">Autor</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.AUTOR' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-autor">
                 <span class="block break-words">{{ d.autorSoporte || '-' }}</span>
@@ -225,13 +227,13 @@
 
             <ng-container matColumnDef="estado">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-estado">
-                <div class="text-center text-sga font-semibold">Estado</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.ESTADO' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-estado">
                 <div class="flex justify-center">
                   <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
                     [ngClass]="documentoChipClass(d)">
-                    {{ documentoChip(d) }}
+                    {{ documentoChip(d) | translate }}
                   </span>
                 </div>
               </td>
@@ -239,11 +241,12 @@
 
             <ng-container matColumnDef="visualizar">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-icon">
-                <div class="text-center text-sga font-semibold">Ver</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.VER' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
-                <button type="button" class="sga-table-action" aria-label="Ver documento"
-                  matTooltip="Ver documento" (click)="verDocumento(d)">
+                <button type="button" class="sga-table-action"
+                  [attr.aria-label]="'TOOLTIPS.VER_DOCUMENTO' | translate"
+                  [matTooltip]="'TOOLTIPS.VER_DOCUMENTO' | translate" (click)="verDocumento(d)">
                   <mat-icon>visibility</mat-icon>
                 </button>
               </td>
@@ -263,12 +266,12 @@
           <section class="border border-black/10 rounded-xl overflow-hidden bg-white bg-gradient-to-b from-sga/5 to-white">
             <header
               class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-              <div class="font-semibold text-sm">Observaciones del docente</div>
-              <div class="text-xs text-black/50">Solo lectura</div>
+              <div class="font-semibold text-sm">{{ 'DETALLE.OBS_DOCENTE' | translate }}</div>
+              <div class="text-xs text-black/50">{{ 'DETALLE.SOLO_LECTURA' | translate }}</div>
             </header>
             <div class="p-3">
               <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
-                <textarea matInput rows="3" placeholder="Sin observacion" [value]="observacionDocente" disabled></textarea>
+                <textarea matInput rows="3" [placeholder]="'DETALLE.SIN_OBSERVACION' | translate" [value]="observacionDocente" disabled></textarea>
               </mat-form-field>
             </div>
           </section>
@@ -277,8 +280,8 @@
           <section class="border border-black/10 rounded-xl overflow-hidden bg-white bg-gradient-to-b from-sga/5 to-white">
             <header
               class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-              <div class="font-semibold text-sm">Historial de observaciones</div>
-              <div class="text-xs text-black/50">Solo lectura</div>
+              <div class="font-semibold text-sm">{{ 'DETALLE.OBS_HISTORIAL' | translate }}</div>
+              <div class="text-xs text-black/50">{{ 'DETALLE.SOLO_LECTURA' | translate }}</div>
             </header>
             <div class="p-3">
               <div class="max-h-[200px] overflow-auto pr-1">
@@ -313,7 +316,7 @@
 
             <ng-container matColumnDef="nombre">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-nombre">
-                <div class="text-center text-sga font-semibold">Documento</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.DOCUMENTO' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-nombre">
                 <span class="block text-left break-words">{{ d.nombre }}</span>
@@ -322,7 +325,7 @@
 
             <ng-container matColumnDef="autor">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-autor">
-                <div class="text-center text-sga font-semibold">Autor del soporte</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.AUTOR_SOPORTE' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-autor">
                 <span class="block break-words">{{ d.autorSoporte || '-' }}</span>
@@ -331,13 +334,13 @@
 
             <ng-container matColumnDef="estado">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-estado">
-                <div class="text-center text-sga font-semibold">Estado</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.ESTADO' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-estado">
                 <div class="flex justify-center">
                   <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
                     [ngClass]="documentoChipClass(d)">
-                    {{ documentoChip(d) }}
+                    {{ documentoChip(d) | translate }}
                   </span>
                 </div>
               </td>
@@ -345,11 +348,12 @@
 
             <ng-container matColumnDef="visualizar">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-icon">
-                <div class="text-center text-sga font-semibold">Ver</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.VER' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
-                <button type="button" class="sga-table-action" aria-label="Ver documento"
-                  matTooltip="Ver documento" (click)="verDocumento(d)">
+                <button type="button" class="sga-table-action"
+                  [attr.aria-label]="'TOOLTIPS.VER_DOCUMENTO' | translate"
+                  [matTooltip]="'TOOLTIPS.VER_DOCUMENTO' | translate" (click)="verDocumento(d)">
                   <mat-icon>visibility</mat-icon>
                 </button>
               </td>
@@ -357,7 +361,7 @@
 
             <ng-container matColumnDef="check">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-check">
-                <div class="text-center text-sga font-semibold">OK</div>
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.OK' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-check">
                 <div class="flex justify-center">
@@ -381,12 +385,12 @@
           <section class="border border-black/10 rounded-xl overflow-hidden bg-white bg-gradient-to-b from-sga/5 to-white">
             <header
               class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-              <div class="font-semibold text-sm">Observaciones del docente</div>
-              <div class="text-xs text-black/50">Solo lectura</div>
+              <div class="font-semibold text-sm">{{ 'DETALLE.OBS_DOCENTE' | translate }}</div>
+              <div class="text-xs text-black/50">{{ 'DETALLE.SOLO_LECTURA' | translate }}</div>
             </header>
             <div class="p-3">
               <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
-                <textarea matInput rows="3" placeholder="Sin observacion" [value]="observacionDocente" disabled></textarea>
+                <textarea matInput rows="3" [placeholder]="'DETALLE.SIN_OBSERVACION' | translate" [value]="observacionDocente" disabled></textarea>
               </mat-form-field>
             </div>
           </section>
@@ -395,13 +399,13 @@
           <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
             <header
               class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-              <div class="font-semibold text-sm">Observaciones de revision</div>
-              <div class="text-xs text-black/50">Subsanacion / aprobacion</div>
+              <div class="font-semibold text-sm">{{ 'DETALLE.OBS_REVISION' | translate }}</div>
+              <div class="text-xs text-black/50">{{ 'DETALLE.OBS_SUB_APROB' | translate }}</div>
             </header>
             <div class="p-3">
-              <div class="text-xs text-black/60 mb-1">Escribe tu observacion</div>
+              <div class="text-xs text-black/60 mb-1">{{ 'DETALLE.ESCRIBE_TU_OBS' | translate }}</div>
               <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
-                <textarea matInput rows="3" placeholder="Escribe aqui..." [(ngModel)]="observacionRevision"></textarea>
+                <textarea matInput rows="3" [placeholder]="'DETALLE.PLACEHOLDER_OBS' | translate" [(ngModel)]="observacionRevision"></textarea>
               </mat-form-field>
             </div>
 
@@ -409,26 +413,26 @@
               <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20 inline-flex items-center"
                 (click)="adjuntarSoporteRevisor()">
                 <mat-icon class="mr-1 text-[18px]">attach_file</mat-icon>
-                Adjuntar documentos
+                {{ 'ACTIONS.ADJUNTAR_DOCS' | translate }}
               </button>
 
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="regresar()">Regresar</button>
+                  (click)="regresar()">{{ 'ACTIONS.REGRESAR' | translate }}</button>
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="rechazarSolicitud()">Rechazar</button>
+                  (click)="rechazarSolicitud()">{{ 'ACTIONS.RECHAZAR' | translate }}</button>
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="retornarSolicitud()">Retornar solicitud</button>
+                  (click)="retornarSolicitud()">{{ 'ACTIONS.RETORNAR' | translate }}</button>
                 <!-- Enviar solo para revisores no-supervisor -->
                 <button *ngIf="!isSupervisor" mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
                   (click)="enviarRevisor()" [disabled]="!allDocsChecked">
-                  Enviar
+                  {{ 'ACTIONS.ENVIAR' | translate }}
                 </button>
               </div>
             </footer>
 
             <div *ngIf="!isSupervisor" class="px-3 pb-1 text-xs text-black/50">
-              Enviar solo esta habilitado cuando <b>todos los documentos</b> tienen check.
+              {{ 'DETALLE.ENVIAR_HABILITADO_MSG' | translate }}
             </div>
           </section>
 
@@ -442,19 +446,19 @@
       <mat-card *ngIf="isSupervisor" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
         <header
           class="px-3 py-2 mb-3 rounded-lg border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-          <div class="font-semibold text-sm">Inicio de ejecucion de la comision</div>
-          <div class="text-xs text-black/50">Supervisor / Decanatura</div>
+          <div class="font-semibold text-sm">{{ 'SUPERVISOR.TITLE' | translate }}</div>
+          <div class="text-xs text-black/50">{{ 'SUPERVISOR.SUBTITLE' | translate }}</div>
         </header>
 
         <div class="flex flex-wrap items-end gap-3">
 
           <!-- Tipo de fecha -->
           <div class="w-[180px]">
-            <div class="text-xs text-black/60 mb-1">Tipo de fecha</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'SUPERVISOR.TIPO_FECHA' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <mat-select [(value)]="tipoFechaSupervisor">
-                <mat-option value="INICIO">Fecha de inicio</mat-option>
-                <mat-option value="PRORROGA">Fecha de prorroga</mat-option>
+                <mat-option value="INICIO">{{ 'SUPERVISOR.FECHA_INICIO' | translate }}</mat-option>
+                <mat-option value="PRORROGA">{{ 'SUPERVISOR.FECHA_PRORROGA' | translate }}</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -462,12 +466,12 @@
           <!-- Fecha -->
           <div class="w-[220px]">
             <div class="text-xs text-black/60 mb-1">
-              {{ tipoFechaSupervisor === 'INICIO' ? 'Fecha inicio contrato' : 'Fecha fin prorroga' }}
+              {{ (tipoFechaSupervisor === 'INICIO' ? 'SUPERVISOR.FECHA_INICIO_CONTRATO' : 'SUPERVISOR.FECHA_FIN_PRORROGA') | translate }}
             </div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input matInput [matDatepicker]="pickerSupervisor"
                 [(ngModel)]="fechaInicioContrato"
-                placeholder="Selecciona fecha" readonly />
+                [placeholder]="'SUPERVISOR.SELECCIONA_FECHA' | translate" readonly />
               <mat-datepicker-toggle matSuffix [for]="pickerSupervisor"></mat-datepicker-toggle>
               <mat-datepicker #pickerSupervisor></mat-datepicker>
             </mat-form-field>
@@ -478,7 +482,7 @@
             <button mat-stroked-button class="h-10 px-3 rounded-lg border-black/20 inline-flex items-center"
               (click)="adjuntarSoporteRevisor()">
               <mat-icon class="mr-1 text-[18px]">attach_file</mat-icon>
-              Adjuntar documentos
+              {{ 'ACTIONS.ADJUNTAR_DOCS' | translate }}
             </button>
           </div>
 
@@ -487,13 +491,13 @@
             <button mat-flat-button color="primary" class="h-10 px-5 rounded-lg"
               (click)="darInicioComision()"
               [disabled]="!allDocsChecked || !fechaInicioContrato">
-              Dar inicio
+              {{ 'ACTIONS.DAR_INICIO' | translate }}
             </button>
           </div>
         </div>
 
         <div *ngIf="!allDocsChecked" class="mt-1 text-xs text-black/50">
-          Debe validar todos los documentos antes de dar inicio.
+          {{ 'DETALLE.VALIDAR_DOCS_MSG' | translate }}
         </div>
       </mat-card>
 

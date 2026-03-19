@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { ROLE_OPTIONS, Role } from '../../../models/roles.model';
 import { SolicitudRow } from '../../../models/solicitud.model';
 import { ColumnDef, TableAction } from '../../../shared/dynamic-table/dynamic-table.types';
@@ -23,7 +24,11 @@ export class BandejaComponent {
     { id: 105, radicado: 'SOL-2026-0005', docente: 'Ana Torres', proyecto: 'Sistemas', estado: 'AVALADA', fecha: '2026-02-05' },
   ];
 
-  constructor(private router: Router, private popup: PopUpManager) {}
+  constructor(
+    private router: Router,
+    private popup: PopUpManager,
+    private translate: TranslateService,
+  ) {}
 
   get title(): string {
     return ROLE_TABLE_CONFIGS[this.selectedRole].title;
@@ -41,38 +46,38 @@ export class BandejaComponent {
       return [
         {
           key: 'VER',
-          label: 'Ver',
+          label: 'ACTIONS.VER',
           icon: 'visibility',
-          tooltip: 'Ver solicitud',
+          tooltip: 'TOOLTIPS.VER_SOLICITUD',
           visible: (row: SolicitudRow) => !editable(row),
         },
         {
           key: 'EDITAR',
-          label: 'Editar',
+          label: 'ACTIONS.EDITAR',
           icon: 'edit',
-          tooltip: 'Editar solicitud',
+          tooltip: 'TOOLTIPS.EDITAR_SOLICITUD',
           visible: editable,
         },
         {
           key: 'ELIMINAR',
-          label: 'Eliminar',
+          label: 'ACTIONS.ELIMINAR',
           icon: 'delete',
-          tooltip: 'Eliminar solicitud',
+          tooltip: 'TOOLTIPS.ELIMINAR_SOLICITUD',
           color: 'warn',
           visible: (row: SolicitudRow) => row.estado === 'BORRADOR',
         },
         {
           key: 'ENVIAR',
-          label: 'Enviar',
+          label: 'ACTIONS.ENVIAR',
           icon: 'send',
-          tooltip: 'Enviar solicitud',
+          tooltip: 'TOOLTIPS.ENVIAR_SOLICITUD',
           color: 'primary',
           visible: editable,
         },
       ];
     }
 
-    return [{ key: 'GESTIONAR', label: 'Gestionar', icon: 'manage_search', tooltip: 'Gestionar solicitud' }];
+    return [{ key: 'GESTIONAR', label: 'ACTIONS.GESTIONAR', icon: 'manage_search', tooltip: 'TOOLTIPS.GESTIONAR_SOLICITUD' }];
   }
 
   onRoleChange(role: Role) {
@@ -105,13 +110,13 @@ export class BandejaComponent {
 
     if (a === 'ELIMINAR') {
       this.popup.confirm(
-        `¿Desea eliminar la solicitud <b>${row.radicado}</b>?`,
-        'Eliminar',
-        'Cancelar'
+        this.translate.instant('POPUPS.ELIMINAR_SOLICITUD_MSG', { radicado: row.radicado }),
+        this.translate.instant('ACTIONS.ELIMINAR'),
+        this.translate.instant('ACTIONS.CANCELAR'),
       ).then((result) => {
         if (result.isConfirmed) {
           this.rows = this.rows.filter((x) => x.id !== row.id);
-          this.popup.success(`Solicitud ${row.radicado} eliminada (demo)`);
+          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ELIMINADA', { radicado: row.radicado }));
         }
       });
       return;
@@ -119,13 +124,13 @@ export class BandejaComponent {
 
     if (a === 'ENVIAR') {
       this.popup.confirm(
-        `¿Desea enviar la solicitud <b>${row.radicado}</b>? Una vez enviada, no podrá editarla.`,
-        'Enviar',
-        'Cancelar'
+        this.translate.instant('POPUPS.ENVIAR_SOLICITUD_MSG', { radicado: row.radicado }),
+        this.translate.instant('ACTIONS.ENVIAR'),
+        this.translate.instant('ACTIONS.CANCELAR'),
       ).then((result) => {
         if (result.isConfirmed) {
           row.estado = 'RADICADA';
-          this.popup.success(`Solicitud ${row.radicado} enviada (demo)`);
+          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA', { radicado: row.radicado }));
         }
       });
       return;

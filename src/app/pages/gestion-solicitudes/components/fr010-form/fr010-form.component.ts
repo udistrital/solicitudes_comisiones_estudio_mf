@@ -7,6 +7,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-fr010-form',
@@ -19,16 +20,20 @@ export class Fr010FormComponent implements OnInit {
   form!: FormGroup;
 
   // 13
-  tipoEstudioOptions = ['Maestría', 'Doctorado', 'PostDoctorado'];
+  tipoEstudioOptions = [
+    { value: 'MAESTRIA', label: 'FR010.OPT_MAESTRIA' },
+    { value: 'DOCTORADO', label: 'FR010.OPT_DOCTORADO' },
+    { value: 'POSTDOCTORADO', label: 'FR010.OPT_POSTDOCTORADO' },
+  ];
 
   // 22
   tipoApoyoOptions = [
-    'Comisión de Estudios en el exterior',
-    'Comisión en Colombia Fuera de Bogotá',
-    'Comisión de Estudios en Bogotá',
-    'Comisión en Modalidad Semipresencial',
-    'Apoyo Económico Representado en Descarga Académica y Pago de Matrícula',
-    'Apoyo Económico Representado en Descarga Académica',
+    { value: 'COMISION_EXTERIOR', label: 'FR010.OPT_COMISION_EXTERIOR' },
+    { value: 'COMISION_COLOMBIA_FUERA', label: 'FR010.OPT_COMISION_COLOMBIA_FUERA' },
+    { value: 'COMISION_BOGOTA', label: 'FR010.OPT_COMISION_BOGOTA' },
+    { value: 'COMISION_SEMIPRESENCIAL', label: 'FR010.OPT_COMISION_SEMIPRESENCIAL' },
+    { value: 'APOYO_DESCARGA_MATRICULA', label: 'FR010.OPT_APOYO_DESCARGA_MATRICULA' },
+    { value: 'APOYO_DESCARGA', label: 'FR010.OPT_APOYO_DESCARGA' },
   ];
 
   // Datos externos simulados (solo lectura)
@@ -48,7 +53,7 @@ export class Fr010FormComponent implements OnInit {
     q12_categoria_actual: 'Asociado',
   };
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private translate: TranslateService) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -184,7 +189,7 @@ export class Fr010FormComponent implements OnInit {
 
   private applyConditionalValidators(): void {
     const tipoApoyo = this.form.get('solicitud.q22_tipo_apoyo_requerido')?.value;
-    const isExterior = tipoApoyo === 'Comisión de Estudios en el exterior';
+    const isExterior = tipoApoyo === 'COMISION_EXTERIOR';
     const isColombia = !!tipoApoyo && !isExterior;
 
     const colombiaConfig: Record<string, ValidatorFn[]> = {
@@ -320,7 +325,7 @@ export class Fr010FormComponent implements OnInit {
       const value = String(control.value ?? '').trim();
       if (!value) return null;
 
-      return /^\d+\s+(día|días|semana|semanas|mes|meses|año|años)$/i.test(value)
+      return /^\d+\s+(día|días|semana|semanas|mes|meses|año|años|day|days|week|weeks|month|months|year|years)$/i.test(value)
         ? null
         : { invalidDuration: true };
     };
@@ -460,27 +465,27 @@ export class Fr010FormComponent implements OnInit {
     const control = this.form.get(path);
     if (!control?.errors) return '';
 
-    if (control.errors['required']) return 'Este campo es obligatorio.';
-    if (control.errors['whitespace']) return 'No puede contener solo espacios.';
-    if (control.errors['lettersOnly']) return 'Solo se permiten letras y espacios.';
-    if (control.errors['invalidDate']) return 'Selecciona una fecha válida.';
-    if (control.errors['digitsOnly']) return 'Solo se permiten números.';
-    if (control.errors['positiveValue']) return 'El valor debe ser mayor que cero.';
-    if (control.errors['invalidDuration']) return 'Usa un formato como: 2 años, 6 meses o 3 semanas.';
+    if (control.errors['required']) return this.translate.instant('VALIDATIONS.REQUIRED');
+    if (control.errors['whitespace']) return this.translate.instant('VALIDATIONS.WHITESPACE');
+    if (control.errors['lettersOnly']) return this.translate.instant('VALIDATIONS.LETTERS_ONLY');
+    if (control.errors['invalidDate']) return this.translate.instant('VALIDATIONS.INVALID_DATE');
+    if (control.errors['digitsOnly']) return this.translate.instant('VALIDATIONS.DIGITS_ONLY');
+    if (control.errors['positiveValue']) return this.translate.instant('VALIDATIONS.POSITIVE_VALUE');
+    if (control.errors['invalidDuration']) return this.translate.instant('VALIDATIONS.INVALID_DURATION');
     if (control.errors['minlength']) {
-      return `Debe tener al menos ${control.errors['minlength'].requiredLength} caracteres.`;
+      return this.translate.instant('VALIDATIONS.MIN_LENGTH', { requiredLength: control.errors['minlength'].requiredLength });
     }
     if (control.errors['maxlength']) {
-      return `No puede superar ${control.errors['maxlength'].requiredLength} caracteres.`;
+      return this.translate.instant('VALIDATIONS.MAX_LENGTH', { requiredLength: control.errors['maxlength'].requiredLength });
     }
     if (control.errors['minValue']) {
-      return `El valor mínimo permitido es ${control.errors['minValue'].min}.`;
+      return this.translate.instant('VALIDATIONS.MIN_VALUE', { min: control.errors['minValue'].min });
     }
     if (control.errors['maxValue']) {
-      return `El valor máximo permitido es ${control.errors['maxValue'].max}.`;
+      return this.translate.instant('VALIDATIONS.MAX_VALUE', { max: control.errors['maxValue'].max });
     }
 
-    return 'Campo inválido.';
+    return this.translate.instant('VALIDATIONS.INVALID_FIELD');
   }
 
   public save(): void {

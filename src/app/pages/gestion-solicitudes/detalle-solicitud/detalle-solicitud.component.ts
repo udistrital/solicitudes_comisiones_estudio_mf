@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { TranslateService } from '@ngx-translate/core';
 
 import { Role } from '../../../models/roles.model';
 import { EstadoSolicitud } from '../../../models/estados.model';
@@ -89,7 +90,8 @@ export class DetalleSolicitudComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
-    private popup: PopUpManager
+    private popup: PopUpManager,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit(): void {
@@ -148,6 +150,10 @@ export class DetalleSolicitudComponent implements OnInit {
     return estadoSolicitudClass(this.estadoSolicitud);
   }
 
+  get estadoLabel(): string {
+    return `ESTADOS.${this.estadoSolicitud}`;
+  }
+
   documentoChipClass(d: DocumentoItem): string {
     const map: Record<DocumentoEstado, string> = {
       PENDIENTE: 'doc-chip--pendiente',
@@ -159,13 +165,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   documentoChip(d: DocumentoItem): string {
-    switch (d.estado) {
-      case 'PENDIENTE': return 'Pendiente';
-      case 'ADJUNTO': return 'Adjunto';
-      case 'VALIDO': return 'Válido';
-      case 'NO_VALIDO': return 'No válido';
-      default: return d.estado;
-    }
+    return `DOC_ESTADOS.${d.estado}`;
   }
 
   isFR010Selected(): boolean {
@@ -181,18 +181,18 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Acciones docente ==========
   guardarDocente() {
-    this.popup.success('Guardado (demo)');
+    this.popup.success(this.translate.instant('POPUPS.GUARDADO'));
   }
 
   enviarDocente() {
     this.popup.confirm(
-      'Usted confirma que desea enviar la solicitud. Una vez enviada, no podrá editarla.',
-      'Enviar',
-      'Cancelar'
+      this.translate.instant('POPUPS.CONFIRMAR_ENVIO'),
+      this.translate.instant('ACTIONS.ENVIAR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
         this.estadoSolicitud = 'RADICADA';
-        this.popup.success('Solicitud enviada (demo)');
+        this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
         this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
       }
     });
@@ -202,7 +202,7 @@ export class DetalleSolicitudComponent implements OnInit {
     if (!this.selectedRequiredDoc) return;
 
     if (this.selectedRequiredDoc.kind === 'FORM') {
-      this.popup.error('Para FR-010 usa "Guardar formulario". (demo)');
+      this.popup.error(this.translate.instant('POPUPS.FR010_USE_GUARDAR'));
       return;
     }
 
@@ -212,20 +212,20 @@ export class DetalleSolicitudComponent implements OnInit {
     doc.estado = 'ADJUNTO';
     doc.autorSoporte = 'Docente';
     this.documentos = [...this.documentos];
-    this.popup.success(`Documento adjuntado: ${doc.nombre} (demo)`);
+    this.popup.success(this.translate.instant('POPUPS.DOC_ADJUNTADO', { nombre: doc.nombre }));
   }
 
   eliminarDocumento(doc: DocumentoItem) {
     this.popup.confirm(
-      `¿Desea eliminar el documento <b>${doc.nombre}</b>?`,
-      'Eliminar',
-      'Cancelar'
+      this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre }),
+      this.translate.instant('ACTIONS.ELIMINAR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
         doc.estado = 'PENDIENTE';
         doc.checked = false;
         this.documentos = [...this.documentos];
-        this.popup.success(`Documento eliminado: ${doc.nombre} (demo)`);
+        this.popup.success(this.translate.instant('POPUPS.DOC_ELIMINADO', { nombre: doc.nombre }));
       }
     });
   }
@@ -239,7 +239,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   guardarFR010() {
     if (!this.fr010Comp) {
-      this.popup.error('El formulario FR-010 no está listo para guardarse');
+      this.popup.error(this.translate.instant('POPUPS.FR010_NO_LISTO'));
       return;
     }
     this.fr010Comp.save();
@@ -255,19 +255,19 @@ export class DetalleSolicitudComponent implements OnInit {
       fr.autorSoporte = 'Docente';
     }
     this.documentos = [...this.documentos];
-    this.popup.success('FR-010 guardado (demo)');
+    this.popup.success(this.translate.instant('POPUPS.FR010_GUARDADO'));
   }
 
   // ========== Acciones revisor ==========
   adjuntarSoporteRevisor() {
-    this.popup.success('Adjuntar documentos (demo)');
+    this.popup.success(this.translate.instant('POPUPS.ADJUNTAR_DOCS'));
   }
 
   retornarSolicitud() {
     this.popup.confirm(
-      'Usted confirma que desea retornar la solicitud para subsanación.',
-      'Retornar',
-      'Cancelar'
+      this.translate.instant('POPUPS.RETORNAR_MSG'),
+      this.translate.instant('ACTIONS.RETORNAR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
         this.estadoSolicitud = 'POR_SUBSANAR';
@@ -279,16 +279,16 @@ export class DetalleSolicitudComponent implements OnInit {
           });
           this.observacionRevision = '';
         }
-        this.popup.alertError('Solicitud retornada para subsanación (demo)');
+        this.popup.alertError(this.translate.instant('POPUPS.SOLICITUD_RETORNADA'));
       }
     });
   }
 
   rechazarSolicitud() {
     this.popup.confirm(
-      'Usted confirma que desea <b>rechazar</b> esta solicitud. Esta acción no se puede deshacer.',
-      'Rechazar',
-      'Cancelar'
+      this.translate.instant('POPUPS.RECHAZAR_MSG'),
+      this.translate.instant('ACTIONS.RECHAZAR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
         this.estadoSolicitud = 'RECHAZADA';
@@ -300,25 +300,25 @@ export class DetalleSolicitudComponent implements OnInit {
           });
           this.observacionRevision = '';
         }
-        this.popup.alertError('Solicitud rechazada (demo)');
+        this.popup.alertError(this.translate.instant('POPUPS.SOLICITUD_RECHAZADA'));
       }
     });
   }
 
   enviarRevisor() {
     if (!this.allDocsChecked) {
-      this.popup.alertError('Alguno de los documentos no es válido. Retorna la solicitud para subsanación. (demo)');
+      this.popup.alertError(this.translate.instant('POPUPS.DOCS_NO_VALIDOS'));
       return;
     }
 
     this.popup.confirm(
-      'Usted confirma que desea avalar todos los documentos y enviar la solicitud.',
-      'Enviar',
-      'Cancelar'
+      this.translate.instant('POPUPS.AVALAR_MSG'),
+      this.translate.instant('ACTIONS.ENVIAR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
         this.estadoSolicitud = 'AVALADA';
-        this.popup.alertSuccess('Todos los documentos están avalados (demo).');
+        this.popup.alertSuccess(this.translate.instant('POPUPS.DOCS_AVALADOS'));
         this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
       }
     });
@@ -327,17 +327,17 @@ export class DetalleSolicitudComponent implements OnInit {
   // ========== Acciones Supervisor / Decanatura ==========
   darInicioComision() {
     if (!this.fechaInicioContrato) {
-      this.popup.alertError('Debe ingresar la fecha de inicio del contrato.');
+      this.popup.alertError(this.translate.instant('POPUPS.INICIO_FECHA_REQUIRED'));
       return;
     }
 
     this.popup.confirm(
-      'Usted confirma que desea dar inicio a la ejecución de la comisión.',
-      'Aceptar',
-      'Cancelar'
+      this.translate.instant('POPUPS.INICIO_MSG'),
+      this.translate.instant('ACTIONS.ACEPTAR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
-        this.popup.alertSuccess('Inicio de comisión registrado (demo).');
+        this.popup.alertSuccess(this.translate.instant('POPUPS.INICIO_REGISTRADO'));
         this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
       }
     });

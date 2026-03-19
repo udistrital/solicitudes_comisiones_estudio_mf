@@ -5,8 +5,8 @@
     <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
       <header
         class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-        <div class="font-semibold text-sm">IDENTIFICACIÓN DEL SOLICITANTE</div>
-        <div class="text-xs text-black/60">Preguntas 1–12 provienen de terceros</div>
+        <div class="font-semibold text-sm">{{ 'FR010.ID_SOLICITANTE' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.ID_SOLICITANTE_NOTA' | translate }}</div>
       </header>
 
       <div class="p-3">
@@ -14,112 +14,112 @@
 
           <!-- 1 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">1. Fecha</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q1_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q1_fecha" placeholder="Fecha registrada" />
+              <input matInput formControlName="q1_fecha" [placeholder]="'FR010.Q1_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 2 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">2. Facultad</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q2_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q2_facultad" placeholder="Facultad registrada" />
+              <input matInput formControlName="q2_facultad" [placeholder]="'FR010.Q2_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 3 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">3. Nombres y Apellidos</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q3_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q3_nombres_apellidos" placeholder="Nombre del solicitante" />
+              <input matInput formControlName="q3_nombres_apellidos" [placeholder]="'FR010.Q3_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 4 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">4. Documento de Identificación</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q4_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q4_documento_identificacion" placeholder="Documento registrado" />
+              <input matInput formControlName="q4_documento_identificacion" [placeholder]="'FR010.Q4_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 5 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">5. Edad</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q5_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q5_edad" placeholder="Edad registrada" />
+              <input matInput formControlName="q5_edad" [placeholder]="'FR010.Q5_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 6 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">6. Correo Electrónico</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q6_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q6_correo" placeholder="Correo institucional registrado" />
+              <input matInput formControlName="q6_correo" [placeholder]="'FR010.Q6_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 7 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">7. Proyecto Curricular al que pertenece</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q7_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q7_proyecto" placeholder="Proyecto curricular registrado" />
+              <input matInput formControlName="q7_proyecto" [placeholder]="'FR010.Q7_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 8 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">8. N° de teléfono</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q8_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q8_telefono" placeholder="Teléfono registrado" />
+              <input matInput formControlName="q8_telefono" [placeholder]="'FR010.Q8_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 9 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">9. N° de Celular</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q9_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q9_celular" placeholder="Celular registrado" />
+              <input matInput formControlName="q9_celular" [placeholder]="'FR010.Q9_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 10 fecha ingreso -->
           <div>
-            <div class="text-xs text-black/60 mb-1">10. Fecha ingreso a la UD</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q10A_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q10_fecha_ingreso_universidad" placeholder="Fecha de ingreso registrada" />
+              <input matInput formControlName="q10_fecha_ingreso_universidad" [placeholder]="'FR010.Q10A_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 10 resolución -->
           <div>
-            <div class="text-xs text-black/60 mb-1">10. N° resolución RH</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q10B_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q10_resolucion_rh" placeholder="Resolución RH registrada" />
+              <input matInput formControlName="q10_resolucion_rh" [placeholder]="'FR010.Q10B_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 11 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">11. Categoría de Ingreso</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q11_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q11_categoria_ingreso" placeholder="Categoría de ingreso registrada" />
+              <input matInput formControlName="q11_categoria_ingreso" [placeholder]="'FR010.Q11_PH' | translate" />
             </mat-form-field>
           </div>
 
           <!-- 12 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">12. Categoría actual</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q12_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q12_categoria_actual" placeholder="Categoría actual registrada" />
+              <input matInput formControlName="q12_categoria_actual" [placeholder]="'FR010.Q12_PH' | translate" />
             </mat-form-field>
           </div>
 
         </div>
 
         <div class="mt-2 p-2.5 rounded-lg border border-dashed border-sga/40 bg-sga/5 text-xs text-black/70">
-          * Preguntas 1–12 provienen de terceros y se muestran solo como referencia visual.
+          {{ 'FR010.TERCEROS_NOTA' | translate }}
         </div>
       </div>
     </section>
@@ -130,8 +130,8 @@
     <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
       <header
         class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-        <div class="font-semibold text-sm">IDENTIFICACIÓN DE LA SOLICITUD</div>
-        <div class="text-xs text-black/60">Preguntas 13–26</div>
+        <div class="font-semibold text-sm">{{ 'FR010.ID_SOLICITUD' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.ID_SOLICITUD_NOTA' | translate }}</div>
       </header>
 
       <div class="p-3">
@@ -139,10 +139,10 @@
 
           <!-- 13 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">13. Tipo de estudio</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q13_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <mat-select formControlName="q13_tipo_estudio" placeholder="Selecciona un tipo de estudio">
-                <mat-option *ngFor="let o of tipoEstudioOptions" [value]="o">{{ o }}</mat-option>
+              <mat-select formControlName="q13_tipo_estudio" [placeholder]="'FR010.Q13_PH' | translate">
+                <mat-option *ngFor="let o of tipoEstudioOptions" [value]="o.value">{{ o.label | translate }}</mat-option>
               </mat-select>
               <mat-error *ngIf="isInvalid('solicitud.q13_tipo_estudio')">
                 {{ getError('solicitud.q13_tipo_estudio') }}
@@ -152,12 +152,12 @@
 
           <!-- 14 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">14. Nombre del programa</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q14_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q14_nombre_programa"
-                placeholder="Ej: Maestría en Ingeniería de Sistemas"
+                [placeholder]="'FR010.Q14_PH' | translate"
                 maxlength="120"
                 (blur)="normalizeText('solicitud.q14_nombre_programa')" />
               <mat-error *ngIf="isInvalid('solicitud.q14_nombre_programa')">
@@ -168,12 +168,12 @@
 
           <!-- 15 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">15. Título al que aspira</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q15_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q15_titulo_aspira"
-                placeholder="Ej: Magíster en Ciencias de la Información"
+                [placeholder]="'FR010.Q15_PH' | translate"
                 maxlength="120"
                 (blur)="normalizeText('solicitud.q15_titulo_aspira')" />
               <mat-error *ngIf="isInvalid('solicitud.q15_titulo_aspira')">
@@ -184,12 +184,12 @@
 
           <!-- 16 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">16. Universidad</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q16_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q16_universidad"
-                placeholder="Ej: Universidad Nacional de Colombia"
+                [placeholder]="'FR010.Q16_PH' | translate"
                 maxlength="120"
                 (blur)="normalizeText('solicitud.q16_universidad')" />
               <mat-error *ngIf="isInvalid('solicitud.q16_universidad')">
@@ -200,12 +200,12 @@
 
           <!-- 17 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">17. País</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q17_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q17_pais"
-                placeholder="Ej: Colombia"
+                [placeholder]="'FR010.Q17_PH' | translate"
                 maxlength="60"
                 (blur)="normalizeText('solicitud.q17_pais')" />
               <mat-error *ngIf="isInvalid('solicitud.q17_pais')">
@@ -216,12 +216,12 @@
 
           <!-- 18 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">18. Ciudad</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q18_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q18_ciudad"
-                placeholder="Ej: Bogotá"
+                [placeholder]="'FR010.Q18_PH' | translate"
                 maxlength="60"
                 (blur)="normalizeText('solicitud.q18_ciudad')" />
               <mat-error *ngIf="isInvalid('solicitud.q18_ciudad')">
@@ -232,13 +232,13 @@
 
           <!-- 19 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">19. Fecha de aceptación</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q19_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 [matDatepicker]="pickerQ19"
                 formControlName="q19_fecha_aceptacion"
-                placeholder="Selecciona una fecha"
+                [placeholder]="'FR010.PH_SELECT_DATE' | translate"
                 readonly />
               <mat-datepicker-toggle matSuffix [for]="pickerQ19"></mat-datepicker-toggle>
               <mat-datepicker #pickerQ19></mat-datepicker>
@@ -250,12 +250,12 @@
 
           <!-- 20 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">20. N° de semestres</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q20_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q20_num_semestres"
-                placeholder="Ej: 4"
+                [placeholder]="'FR010.Q20_PH' | translate"
                 inputmode="numeric"
                 maxlength="2"
                 (input)="onlyDigits($event, 'solicitud.q20_num_semestres', 2)" />
@@ -267,10 +267,10 @@
 
           <!-- 22 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">22. Tipo de apoyo requerido</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q22_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <mat-select formControlName="q22_tipo_apoyo_requerido" placeholder="Selecciona un tipo de apoyo">
-                <mat-option *ngFor="let o of tipoApoyoOptions" [value]="o">{{ o }}</mat-option>
+              <mat-select formControlName="q22_tipo_apoyo_requerido" [placeholder]="'FR010.Q22_PH' | translate">
+                <mat-option *ngFor="let o of tipoApoyoOptions" [value]="o.value">{{ o.label | translate }}</mat-option>
               </mat-select>
               <mat-error *ngIf="isInvalid('solicitud.q22_tipo_apoyo_requerido')">
                 {{ getError('solicitud.q22_tipo_apoyo_requerido') }}
@@ -280,13 +280,13 @@
 
           <!-- 23 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">23. Fecha de inicio de estudios</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q23_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 [matDatepicker]="pickerQ23"
                 formControlName="q23_fecha_inicio_estudios"
-                placeholder="Selecciona una fecha"
+                [placeholder]="'FR010.PH_SELECT_DATE' | translate"
                 readonly />
               <mat-datepicker-toggle matSuffix [for]="pickerQ23"></mat-datepicker-toggle>
               <mat-datepicker #pickerQ23></mat-datepicker>
@@ -295,19 +295,19 @@
               </mat-error>
             </mat-form-field>
             <div *ngIf="hasSolicitudGroupError('acceptanceAfterStart')" class="mt-1 text-xs text-red-600">
-              La fecha de inicio no puede ser anterior a la fecha de aceptación.
+              {{ 'VALIDATIONS.ACCEPTANCE_AFTER_START' | translate }}
             </div>
           </div>
 
           <!-- 24 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">24. Fecha de culminación</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q24_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 [matDatepicker]="pickerQ24"
                 formControlName="q24_fecha_culminacion_estudios"
-                placeholder="Selecciona una fecha"
+                [placeholder]="'FR010.PH_SELECT_DATE' | translate"
                 readonly />
               <mat-datepicker-toggle matSuffix [for]="pickerQ24"></mat-datepicker-toggle>
               <mat-datepicker #pickerQ24></mat-datepicker>
@@ -316,18 +316,18 @@
               </mat-error>
             </mat-form-field>
             <div *ngIf="hasSolicitudGroupError('endBeforeStart')" class="mt-1 text-xs text-red-600">
-              La fecha de culminación no puede ser anterior a la fecha de inicio.
+              {{ 'VALIDATIONS.END_BEFORE_START' | translate }}
             </div>
           </div>
 
           <!-- 25 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">25. Tiempo requerido para culminación</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q25_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q25_tiempo_requerido_culminacion"
-                placeholder="Ej: 2 años o 6 meses"
+                [placeholder]="'FR010.Q25_PH' | translate"
                 maxlength="20"
                 (blur)="normalizeText('solicitud.q25_tiempo_requerido_culminacion')" />
               <mat-error *ngIf="isInvalid('solicitud.q25_tiempo_requerido_culminacion')">
@@ -338,12 +338,12 @@
 
           <!-- 26 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">26. Costo total requerido</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q26_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q26_costo_total_requerido"
-                placeholder="Ej: 15000000"
+                [placeholder]="'FR010.Q26_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'solicitud.q26_costo_total_requerido', 12)" />
@@ -363,8 +363,8 @@
     <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
       <header
         class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-        <div class="font-semibold text-sm">FINANCIACIÓN Y COSTOS REQUERIDOS</div>
-        <div class="text-xs text-black/60">Comisiones en Colombia (27–32)</div>
+        <div class="font-semibold text-sm">{{ 'FR010.FINANCIACION' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.FINANCIACION_COL_NOTA' | translate }}</div>
       </header>
 
       <div class="p-3">
@@ -372,12 +372,12 @@
 
           <!-- 27 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">27. Pago matrícula (valor semestral o anual)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q27_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q27_pago_matricula_valor"
-                placeholder="Ej: 4200000"
+                [placeholder]="'FR010.Q27_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_colombia.q27_pago_matricula_valor', 12)" />
@@ -389,12 +389,12 @@
 
           <!-- 28 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">28. Pago matrícula (suma total)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q28_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q28_pago_matricula_total"
-                placeholder="Ej: 8400000"
+                [placeholder]="'FR010.Q28_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_colombia.q28_pago_matricula_total', 12)" />
@@ -406,12 +406,12 @@
 
           <!-- 29 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">29. Tiquetes (una sola vez ida y vuelta)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q29_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q29_tiquetes"
-                placeholder="Ej: 1200000"
+                [placeholder]="'FR010.Q29_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_colombia.q29_tiquetes', 12)" />
@@ -423,12 +423,12 @@
 
           <!-- 30 -->
           <div>
-            <div class="text-xs text-black/60 mb-1">30. Descarga académica (horas)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q30_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q30_descarga_academica_horas"
-                placeholder="Ej: 12"
+                [placeholder]="'FR010.Q30_PH' | translate"
                 inputmode="numeric"
                 maxlength="2"
                 (input)="onlyDigits($event, 'financiacion_colombia.q30_descarga_academica_horas', 2)" />
@@ -440,12 +440,12 @@
 
           <!-- 31 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">31. Descarga académica (valor total) — Certificación RH</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q31_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q31_descarga_academica_valor_total"
-                placeholder="Ej: 6800000"
+                [placeholder]="'FR010.Q31_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_colombia.q31_descarga_academica_valor_total', 12)" />
@@ -457,12 +457,12 @@
 
           <!-- 32 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">32. Costo reemplazo docente — Certificación RH</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q32_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q32_costo_reemplazo_docente"
-                placeholder="Ej: 5400000"
+                [placeholder]="'FR010.Q32_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_colombia.q32_costo_reemplazo_docente', 12)" />
@@ -482,8 +482,8 @@
     <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
       <header
         class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-        <div class="font-semibold text-sm">FINANCIACIÓN Y COSTOS REQUERIDOS</div>
-        <div class="text-xs text-black/60">Comisiones en el Exterior (33–39)</div>
+        <div class="font-semibold text-sm">{{ 'FR010.FINANCIACION' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.FINANCIACION_EXT_NOTA' | translate }}</div>
       </header>
 
       <div class="p-3">
@@ -491,12 +491,12 @@
 
           <!-- 33 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">33. Valor salario tiempo comisión (Certificación RH)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q33_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q33_valor_salario_tiempo_comision"
-                placeholder="Ej: 18000000"
+                [placeholder]="'FR010.Q33_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_exterior.q33_valor_salario_tiempo_comision', 12)" />
@@ -508,12 +508,12 @@
 
           <!-- 34 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">34. Pago matrícula (valor semestral o anual)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q34_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q34_pago_matricula_valor"
-                placeholder="Ej: 25000000"
+                [placeholder]="'FR010.Q34_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_exterior.q34_pago_matricula_valor', 12)" />
@@ -525,12 +525,12 @@
 
           <!-- 35 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">35. Pago total matrícula (suma total duración)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q35_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q35_pago_total_matricula"
-                placeholder="Ej: 100000000"
+                [placeholder]="'FR010.Q35_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_exterior.q35_pago_total_matricula', 12)" />
@@ -542,12 +542,12 @@
 
           <!-- 36 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">36. Tiquetes (una sola vez ida y vuelta)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q36_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q36_tiquetes"
-                placeholder="Ej: 8500000"
+                [placeholder]="'FR010.Q36_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_exterior.q36_tiquetes', 12)" />
@@ -559,12 +559,12 @@
 
           <!-- 37 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">37. Seguro médico (hasta US 800, proporcional)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q37_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q37_seguro_medico"
-                placeholder="Ej: 3200000"
+                [placeholder]="'FR010.Q37_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_exterior.q37_seguro_medico', 12)" />
@@ -576,12 +576,12 @@
 
           <!-- 38 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">38. Gastos por instalación (hasta 15 SMLV)</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q38_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q38_gastos_instalacion"
-                placeholder="Ej: 18000000"
+                [placeholder]="'FR010.Q38_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_exterior.q38_gastos_instalacion', 12)" />
@@ -593,12 +593,12 @@
 
           <!-- 39 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">39. Costo reemplazo docente — Certificación RH</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q39_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q39_costo_reemplazo_docente"
-                placeholder="Ej: 7000000"
+                [placeholder]="'FR010.Q39_PH' | translate"
                 inputmode="numeric"
                 maxlength="12"
                 (input)="onlyDigits($event, 'financiacion_exterior.q39_costo_reemplazo_docente', 12)" />
@@ -618,8 +618,8 @@
     <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
       <header
         class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-        <div class="font-semibold text-sm">Diligenciar cuando se gana una beca</div>
-        <div class="text-xs text-black/60">Preguntas 40–43</div>
+        <div class="font-semibold text-sm">{{ 'FR010.BECA_TITLE' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.BECA_NOTA' | translate }}</div>
       </header>
 
       <div class="p-3">
@@ -627,12 +627,12 @@
 
           <!-- 40 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">40. Cubrimiento de la beca</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q40_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q40_cubrimiento_beca"
-                placeholder="Ej: Matrícula 100% y seguro médico"
+                [placeholder]="'FR010.Q40_PH' | translate"
                 maxlength="150"
                 (blur)="normalizeText('beca.q40_cubrimiento_beca')" />
               <mat-error *ngIf="isInvalid('beca.q40_cubrimiento_beca')">
@@ -643,12 +643,12 @@
 
           <!-- 41 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">41. Institución que otorga la beca</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q41_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q41_institucion_otorga"
-                placeholder="Ej: COLFUTURO"
+                [placeholder]="'FR010.Q41_PH' | translate"
                 maxlength="120"
                 (blur)="normalizeText('beca.q41_institucion_otorga')" />
               <mat-error *ngIf="isInvalid('beca.q41_institucion_otorga')">
@@ -659,12 +659,12 @@
 
           <!-- 42 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">42. Tipo de financiación y monto de la beca</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q42_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q42_tipo_financiacion_monto"
-                placeholder="Ej: Beca parcial por 12000000"
+                [placeholder]="'FR010.Q42_PH' | translate"
                 maxlength="150"
                 (blur)="normalizeText('beca.q42_tipo_financiacion_monto')" />
               <mat-error *ngIf="isInvalid('beca.q42_tipo_financiacion_monto')">
@@ -675,12 +675,12 @@
 
           <!-- 43 -->
           <div class="md:col-span-2">
-            <div class="text-xs text-black/60 mb-1">43. Duración de la beca</div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q43_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <input
                 matInput
                 formControlName="q43_duracion_beca"
-                placeholder="Ej: 2 años"
+                [placeholder]="'FR010.Q43_PH' | translate"
                 maxlength="20"
                 (blur)="normalizeText('beca.q43_duracion_beca')" />
               <mat-error *ngIf="isInvalid('beca.q43_duracion_beca')">
@@ -699,18 +699,18 @@
     <section class="border border-black/10 rounded-xl overflow-hidden bg-white bg-gradient-to-b from-sga/5 to-white">
       <header
         class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-        <div class="font-semibold text-sm">Observaciones</div>
-        <div class="text-xs text-black/60">Información adicional</div>
+        <div class="font-semibold text-sm">{{ 'FR010.OBSERVACIONES' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.OBSERVACIONES_NOTA' | translate }}</div>
       </header>
 
       <div class="p-3">
-        <div class="text-xs text-black/60 mb-1">Observaciones</div>
+        <div class="text-xs text-black/60 mb-1">{{ 'FR010.OBS_LABEL' | translate }}</div>
         <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
           <textarea
             matInput
             rows="4"
             maxlength="500"
-            placeholder="Ej: Solicito validación prioritaria por inicio de clases el 01/08/2026."
+            [placeholder]="'FR010.OBS_PH' | translate"
             formControlName="observaciones"
             (blur)="normalizeText('observaciones')"></textarea>
           <mat-error *ngIf="isInvalid('observaciones')">

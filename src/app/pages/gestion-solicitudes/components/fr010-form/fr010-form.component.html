@@ -10,6 +10,10 @@
       </header>
 
       <div class="p-3">
+        <div *ngIf="loadingSolicitante" class="text-xs text-sga animate-pulse mb-2">
+          {{ 'FR010.LOADING_DATOS' | translate }}
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="solicitante">
 
           <!-- 1 -->
@@ -88,7 +92,14 @@
           <div>
             <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q10A_LABEL' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput formControlName="q10_fecha_ingreso_universidad" [placeholder]="'FR010.Q10A_PH' | translate" />
+              <input
+                matInput
+                [matDatepicker]="pickerQ10"
+                formControlName="q10_fecha_ingreso_universidad"
+                [placeholder]="'FR010.PH_SELECT_DATE' | translate"
+                readonly />
+              <mat-datepicker-toggle matSuffix [for]="pickerQ10"></mat-datepicker-toggle>
+              <mat-datepicker #pickerQ10></mat-datepicker>
             </mat-form-field>
           </div>
 

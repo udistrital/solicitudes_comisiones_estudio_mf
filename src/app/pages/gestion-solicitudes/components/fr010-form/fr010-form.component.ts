@@ -8,6 +8,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
+import { DocenteInfoService } from 'src/app/services/docente-info.service';
+import { DocenteInfo } from 'src/app/models/docente-info.model';
+import { getDocumento, getCorreoSesion } from 'src/app/utils/auth.util';
+import { PopUpManager } from 'src/app/managers/popup.manager';
 
 @Component({
   selector: 'app-fr010-form',
@@ -36,41 +40,40 @@ export class Fr010FormComponent implements OnInit {
     { value: 'APOYO_DESCARGA', label: 'FR010.OPT_APOYO_DESCARGA' },
   ];
 
-  // Datos externos simulados (solo lectura)
-  private terceroSolicitante = {
-    q1_fecha: '2026-02-16',
-    q2_facultad: 'Facultad Tecnológica',
-    q3_nombres_apellidos: 'María Pérez',
-    q4_documento_identificacion: 'CC 1032490151',
-    q5_edad: '32',
-    q6_correo: 'maria.perez@udistrital.edu.co',
-    q7_proyecto: 'Ingeniería de Sistemas',
-    q8_telefono: '6010000000',
-    q9_celular: '3000000000',
-    q10_fecha_ingreso_universidad: '2019-02-15',
-    q10_resolucion_rh: '1234-2019',
-    q11_categoria_ingreso: 'Asistente',
-    q12_categoria_actual: 'Asociado',
-  };
+  loadingSolicitante = true;
 
-  constructor(private fb: FormBuilder, private translate: TranslateService) {}
+  /** Campos que el servicio de docente planta debe proveer */
+  private readonly camposEsperados: (keyof DocenteInfo)[] = [
+    'nombres', 'apellidos', 'documento', 'tipoDocumento',
+    'facultad', 'proyecto', 'celular', 'telefono',
+  ];
+
+  constructor(
+    private fb: FormBuilder,
+    private translate: TranslateService,
+    private docenteInfoService: DocenteInfoService,
+    private popup: PopUpManager,
+  ) {}
 
   ngOnInit(): void {
+    const today = new Date();
+    const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
     this.form = this.fb.group({
       solicitante: this.fb.group({
-        q1_fecha: [{ value: this.terceroSolicitante.q1_fecha, disabled: true }],
-        q2_facultad: [{ value: this.terceroSolicitante.q2_facultad, disabled: true }],
-        q3_nombres_apellidos: [{ value: this.terceroSolicitante.q3_nombres_apellidos, disabled: true }],
-        q4_documento_identificacion: [{ value: this.terceroSolicitante.q4_documento_identificacion, disabled: true }],
-        q5_edad: [{ value: this.terceroSolicitante.q5_edad, disabled: true }],
-        q6_correo: [{ value: this.terceroSolicitante.q6_correo, disabled: true }],
-        q7_proyecto: [{ value: this.terceroSolicitante.q7_proyecto, disabled: true }],
-        q8_telefono: [{ value: this.terceroSolicitante.q8_telefono, disabled: true }],
-        q9_celular: [{ value: this.terceroSolicitante.q9_celular, disabled: true }],
-        q10_fecha_ingreso_universidad: [{ value: this.terceroSolicitante.q10_fecha_ingreso_universidad, disabled: true }],
-        q10_resolucion_rh: [{ value: this.terceroSolicitante.q10_resolucion_rh, disabled: true }],
-        q11_categoria_ingreso: [{ value: this.terceroSolicitante.q11_categoria_ingreso, disabled: true }],
-        q12_categoria_actual: [{ value: this.terceroSolicitante.q12_categoria_actual, disabled: true }],
+        q1_fecha: [{ value: todayIso, disabled: true }],
+        q2_facultad: [{ value: '', disabled: true }],
+        q3_nombres_apellidos: [{ value: '', disabled: true }],
+        q4_documento_identificacion: [{ value: '', disabled: true }],
+        q5_edad: [{ value: '', disabled: true }],
+        q6_correo: [{ value: '', disabled: true }],
+        q7_proyecto: [{ value: '', disabled: true }],
+        q8_telefono: [{ value: '', disabled: true }],
+        q9_celular: [{ value: '', disabled: true }],
+        q10_fecha_ingreso_universidad: [{ value: null, disabled: true }],
+        q10_resolucion_rh: [{ value: '', disabled: true }],
+        q11_categoria_ingreso: [{ value: '', disabled: true }],
+        q12_categoria_actual: [{ value: '', disabled: true }],
       }),
 
       solicitud: this.fb.group(
@@ -172,7 +175,99 @@ export class Fr010FormComponent implements OnInit {
     });
 
     this.configureConditionalValidators();
+    this.loadDocenteInfo();
   }
+
+  // ── Carga de datos del docente ─────────────────────────────────────
+
+  private loadDocenteInfo(): void {
+    const cedula = getDocumento();
+    const correo = getCorreoSesion();
+
+    if (!cedula) {
+      this.handleServiceFailure(correo);
+      return;
+    }
+
+    this.docenteInfoService.consultarDocentePlanta(cedula).subscribe({
+      next: (info) => {
+        if (info && this.isResponseComplete(info)) {
+          this.populateFromService(info, correo);
+        } else {
+          this.handleServiceFailure(correo);
+        }
+      },
+      error: () => this.handleServiceFailure(correo),
+    });
+  }
+
+  private isResponseComplete(info: DocenteInfo): boolean {
+    return this.camposEsperados.every(
+      (field) => info[field] !== null && info[field] !== '',
+    );
+  }
+
+  private populateFromService(info: DocenteInfo, correoSesion: string | null): void {
+    const sol = this.form.get('solicitante') as FormGroup;
+
+    // Campos resueltos por el servicio → valor + readonly
+    sol.get('q2_facultad')?.setValue(info.facultad);
+    sol.get('q3_nombres_apellidos')?.setValue(
+      [info.nombres, info.apellidos].filter(Boolean).join(' '),
+    );
+    sol.get('q4_documento_identificacion')?.setValue(
+      [this.abreviarTipoDoc(info.tipoDocumento), info.documento].filter(Boolean).join(' '),
+    );
+    sol.get('q7_proyecto')?.setValue(info.proyecto);
+    sol.get('q8_telefono')?.setValue(info.telefono);
+    sol.get('q9_celular')?.setValue(info.celular);
+
+    // Correo: viene de la sesión, no del servicio
+    sol.get('q6_correo')?.setValue(correoSesion ?? '');
+    if (!correoSesion) {
+      sol.get('q6_correo')?.enable();
+    }
+
+    // Campos que nunca vienen del servicio → editables
+    ['q5_edad', 'q10_fecha_ingreso_universidad', 'q10_resolucion_rh',
+     'q11_categoria_ingreso', 'q12_categoria_actual'].forEach(
+      (key) => sol.get(key)?.enable(),
+    );
+
+    this.loadingSolicitante = false;
+  }
+
+  private handleServiceFailure(correoSesion: string | null): void {
+    const sol = this.form.get('solicitante') as FormGroup;
+
+    // Habilitar todos los campos excepto q1_fecha (fecha del sistema)
+    Object.keys(sol.controls).forEach((key) => {
+      if (key !== 'q1_fecha') sol.get(key)?.enable();
+    });
+
+    // Pre-llenar correo de sesión si existe
+    if (correoSesion) {
+      sol.get('q6_correo')?.setValue(correoSesion);
+    }
+
+    this.loadingSolicitante = false;
+    this.popup.error(this.translate.instant('FR010.ERROR_CARGA_DATOS'));
+  }
+
+  private abreviarTipoDoc(tipo: string | null): string {
+    if (!tipo) return '';
+    const mapa: Record<string, string> = {
+      'CÉDULA DE CIUDADANÍA': 'CC',
+      'CEDULA DE CIUDADANIA': 'CC',
+      'TARJETA DE IDENTIDAD': 'TI',
+      'CÉDULA DE EXTRANJERÍA': 'CE',
+      'CEDULA DE EXTRANJERIA': 'CE',
+      'PASAPORTE': 'PA',
+    };
+    return mapa[tipo.toUpperCase()] ?? tipo;
+  }
+
+  // ── Validators condicionales ───────────────────────────────────────
 
   private configureConditionalValidators(): void {
     this.form.get('solicitud.q22_tipo_apoyo_requerido')?.valueChanges.subscribe(() => {
@@ -503,6 +598,10 @@ export class Fr010FormComponent implements OnInit {
       },
       fr010: {
         ...raw,
+        solicitante: {
+          ...raw.solicitante,
+          q10_fecha_ingreso_universidad: this.formatDate(raw.solicitante.q10_fecha_ingreso_universidad),
+        },
         solicitud: {
           ...raw.solicitud,
           q19_fecha_aceptacion: this.formatDate(raw.solicitud.q19_fecha_aceptacion),

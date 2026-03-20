@@ -335,13 +335,14 @@ export class DetalleSolicitudComponent implements OnInit {
     }
 
     this.dialog.open(VisorDocumentosComponent, {
-      width: '720px',
-      data: {
-        nombre: doc.fileName || doc.nombre,
-        mimeType: doc.mimeType || 'application/pdf',
-        base64: doc.base64,
-        estado: doc.estado,
-        autor: doc.autorSoporte,
+    width: '900px',
+    maxWidth: '95vw',
+    data: {
+      nombre: doc.fileName || doc.nombre,
+      mimeType: doc.mimeType || 'application/pdf',
+      base64: doc.base64,
+      estado: doc.estado,
+      autor: doc.autorSoporte,
       },
     });
   }

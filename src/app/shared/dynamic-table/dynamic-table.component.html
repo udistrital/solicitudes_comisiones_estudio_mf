@@ -21,7 +21,7 @@
 
           <div class="flex flex-col items-center gap-4">
             <div class="w-full text-center leading-snug font-semibold">
-              {{ col.header }}
+              {{ col.header | translate }}
             </div>
 
             <!-- Filtro por columna -->
@@ -30,12 +30,12 @@
                 type="text"
                 class="w-full h-10 rounded-md border border-black/30 bg-white px-3 pr-10 text-sm text-black/80
                        placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-sga/20 focus:border-sga"
-                [placeholder]="col.filterPlaceholder || 'Buscar...'"
+                [placeholder]="(col.filterPlaceholder || 'TABLE.FILTER_PLACEHOLDER') | translate"
                 [(ngModel)]="filters[col.key]" />
 
               <button
                 type="button"
-                aria-label="Limpiar"
+                [attr.aria-label]="'ACTIONS.CANCELAR' | translate"
                 *ngIf="filters[col.key]"
                 (click)="clearFilter(col.key)"
                 class="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center w-8 h-8 rounded-md
@@ -57,7 +57,7 @@
               <span
                 class="inline-block rounded-full border border-black/10 px-2.5 py-0.5 text-xs font-medium"
                 [ngClass]="col.chipClass ? col.chipClass(row) : ''">
-                {{ col.cell(row) }}
+                {{ col.cell(row) | translate }}
               </span>
             </div>
 
@@ -75,7 +75,7 @@
           *matHeaderCellDef
           class="align-top text-center text-sga px-3 pb-4 border-b border-sga/30 col-acciones">
           <div class="pt-3"></div>
-          <div class="w-full text-center leading-snug font-semibold">Acciones</div>
+          <div class="w-full text-center leading-snug font-semibold">{{ 'TABLE.ACCIONES' | translate }}</div>
         </th>
 
         <td
@@ -93,8 +93,8 @@
                   'sga-table-action--warn': a.color === 'warn',
                   'sga-table-action--primary': a.color === 'primary'
                 }"
-                [attr.aria-label]="a.tooltip || a.label"
-                [matTooltip]="a.tooltip || a.label"
+                [attr.aria-label]="(a.tooltip || a.label) | translate"
+                [matTooltip]="(a.tooltip || a.label) | translate"
                 (click)="emit(a.key, row)">
                 <mat-icon>{{ a.icon }}</mat-icon>
               </button>
@@ -104,9 +104,9 @@
                 *ngIf="isVisible(a, row) && !a.icon && (a.variant !== 'flat')"
                 mat-stroked-button
                 class="h-9 px-3.5 rounded-lg border-black/20"
-                [matTooltip]="a.tooltip || ''"
+                [matTooltip]="(a.tooltip || '') | translate"
                 (click)="emit(a.key, row)">
-                {{ a.label }}
+                {{ a.label | translate }}
               </button>
 
               <button
@@ -114,9 +114,9 @@
                 mat-flat-button
                 color="primary"
                 class="h-9 px-3.5 rounded-lg"
-                [matTooltip]="a.tooltip || ''"
+                [matTooltip]="(a.tooltip || '') | translate"
                 (click)="emit(a.key, row)">
-                {{ a.label }}
+                {{ a.label | translate }}
               </button>
             </ng-container>
           </div>

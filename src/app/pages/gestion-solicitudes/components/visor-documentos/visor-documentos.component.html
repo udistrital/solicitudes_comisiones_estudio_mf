@@ -1,7 +1,7 @@
 <h2
   mat-dialog-title
   class="m-0 pl-3 border-l-[6px] border-l-sga text-[20px] font-semibold">
-  Visualizar documento
+  {{ 'VISOR.TITLE' | translate }}
 </h2>
 
 <div mat-dialog-content class="pt-2 grid gap-3">
@@ -9,23 +9,23 @@
   <!-- Panel: Metadata -->
   <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
     <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-      <div class="font-semibold">Información del documento</div>
-      <div class="text-xs text-black/60">Detalle</div>
+      <div class="font-semibold">{{ 'VISOR.INFO_DOC' | translate }}</div>
+      <div class="text-xs text-black/60">{{ 'VISOR.DETALLE' | translate }}</div>
     </header>
 
     <div class="p-3 grid gap-2 text-black/80">
       <div class="grid grid-cols-[90px_1fr] gap-2">
-        <span class="text-black/60">Nombre:</span>
+        <span class="text-black/60">{{ 'VISOR.NOMBRE' | translate }}:</span>
         <span class="break-words">{{ data.nombre }}</span>
       </div>
 
       <div class="grid grid-cols-[90px_1fr] gap-2">
-        <span class="text-black/60">Autor:</span>
+        <span class="text-black/60">{{ 'VISOR.AUTOR' | translate }}:</span>
         <span class="break-words">{{ data.autor || '-' }}</span>
       </div>
 
       <div class="grid grid-cols-[90px_1fr] gap-2">
-        <span class="text-black/60">Estado:</span>
+        <span class="text-black/60">{{ 'VISOR.ESTADO' | translate }}:</span>
         <span class="break-words">{{ data.estado }}</span>
       </div>
     </div>
@@ -34,15 +34,15 @@
   <!-- Panel: Visor -->
   <section class="border border-black/10 rounded-xl overflow-hidden bg-gradient-to-b from-sga/5 to-white">
     <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-      <div class="font-semibold">Visor</div>
-      <div class="text-xs text-black/60">PDF (pendiente)</div>
+      <div class="font-semibold">{{ 'VISOR.VISOR_LABEL' | translate }}</div>
+      <div class="text-xs text-black/60">{{ 'VISOR.PDF_PENDIENTE' | translate }}</div>
     </header>
 
     <div class="p-3">
       <div class="border border-dashed border-sga/40 rounded-xl bg-sga/5 p-4 flex gap-3 items-center">
         <mat-icon class="text-sga">picture_as_pdf</mat-icon>
         <div class="text-black/70">
-          Placeholder visor: aquí luego debería verse un PDF.
+          {{ 'VISOR.PDF_PLACEHOLDER' | translate }}
         </div>
       </div>
     </div>
@@ -52,6 +52,6 @@
 
 <div mat-dialog-actions align="end" class="pt-1">
   <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg" mat-dialog-close>
-    Aceptar
+    {{ 'ACTIONS.ACEPTAR' | translate }}
   </button>
 </div>

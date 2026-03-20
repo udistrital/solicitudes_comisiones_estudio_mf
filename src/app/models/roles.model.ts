@@ -6,9 +6,9 @@ export type Role =
   | 'SUPERVISION';
 
 export const ROLE_OPTIONS: { label: string; value: Role }[] = [
-  { label: 'Docente', value: 'DOCENTE' },
-  { label: 'Coordinación / Proyecto Curricular', value: 'COORDINACION' },
-  { label: 'Secretaría Académica', value: 'SECRETARIA_ACADEMICA' },
-  { label: 'Secretaría General', value: 'SECRETARIA_GENERAL' },
-  { label: 'Supervisor / Decanatura', value: 'SUPERVISION' },
+  { label: 'ROLES.DOCENTE', value: 'DOCENTE' },
+  { label: 'ROLES.COORDINACION', value: 'COORDINACION' },
+  { label: 'ROLES.SECRETARIA_ACADEMICA', value: 'SECRETARIA_ACADEMICA' },
+  { label: 'ROLES.SECRETARIA_GENERAL', value: 'SECRETARIA_GENERAL' },
+  { label: 'ROLES.SUPERVISION', value: 'SUPERVISION' },
 ];

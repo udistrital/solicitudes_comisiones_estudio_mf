@@ -72,11 +72,6 @@
               (click)="adjuntarDocumento(docFileInput)">
               {{ 'ACTIONS.ADJUNTAR_DOC' | translate }}
             </button>
-
-            <button mat-stroked-button class="h-10 px-3.5 rounded-lg border-black/20" 
-              (click)="guardarDocente()">
-              {{ 'ACTIONS.GUARDAR' | translate }}
-            </button>
           </div>
         </div>
       </mat-card>
@@ -170,8 +165,10 @@
 
             <footer class="px-3 pb-3 flex justify-end gap-2 flex-wrap">
               <button mat-stroked-button class="h-9 px-3.5 rounded-lg border-black/20"
+                [disabled]="guardando"
                 (click)="guardarDocente()">{{ 'ACTIONS.GUARDAR' | translate }}</button>
               <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
+                [disabled]="guardando"
                 (click)="enviarDocente()">{{ 'ACTIONS.ENVIAR' | translate }}</button>
             </footer>
           </section>

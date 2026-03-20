@@ -45,7 +45,8 @@
     "DAR_INICIO": "Dar inicio",
     "ADJUNTAR_DOC": "Adjuntar documento",
     "ADJUNTAR_DOCS": "Adjuntar documentos",
-    "GUARDAR_FORM": "Guardar formulario"
+    "GUARDAR_FORM": "Guardar formulario",
+    "CREAR_SOLICITUD": "Crear solicitud"
   },
   "TOOLTIPS": {
     "VER_SOLICITUD": "Ver solicitud",
@@ -76,7 +77,8 @@
     "SIN_OBSERVACION": "Sin observacion",
     "FR010_TITLE": "Formulario de solicitud inicial FR-010",
     "ENVIAR_HABILITADO_MSG": "Enviar solo esta habilitado cuando todos los documentos tienen check.",
-    "VALIDAR_DOCS_MSG": "Debe validar todos los documentos antes de dar inicio."
+    "VALIDAR_DOCS_MSG": "Debe validar todos los documentos antes de dar inicio.",
+    "NUEVA_SOLICITUD": "Nueva solicitud"
   },
   "SUPERVISOR": {
     "TITLE": "Inicio de ejecucion de la comision",
@@ -273,7 +275,10 @@
     "DOCS_AVALADOS": "Todos los documentos estan avalados (demo).",
     "INICIO_FECHA_REQUIRED": "Debe ingresar la fecha de inicio del contrato.",
     "INICIO_MSG": "Usted confirma que desea dar inicio a la ejecucion de la comision.",
-    "INICIO_REGISTRADO": "Inicio de comision registrado (demo)."
+    "INICIO_REGISTRADO": "Inicio de comision registrado (demo).",
+    "SOLICITUD_GUARDADA": "Solicitud guardada correctamente.",
+    "ERROR_GUARDAR": "No fue posible guardar la solicitud. Intente nuevamente.",
+    "ERROR_ENVIAR": "No fue posible enviar la solicitud. Intente nuevamente."
   },
   "LANG": {
     "ES": "Espaniol",

@@ -84,6 +84,12 @@ export class BandejaComponent {
     this.selectedRole = role;
   }
 
+  crearSolicitud(): void {
+    this.router.navigate(['/solicitudes', 'nuevo'], {
+      queryParams: { role: 'DOCENTE', mode: 'EDITAR' },
+    });
+  }
+
   onAction(action: string, row: SolicitudRow) {
     const a = action as BandejaActionKey;
 

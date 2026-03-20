@@ -7,6 +7,8 @@ import { Role } from '../../../models/roles.model';
 import { EstadoSolicitud } from '../../../models/estados.model';
 import { PopUpManager } from '../../../managers/popup.manager';
 import { estadoSolicitudClass } from '../../../utils/estado-solicitud.util';
+import { SolicitudesService } from '../../../services/solicitudes.service';
+import { getDocumento } from '../../../utils/auth.util';
 
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
 import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
@@ -58,6 +60,10 @@ export class DetalleSolicitudComponent implements OnInit {
   role: Role = 'DOCENTE';
   mode: 'EDITAR' | 'GESTIONAR' | 'VER' = 'GESTIONAR';
 
+  // Modo creación
+  isCreating = false;
+  guardando = false;
+
   // Solicitud (demo)
   radicado = 'SOL-2026-0001';
   estadoSolicitud: EstadoSolicitud = 'BORRADOR';
@@ -66,6 +72,8 @@ export class DetalleSolicitudComponent implements OnInit {
 
   identificacionDocente = 86064919;
   tipoSolicitudId = 2;
+
+  formularioCompletado = false;
   
   // Supervisor: fecha inicio contrato
   fechaInicioContrato: Date | null = null;
@@ -109,24 +117,35 @@ export class DetalleSolicitudComponent implements OnInit {
     private dialog: MatDialog,
     private popup: PopUpManager,
     private translate: TranslateService,
-    // private solicitudesMidService: SolicitudesMidService,
+    private solicitudesService: SolicitudesService,
   ) {}
 
   ngOnInit(): void {
-    this.id = Number(this.route.snapshot.paramMap.get('id'));
+    const rawId = this.route.snapshot.paramMap.get('id');
+    this.isCreating = rawId === 'nuevo';
+    this.id = this.isCreating ? 0 : Number(rawId);
 
     const qp = this.route.snapshot.queryParamMap;
     this.role = (qp.get('role') as Role) || 'DOCENTE';
     this.mode = (qp.get('mode') as any) || 'GESTIONAR';
 
-    // si es revisor (no docente), simula que ya está en revisión
-    if (this.role !== 'DOCENTE') {
-      this.estadoSolicitud = 'EN_REVISION';
-    }
+    if (this.isCreating) {
+      this.estadoSolicitud = 'BORRADOR';
+      this.radicado = this.translate.instant('DETALLE.NUEVA_SOLICITUD');
+      this.observacionDocente = '';
+      this.observacionesSubsanacion = [];
+      const doc = getDocumento();
+      if (doc) this.identificacionDocente = Number(doc) || 0;
+    } else {
+      // si es revisor (no docente), simula que ya está en revisión
+      if (this.role !== 'DOCENTE') {
+        this.estadoSolicitud = 'EN_REVISION';
+      }
 
-    // Docente VER → muestra estado real de la solicitud (demo: AVALADA)
-    if (this.role === 'DOCENTE' && this.mode === 'VER') {
-      this.estadoSolicitud = 'AVALADA';
+      // Docente VER → muestra estado real de la solicitud (demo: AVALADA)
+      if (this.role === 'DOCENTE' && this.mode === 'VER') {
+        this.estadoSolicitud = 'AVALADA';
+      }
     }
 
     this.selectedRequiredDoc = this.requiredDocs[0];
@@ -199,12 +218,26 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Acciones docente ==========
   guardarDocente(): void {
-    const payload = this.construirPayloadCrearSolicitud();
-    console.log('[PAYLOAD GUARDAR BORRADOR]', payload)
-    // Si vas a guardar borrador en el MID, aquí sería:
-    // this.solicitudesMidService.crearSolicitud(payload).subscribe(...);
+    if (this.guardando) return;
 
-    this.popup.success(this.translate.instant('POPUPS.GUARDADO'));  
+    const payload = this.construirPayloadCrearSolicitud();
+    console.log('[PAYLOAD GUARDAR BORRADOR]', payload);
+
+    this.guardando = true;
+    this.solicitudesService.crearSolicitud(payload).subscribe({
+      next: (resp) => {
+        this.guardando = false;
+        if (this.isCreating && resp?.Data?.Id) {
+          this.id = resp.Data.Id;
+          this.isCreating = false;
+        }
+        this.popup.success(this.translate.instant('POPUPS.SOLICITUD_GUARDADA'));
+      },
+      error: () => {
+        this.guardando = false;
+        this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
+      },
+    });
   }
 
   enviarDocente(): void {
@@ -213,29 +246,26 @@ export class DetalleSolicitudComponent implements OnInit {
       this.translate.instant('ACTIONS.ENVIAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
-      if (!result.isConfirmed) {
-        return;
-      }
+      if (!result.isConfirmed) return;
+
+      if (this.guardando) return;
 
       const payload = this.construirPayloadCrearSolicitud();
       console.log('[PAYLOAD ENVIAR SOLICITUD]', payload);
 
-      // cuando se tenga la conexion con el mid aqui se haria el POST real:
-      // this.solicitudesMidService.crearSolicitud(payload).subscribe({
-      //   next: (resp) => {
-      //     this.estadoSolicitud = 'RADICADA';
-      //     this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
-      //     this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
-      //   },
-      //   error: () => {
-      //     this.popup.alertError(this.translate.instant('POPUPS.ERROR_ENVIAR_SOLICITUD'));
-      //   }
-      // });
-
-      // Temporal mientras se conecta con el mid:
-      this.estadoSolicitud = 'RADICADA';
-      this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
-      this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+      this.guardando = true;
+      this.solicitudesService.crearSolicitud(payload).subscribe({
+        next: () => {
+          this.guardando = false;
+          this.estadoSolicitud = 'RADICADA';
+          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
+          this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+        },
+        error: () => {
+          this.guardando = false;
+          this.popup.error(this.translate.instant('POPUPS.ERROR_ENVIAR'));
+        },
+      });
     });
   }
 
@@ -356,7 +386,8 @@ export class DetalleSolicitudComponent implements OnInit {
 
   onFr010Saved(payload: any): void {
     this.fr010Json = payload;
-    console.log('[FR-010 JSON]', payload);
+    this.formularioCompletado = this.fr010Comp?.isFormularioCompleto() ?? false;
+    console.log('[FR-010 JSON]', payload, '| completado:', this.formularioCompletado);
 
     const fr = this.documentos.find((d) => d.code === 'FR010');
     if (fr) {
@@ -377,42 +408,44 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Construcción del payload para el MID ==========
   construirPayloadCrearSolicitud(): any {
-    const documentosAdjuntos = this.documentos
-      .filter((d) => d.code !== 'FR010' && d.base64)
+    // FR-010: datos frescos del componente si está visible, o último guardado
+    let fr010Data = this.fr010Json?.fr010 || null;
+    if (this.fr010Comp) {
+      fr010Data = this.fr010Comp.getFormData();
+      this.formularioCompletado = this.fr010Comp.isFormularioCompleto();
+    }
+
+    const identificacion = Number(getDocumento()) || this.identificacionDocente;
+
+    const formulario: any = {
+      formulario_completado: this.formularioCompletado,
+    };
+
+    if (fr010Data) {
+      formulario.solicitante = fr010Data.solicitante;
+      formulario.solicitud = fr010Data.solicitud;
+      formulario.financiacion_colombia = fr010Data.financiacion_colombia;
+      formulario.financiacion_exterior = fr010Data.financiacion_exterior;
+      formulario.beca = fr010Data.beca;
+    }
+
+    const documento_solicitud = this.documentos
+      .filter((d) => d.base64)
       .map((d) => ({
         IdTipoDocumento: d.idTipoDocumento,
-        nombre: d.fileName || d.nombre,
-        descripcion: d.descripcion || d.nombre,
-        metadatos: {
-          ...(d.metadatos || {}),
-          nombreDocumentoRequerido: d.nombre,
-          tipoMime: d.mimeType,
-        },
-        file: d.base64,
+        Nombre: d.fileName || d.nombre,
+        Descripcion: d.descripcion || d.nombre,
+        Metadatos: d.metadatos || {},
+        File: d.base64,
       }));
 
     return {
-      Identificacion: this.identificacionDocente,
-      TipoSolicitudId: this.tipoSolicitudId,
-      DetalleSolicitud: {
-        observacionDocente: this.observacionDocente,
-        proyecto: this.proyecto,
-        docenteNombre: this.docenteNombre,
-        fr010: this.fr010Json,
-        documentosResumen: this.documentos.map((d) => ({
-          id: d.id,
-          nombre: d.nombre,
-          estado: d.estado,
-          fileName: d.fileName || null,
-          mimeType: d.mimeType || null,
-          tieneArchivo: !!d.base64,
-          code: d.code,
-        })),
-      },
-
-      // Como en el MID hoy está como string,
-      // aquí enviamos la lista serializada
-      DocumentoSolicitud: JSON.stringify(documentosAdjuntos),
+      identificacion,
+      tipo_solicitud_id: this.tipoSolicitudId,
+      formulario,
+      observacion: this.observacionDocente || '',
+      cod_abreviacion_rol: 'PROFE',
+      documento_solicitud,
     };
   }
 

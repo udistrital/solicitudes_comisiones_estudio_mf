@@ -28,6 +28,15 @@
       </div>
     </mat-card>
 
+    <!-- Crear solicitud (solo DOCENTE) -->
+    <div *ngIf="selectedRole === 'DOCENTE'" class="flex justify-end mb-3">
+      <button mat-flat-button color="primary" class="h-9 px-4 rounded-lg inline-flex items-center"
+        (click)="crearSolicitud()">
+        <mat-icon class="mr-1 text-[18px]">add</mat-icon>
+        {{ 'ACTIONS.CREAR_SOLICITUD' | translate }}
+      </button>
+    </div>
+
     <!-- Tabla -->
     <app-dynamic-table
       [rows]="rows"

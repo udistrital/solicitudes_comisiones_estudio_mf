@@ -32,20 +32,38 @@
   </section>
 
   <!-- Panel: Visor -->
+  
   <section class="border border-black/10 rounded-xl overflow-hidden bg-gradient-to-b from-sga/5 to-white">
     <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
       <div class="font-semibold">{{ 'VISOR.VISOR_LABEL' | translate }}</div>
-      <div class="text-xs text-black/60">{{ 'VISOR.PDF_PENDIENTE' | translate }}</div>
+    <!--class="text-xs text-black/60">{{ 'VISOR.PDF_PENDIENTE' | translate }}</div>-->
     </header>
 
-    <div class="p-3">
+    <!--<div class="p-3">
       <div class="border border-dashed border-sga/40 rounded-xl bg-sga/5 p-4 flex gap-3 items-center">
         <mat-icon class="text-sga">picture_as_pdf</mat-icon>
         <div class="text-black/70">
           {{ 'VISOR.PDF_PLACEHOLDER' | translate }}
         </div>
       </div>
-    </div>
+    </div>-->
+    <mat-dialog-content class="visor-content">
+      <ng-container *ngIf="pdfUrl; else sinDocumento">
+        <iframe
+          [src]="pdfUrl"
+          width="100%"
+          height="700"
+          style="border: none;">
+        </iframe>
+      </ng-container>
+
+      <ng-template #sinDocumento>
+        <div class="p-4">
+          No hay documento disponible para visualizar.
+        </div>
+      </ng-template>
+    </mat-dialog-content>
+
   </section>
 
 </div>

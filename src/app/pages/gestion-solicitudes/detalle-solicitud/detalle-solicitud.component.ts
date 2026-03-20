@@ -19,6 +19,15 @@ interface DocumentoItem {
   autorSoporte?: string;
   estado: DocumentoEstado;
   checked: boolean; // usado por revisores
+
+  // nuevos campos para manejo temporal en front
+  code?: 'FR010' | 'CARTA' | 'PLAN' | 'AVAL';
+  idTipoDocumento?: number;
+  descripcion?: string;
+  base64?: string;
+  fileName?: string;
+  mimeType?: string;
+  metadatos?: any;
 }
 
 interface ObservacionItem {
@@ -32,6 +41,8 @@ interface RequiredDocOption {
   code: 'FR010' | 'CARTA' | 'PLAN' | 'AVAL';
   name: string;
   kind: RequiredDocKind;
+  idTipoDocumento?: number;
+  descripcion?: string;
 }
 
 @Component({
@@ -53,26 +64,32 @@ export class DetalleSolicitudComponent implements OnInit {
   docenteNombre = 'María Pérez';
   proyecto = 'Ingeniería de Sistemas';
 
+  identificacionDocente = 86064919;
+  tipoSolicitudId = 2;
+  
   // Supervisor: fecha inicio contrato
   fechaInicioContrato: Date | null = null;
   tipoFechaSupervisor: 'INICIO' | 'PRORROGA' = 'INICIO';
 
+  // Para saber qué documento se está cargando
+  documentoEnCarga: DocumentoItem | null = null;
+
   // Docs requeridos (para el desplegable)
   requiredDocs: RequiredDocOption[] = [
-    { code: 'FR010', name: 'FR-010 Formulario de solicitud inicial', kind: 'FORM' },
-    { code: 'CARTA', name: 'Carta de motivación', kind: 'FILE' },
-    { code: 'PLAN', name: 'Plan de trabajo', kind: 'FILE' },
-    { code: 'AVAL', name: 'Aval del proyecto curricular', kind: 'FILE' },
+    { code: 'FR010', name: 'FR-010 Formulario de solicitud inicial', kind: 'FORM', idTipoDocumento: 1, descripcion: 'Formulario FR-010' },
+    { code: 'CARTA', name: 'Carta de motivación', kind: 'FILE', idTipoDocumento: 2, descripcion: 'Carta de motivación'  },
+    { code: 'PLAN', name: 'Plan de trabajo', kind: 'FILE', idTipoDocumento: 3, descripcion: 'Plan de trabajo' },
+    { code: 'AVAL', name: 'Aval del proyecto curricular', kind: 'FILE', idTipoDocumento: 4, descripcion: 'Aval del proyecto curricular' },
   ];
 
   selectedRequiredDoc: RequiredDocOption = this.requiredDocs[0];
 
   // Tabla docs (demo)
   documentos: DocumentoItem[] = [
-    { id: 1, nombre: 'FR-010 Formulario de solicitud inicial', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false },
-    { id: 2, nombre: 'Carta de motivación', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false },
-    { id: 3, nombre: 'Plan de trabajo', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false },
-    { id: 4, nombre: 'Aval del proyecto curricular', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false },
+    { id: 1, nombre: 'FR-010 Formulario de solicitud inicial', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false, code: 'FR010', idTipoDocumento: 1, descripcion: 'Formulario FR-010'},
+    { id: 2, nombre: 'Carta de motivación', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false, code: 'CARTA', idTipoDocumento: 2, descripcion: 'Carta de motivación' },
+    { id: 3, nombre: 'Plan de trabajo', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false, code: 'PLAN', idTipoDocumento: 3, descripcion: 'Plan de trabajo' },
+    { id: 4, nombre: 'Aval del proyecto curricular', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false, code: 'AVAL', idTipoDocumento: 4, descripcion: 'Aval del proyecto curricular' },
   ];
 
   // Observaciones
@@ -92,6 +109,7 @@ export class DetalleSolicitudComponent implements OnInit {
     private dialog: MatDialog,
     private popup: PopUpManager,
     private translate: TranslateService,
+    // private solicitudesMidService: SolicitudesMidService,
   ) {}
 
   ngOnInit(): void {
@@ -180,25 +198,48 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   // ========== Acciones docente ==========
-  guardarDocente() {
-    this.popup.success(this.translate.instant('POPUPS.GUARDADO'));
+  guardarDocente(): void {
+    const payload = this.construirPayloadCrearSolicitud();
+    console.log('[PAYLOAD GUARDAR BORRADOR]', payload)
+    // Si vas a guardar borrador en el MID, aquí sería:
+    // this.solicitudesMidService.crearSolicitud(payload).subscribe(...);
+
+    this.popup.success(this.translate.instant('POPUPS.GUARDADO'));  
   }
 
-  enviarDocente() {
+  enviarDocente(): void {
     this.popup.confirm(
       this.translate.instant('POPUPS.CONFIRMAR_ENVIO'),
       this.translate.instant('ACTIONS.ENVIAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
-      if (result.isConfirmed) {
-        this.estadoSolicitud = 'RADICADA';
-        this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
-        this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+      if (!result.isConfirmed) {
+        return;
       }
+
+      const payload = this.construirPayloadCrearSolicitud();
+      console.log('[PAYLOAD ENVIAR SOLICITUD]', payload);
+
+      // cuando se tenga la conexion con el mid aqui se haria el POST real:
+      // this.solicitudesMidService.crearSolicitud(payload).subscribe({
+      //   next: (resp) => {
+      //     this.estadoSolicitud = 'RADICADA';
+      //     this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
+      //     this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+      //   },
+      //   error: () => {
+      //     this.popup.alertError(this.translate.instant('POPUPS.ERROR_ENVIAR_SOLICITUD'));
+      //   }
+      // });
+
+      // Temporal mientras se conecta con el mid:
+      this.estadoSolicitud = 'RADICADA';
+      this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
+      this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
     });
   }
 
-  adjuntarDocumento() {
+  adjuntarDocumento(fileInput: HTMLInputElement): void {
     if (!this.selectedRequiredDoc) return;
 
     if (this.selectedRequiredDoc.kind === 'FORM') {
@@ -209,35 +250,103 @@ export class DetalleSolicitudComponent implements OnInit {
     const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
     if (!doc) return;
 
-    doc.estado = 'ADJUNTO';
-    doc.autorSoporte = 'Docente';
-    this.documentos = [...this.documentos];
-    this.popup.success(this.translate.instant('POPUPS.DOC_ADJUNTADO', { nombre: doc.nombre }));
+    this.documentoEnCarga = doc;
+    fileInput.value = '';
+    fileInput.click();
   }
 
-  eliminarDocumento(doc: DocumentoItem) {
+  async onFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!this.documentoEnCarga) {
+      this.popup.error(this.translate.instant('POPUPS.DOC_NO_ENCONTRADO'));
+      input.value = '';
+      return;
+    }
+
+    if (file.type !== 'application/pdf') {
+      this.popup.error(this.translate.instant('POPUPS.SOLO_PDF'));
+      input.value = '';
+      return;
+    }
+
+    try {
+      const base64 = await this.fileToBase64(file);
+
+      this.documentoEnCarga.base64 = base64;
+      this.documentoEnCarga.fileName = file.name;
+      this.documentoEnCarga.mimeType = file.type;
+      this.documentoEnCarga.autorSoporte = 'Docente';
+      this.documentoEnCarga.estado = 'ADJUNTO';
+      this.documentoEnCarga.metadatos = {
+        documento_requerido: this.documentoEnCarga.nombre,
+        codigo: this.documentoEnCarga.code,
+        cargadoPor: 'DOCENTE',
+        fechaCarga: new Date().toISOString(),
+      };
+
+      this.documentos = [...this.documentos];
+
+      this.popup.success(
+        this.translate.instant('POPUPS.DOC_ADJUNTADO', {
+          nombre: this.documentoEnCarga.nombre,
+        }),
+      );
+    } catch (error) {
+      this.popup.error(this.translate.instant('POPUPS.ERROR_PROCESAR_ARCHIVO'));
+    } finally {
+      this.documentoEnCarga = null;
+      input.value = '';
+    }
+  }
+
+  eliminarDocumento(doc: DocumentoItem): void {
     this.popup.confirm(
       this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre }),
       this.translate.instant('ACTIONS.ELIMINAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
-      if (result.isConfirmed) {
-        doc.estado = 'PENDIENTE';
-        doc.checked = false;
-        this.documentos = [...this.documentos];
-        this.popup.success(this.translate.instant('POPUPS.DOC_ELIMINADO', { nombre: doc.nombre }));
+      if (!result.isConfirmed) {
+        return;
       }
+
+      doc.estado = 'PENDIENTE';
+      doc.checked = false;
+      doc.base64 = undefined;
+      doc.fileName = undefined;
+      doc.mimeType = undefined;
+      doc.metadatos = undefined;
+      doc.autorSoporte = 'Docente';
+
+      this.documentos = [...this.documentos];
+      this.popup.success(this.translate.instant('POPUPS.DOC_ELIMINADO', { nombre: doc.nombre }));
     });
   }
 
-  verDocumento(doc: DocumentoItem) {
+  verDocumento(doc: DocumentoItem): void {
+    if (!doc.base64) {
+      this.popup.error(this.translate.instant('POPUPS.DOC_NO_DISPONIBLE'));
+      return;
+    }
+
     this.dialog.open(VisorDocumentosComponent, {
       width: '720px',
-      data: { nombre: doc.nombre, estado: doc.estado, autor: doc.autorSoporte },
+      data: {
+        nombre: doc.fileName || doc.nombre,
+        mimeType: doc.mimeType || 'application/pdf',
+        base64: doc.base64,
+        estado: doc.estado,
+        autor: doc.autorSoporte,
+      },
     });
   }
 
-  guardarFR010() {
+  guardarFR010(): void {
     if (!this.fr010Comp) {
       this.popup.error(this.translate.instant('POPUPS.FR010_NO_LISTO'));
       return;
@@ -245,17 +354,81 @@ export class DetalleSolicitudComponent implements OnInit {
     this.fr010Comp.save();
   }
 
-  onFr010Saved(payload: any) {
+  onFr010Saved(payload: any): void {
     this.fr010Json = payload;
     console.log('[FR-010 JSON]', payload);
 
-    const fr = this.documentos.find((d) => d.nombre.startsWith('FR-010'));
+    const fr = this.documentos.find((d) => d.code === 'FR010');
     if (fr) {
       fr.estado = 'ADJUNTO';
       fr.autorSoporte = 'Docente';
+      fr.metadatos = {
+        documento_requerido: fr.nombre,
+        codigo: fr.code,
+        cargadoPor: 'DOCENTE',
+        fechaCarga: new Date().toISOString(),
+        origen: 'FORMULARIO_DIGITAL',
+      };
     }
+
     this.documentos = [...this.documentos];
     this.popup.success(this.translate.instant('POPUPS.FR010_GUARDADO'));
+  }
+
+  // ========== Construcción del payload para el MID ==========
+  construirPayloadCrearSolicitud(): any {
+    const documentosAdjuntos = this.documentos
+      .filter((d) => d.code !== 'FR010' && d.base64)
+      .map((d) => ({
+        IdTipoDocumento: d.idTipoDocumento,
+        nombre: d.fileName || d.nombre,
+        descripcion: d.descripcion || d.nombre,
+        metadatos: {
+          ...(d.metadatos || {}),
+          nombreDocumentoRequerido: d.nombre,
+          tipoMime: d.mimeType,
+        },
+        file: d.base64,
+      }));
+
+    return {
+      Identificacion: this.identificacionDocente,
+      TipoSolicitudId: this.tipoSolicitudId,
+      DetalleSolicitud: {
+        observacionDocente: this.observacionDocente,
+        proyecto: this.proyecto,
+        docenteNombre: this.docenteNombre,
+        fr010: this.fr010Json,
+        documentosResumen: this.documentos.map((d) => ({
+          id: d.id,
+          nombre: d.nombre,
+          estado: d.estado,
+          fileName: d.fileName || null,
+          mimeType: d.mimeType || null,
+          tieneArchivo: !!d.base64,
+          code: d.code,
+        })),
+      },
+
+      // Como en el MID hoy está como string,
+      // aquí enviamos la lista serializada
+      DocumentoSolicitud: JSON.stringify(documentosAdjuntos),
+    };
+  }
+
+  private fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
   }
 
   // ========== Acciones revisor ==========
@@ -347,3 +520,4 @@ export class DetalleSolicitudComponent implements OnInit {
     this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
   }
 }
+

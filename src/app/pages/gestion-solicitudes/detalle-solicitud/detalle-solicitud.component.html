@@ -53,6 +53,14 @@
             </mat-form-field>
           </div>
 
+          <input
+            #docFileInput
+            type="file"
+            accept=".pdf,application/pdf"
+            hidden
+            (change)="onFileSelected($event)"
+          />
+
           <!-- Botones alineados con el select -->
           <div class="flex flex-wrap items-center gap-2 mb-[22px]">
             <button *ngIf="isFR010Selected()" mat-flat-button color="primary" class="h-10 px-3.5 rounded-lg"
@@ -61,11 +69,12 @@
             </button>
 
             <button *ngIf="!isFR010Selected()" mat-stroked-button class="h-10 px-3.5 rounded-lg border-black/20"
-              (click)="adjuntarDocumento()">
+              (click)="adjuntarDocumento(docFileInput)">
               {{ 'ACTIONS.ADJUNTAR_DOC' | translate }}
             </button>
 
-            <button mat-stroked-button class="h-10 px-3.5 rounded-lg border-black/20" (click)="guardarDocente()">
+            <button mat-stroked-button class="h-10 px-3.5 rounded-lg border-black/20" 
+              (click)="guardarDocente()">
               {{ 'ACTIONS.GUARDAR' | translate }}
             </button>
           </div>

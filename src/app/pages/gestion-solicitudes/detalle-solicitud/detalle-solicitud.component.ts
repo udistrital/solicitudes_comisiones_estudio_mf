@@ -121,10 +121,7 @@ export class DetalleSolicitudComponent implements OnInit {
     private dialog: MatDialog,
     private popup: PopUpManager,
     private translate: TranslateService,
-<<<<<<< HEAD
     private solicitudesService: SolicitudesService,
-=======
->>>>>>> origin/develop
   ) {}
 
   ngOnInit(): void {

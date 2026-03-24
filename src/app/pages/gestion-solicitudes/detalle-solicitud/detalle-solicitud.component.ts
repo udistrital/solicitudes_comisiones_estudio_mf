@@ -21,13 +21,15 @@ interface DocumentoItem {
   checked: boolean; // usado por revisores
 
   // nuevos campos para manejo temporal en front
-  code?: 'FR010' | 'CARTA' | 'PLAN' | 'AVAL';
+  code?: 'FR010' | 'CARTA' | 'PLAN' | 'AVAL' | 'SOPORTE_REVISOR';
   idTipoDocumento?: number;
   descripcion?: string;
   base64?: string;
   fileName?: string;
   mimeType?: string;
   metadatos?: any;
+  esSoporteRevisor?: boolean;
+  nombreTemporal?: string;
 }
 
 interface ObservacionItem {
@@ -73,6 +75,8 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // Para saber qué documento se está cargando
   documentoEnCarga: DocumentoItem | null = null;
+  reviewerUploadCounter = 1000;
+  MIN_NOMBRE_SOPORTE_REVISOR = 12;
 
   // Docs requeridos (para el desplegable)
   requiredDocs: RequiredDocOption[] = [
@@ -109,7 +113,6 @@ export class DetalleSolicitudComponent implements OnInit {
     private dialog: MatDialog,
     private popup: PopUpManager,
     private translate: TranslateService,
-    // private solicitudesMidService: SolicitudesMidService,
   ) {}
 
   ngOnInit(): void {
@@ -171,6 +174,21 @@ export class DetalleSolicitudComponent implements OnInit {
   get estadoLabel(): string {
     return `ESTADOS.${this.estadoSolicitud}`;
   }
+
+   get soportesRevisor(): DocumentoItem[] {
+    return this.documentos.filter((d) => d.esSoporteRevisor);
+  }
+
+  get haySoportesRevisorInvalidos(): boolean {
+    return this.soportesRevisor.some(
+      (d) => !d.nombre || d.nombre.trim().length < this.MIN_NOMBRE_SOPORTE_REVISOR
+    );
+  }
+
+  get puedeContinuarRevisor(): boolean {
+    return !this.haySoportesRevisorInvalidos;
+  }
+
 
   documentoChipClass(d: DocumentoItem): string {
     const map: Record<DocumentoEstado, string> = {
@@ -305,26 +323,27 @@ export class DetalleSolicitudComponent implements OnInit {
     }
   }
 
-  eliminarDocumento(doc: DocumentoItem): void {
+  eliminarDocumento(doc: DocumentoItem) {
     this.popup.confirm(
-      this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre }),
+      this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre || doc.fileName || 'documento' }),
       this.translate.instant('ACTIONS.ELIMINAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
-      if (!result.isConfirmed) {
-        return;
+      if (result.isConfirmed) {
+        if (doc.esSoporteRevisor) {
+          this.documentos = this.documentos.filter((d) => d.id !== doc.id);
+        } else {
+          doc.estado = 'PENDIENTE';
+          doc.checked = false;
+          doc.base64 = undefined;
+          doc.fileName = undefined;
+          doc.mimeType = undefined;
+          doc.metadatos = undefined;
+        }
+
+        this.documentos = [...this.documentos];
+        this.popup.success(this.translate.instant('POPUPS.DOC_ELIMINADO', { nombre: doc.nombre || doc.fileName || 'documento' }));
       }
-
-      doc.estado = 'PENDIENTE';
-      doc.checked = false;
-      doc.base64 = undefined;
-      doc.fileName = undefined;
-      doc.mimeType = undefined;
-      doc.metadatos = undefined;
-      doc.autorSoporte = 'Docente';
-
-      this.documentos = [...this.documentos];
-      this.popup.success(this.translate.instant('POPUPS.DOC_ELIMINADO', { nombre: doc.nombre }));
     });
   }
 
@@ -433,10 +452,69 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   // ========== Acciones revisor ==========
-  adjuntarSoporteRevisor() {
-    this.popup.success(this.translate.instant('POPUPS.ADJUNTAR_DOCS'));
+  adjuntarSoporteRevisor(fileInput: HTMLInputElement): void {
+    fileInput.value = '';
+    fileInput.click();
   }
 
+  async onReviewerFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (file.type !== 'application/pdf') {
+      this.popup.error(this.translate.instant('POPUPS.SOLO_PDF'));
+      input.value = '';
+      return;
+    }
+
+    try {
+      const base64 = await this.fileToBase64(file);
+
+      const nuevoDoc: DocumentoItem = {
+        id: this.reviewerUploadCounter++,
+        nombre: '',
+        nombreTemporal: file.name.replace(/\.pdf$/i, ''),
+        autorSoporte: this.role,
+        estado: 'ADJUNTO',
+        checked: false,
+        code: 'SOPORTE_REVISOR',
+        descripcion: 'Soporte cargado por revisor',
+        base64,
+        fileName: file.name,
+        mimeType: file.type,
+        esSoporteRevisor: true,
+        metadatos: {
+          cargadoPor: this.role,
+          fechaCarga: new Date().toISOString(),
+          origen: 'REVISOR',
+        },
+      };
+
+      this.documentos = [...this.documentos, nuevoDoc];
+
+      this.popup.success(this.translate.instant('POPUPS.SOPORTE_REVISOR_AGREGADO'));
+    } catch (error) {
+      this.popup.error(this.translate.instant('POPUPS.ERROR_PROCESAR_ARCHIVO'));
+    } finally {
+      input.value = '';
+    }
+  }
+
+NombreSoporteRevisorValido(doc: DocumentoItem): boolean {
+  if (!doc.esSoporteRevisor) {
+    return true;
+  }
+  return !!doc.nombre && doc.nombre.trim().length >= this.MIN_NOMBRE_SOPORTE_REVISOR;
+}
+
+actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
+  doc.nombre = value;
+  this.documentos = [...this.documentos];
+}
   retornarSolicitud() {
     this.popup.confirm(
       this.translate.instant('POPUPS.RETORNAR_MSG'),

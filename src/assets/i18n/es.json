@@ -78,7 +78,14 @@
     "FR010_TITLE": "Formulario de solicitud inicial FR-010",
     "ENVIAR_HABILITADO_MSG": "Enviar solo esta habilitado cuando todos los documentos tienen check.",
     "VALIDAR_DOCS_MSG": "Debe validar todos los documentos antes de dar inicio.",
+<<<<<<< HEAD
     "NUEVA_SOLICITUD": "Nueva solicitud"
+=======
+    "NOMBRE_SOPORTE_REVISOR": "Escriba un nombre descriptivo del documento",
+    "NOMBRE_MINIMO_SOPORTE": "El nombre debe tener al menos 12 caracteres.",
+    "NOMBRE_VALIDO_SOPORTE": "Nombre válido.",
+    "BLOQUEO_NOMBRE_SOPORTE": "Debe asignar a cada soporte del revisor un nombre descriptivo de mínimo 12 caracteres."
+>>>>>>> origin/develop
   },
   "SUPERVISOR": {
     "TITLE": "Inicio de ejecucion de la comision",
@@ -276,9 +283,16 @@
     "INICIO_FECHA_REQUIRED": "Debe ingresar la fecha de inicio del contrato.",
     "INICIO_MSG": "Usted confirma que desea dar inicio a la ejecucion de la comision.",
     "INICIO_REGISTRADO": "Inicio de comision registrado (demo).",
+<<<<<<< HEAD
     "SOLICITUD_GUARDADA": "Solicitud guardada correctamente.",
     "ERROR_GUARDAR": "No fue posible guardar la solicitud. Intente nuevamente.",
     "ERROR_ENVIAR": "No fue posible enviar la solicitud. Intente nuevamente."
+=======
+    "SOLO_PDF": "Solo se permiten archivos PDF.",
+    "ERROR_PROCESAR_ARCHIVO": "No fue posible procesar el archivo.",
+    "SOPORTE_REVISOR_AGREGADO": "Se agregó un nuevo soporte del revisor.",
+    "DOC_NO_DISPONIBLE": "No hay documento disponible para visualizar."
+>>>>>>> origin/develop
   },
   "LANG": {
     "ES": "Espaniol",

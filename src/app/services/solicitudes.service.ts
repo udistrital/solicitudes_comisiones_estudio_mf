@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 import { RequestManager } from '../managers/request.manager';
-import { Role } from '../models/roles.model';
-import { SolicitudRow } from '../models/solicitud.model';
 
 @Injectable({ providedIn: 'root' })
 export class SolicitudesService {
@@ -15,11 +13,6 @@ export class SolicitudesService {
     this.apiCrud = this.request.client('COMISIONES_CRUD_SERVICE');
   }
 
-  // DEMO: ajustas endpoints reales cuando los tengas
-  listarBandeja(role: Role) {
-    return this.api.get<SolicitudRow[]>(`/solicitudes?role=${role}`);
-  }
-
   obtenerDetalle(id: number) {
     return this.api.get<any>(`/solicitudes/${id}`);
   }
@@ -30,5 +23,19 @@ export class SolicitudesService {
 
   listarTiposDocumentoSolicitud() {
     return this.apiCrud.get<any>('v1/tipo_documento_solicitud');
+  }
+
+  // ========== Bandeja por rol ==========
+
+  listarSolicitudesDocente(cedula: string) {
+    return this.apiMid.get<any>(`v1/solicitud/solicitudes_by_identificacion/${cedula}`);
+  }
+
+  listarPendientesCoordinador(cedula: string) {
+    return this.apiMid.get<any>(`v1/solicitud/pendientes_coordinador/${cedula}`);
+  }
+
+  listarPendientesSecretaria(cedula: string) {
+    return this.apiMid.get<any>(`v1/solicitud/pendientes_secretaria/${cedula}`);
   }
 }

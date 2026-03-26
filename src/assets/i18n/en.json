@@ -1,19 +1,25 @@
 {
   "BANDEJA": {
-    "SUBTITLE": "Select a role to view the inbox and actions (demo).",
-    "ROLE_LABEL": "Role (demo)",
+    "SUBTITLE": "Study commission requests assigned to your role.",
     "TITLE_DOCENTE": "My requests",
-    "TITLE_COORDINACION": "Requests to review (Coordination)",
-    "TITLE_SECRETARIA_ACADEMICA": "Academic Secretary Inbox",
-    "TITLE_SECRETARIA_GENERAL": "General Secretary Inbox",
-    "TITLE_SUPERVISION": "Supervisor / Dean Inbox"
+    "TITLE_COORDINADOR": "Pending requests - Curricular project coordination",
+    "TITLE_ADMINISTRADOR": "Pending requests - Academic Secretary",
+    "TITLE_ORDENADOR_GASTO": "Pending requests - General Secretary",
+    "TITLE_DECANO": "Pending requests - Dean's Office",
+    "TITLE_SIN_ROL": "Request inbox",
+    "SIN_ROL_MSG": "No valid role for this module was found in your session. Please verify that your account has an assigned role.",
+    "CARGANDO": "Loading requests...",
+    "ERROR_CARGAR": "Could not load requests. Please try again later.",
+    "SIN_INTEGRACION": "Integration for this role is not yet available. Management from this view will be enabled soon.",
+    "SIN_SOLICITUDES_DOCENTE": "You have no registered commission requests.",
+    "SIN_SOLICITUDES_REVISOR": "You have no pending requests to manage."
   },
   "ROLES": {
     "DOCENTE": "Professor",
-    "COORDINACION": "Coordination / Curricular Project",
-    "SECRETARIA_ACADEMICA": "Academic Secretary",
-    "SECRETARIA_GENERAL": "General Secretary",
-    "SUPERVISION": "Supervisor / Dean"
+    "COORDINADOR": "Curricular project coordination",
+    "ADMINISTRADOR": "Academic Secretary",
+    "ORDENADOR_GASTO": "General Secretary",
+    "DECANO": "Dean's Office"
   },
   "TABLE": {
     "ID_SOLICITUD": "Request ID",

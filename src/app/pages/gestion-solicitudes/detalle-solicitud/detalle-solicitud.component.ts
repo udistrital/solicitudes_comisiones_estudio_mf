@@ -188,7 +188,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   get isSupervisor(): boolean {
-    return this.role === 'SUPERVISION';
+    return this.role === 'DECANO';
   }
 
   /** Docente editable solo en NO_ENV o CORR */

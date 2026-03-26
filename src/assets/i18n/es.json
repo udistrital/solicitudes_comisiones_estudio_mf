@@ -1,19 +1,25 @@
 {
   "BANDEJA": {
-    "SUBTITLE": "Selecciona un rol para ver la bandeja y acciones (demo).",
-    "ROLE_LABEL": "Rol (demo)",
+    "SUBTITLE": "Solicitudes de comision de estudio asignadas a su rol.",
     "TITLE_DOCENTE": "Mis solicitudes",
-    "TITLE_COORDINACION": "Solicitudes por revisar (Coordinacion)",
-    "TITLE_SECRETARIA_ACADEMICA": "Bandeja Secretaria Academica",
-    "TITLE_SECRETARIA_GENERAL": "Bandeja Secretaria General",
-    "TITLE_SUPERVISION": "Bandeja Supervisor / Decanatura"
+    "TITLE_COORDINADOR": "Solicitudes pendientes - Coordinacion de proyecto curricular",
+    "TITLE_ADMINISTRADOR": "Solicitudes pendientes - Secretaria Academica",
+    "TITLE_ORDENADOR_GASTO": "Solicitudes pendientes - Secretaria General",
+    "TITLE_DECANO": "Solicitudes pendientes - Decanatura",
+    "TITLE_SIN_ROL": "Bandeja de solicitudes",
+    "SIN_ROL_MSG": "No se encontro un rol valido para este modulo en su sesion. Verifique que su cuenta tiene un rol asignado.",
+    "CARGANDO": "Cargando solicitudes...",
+    "ERROR_CARGAR": "No fue posible cargar las solicitudes. Intente de nuevo mas tarde.",
+    "SIN_INTEGRACION": "La integracion para este rol aun no esta disponible. Proximamente se habilitara la gestion desde esta vista.",
+    "SIN_SOLICITUDES_DOCENTE": "No tiene solicitudes de comision registradas.",
+    "SIN_SOLICITUDES_REVISOR": "No tiene solicitudes pendientes por gestionar."
   },
   "ROLES": {
     "DOCENTE": "Docente",
-    "COORDINACION": "Coordinacion / Proyecto Curricular",
-    "SECRETARIA_ACADEMICA": "Secretaria Academica",
-    "SECRETARIA_GENERAL": "Secretaria General",
-    "SUPERVISION": "Supervisor / Decanatura"
+    "COORDINADOR": "Coordinacion de proyecto curricular",
+    "ADMINISTRADOR": "Secretaria Academica",
+    "ORDENADOR_GASTO": "Secretaria General",
+    "DECANO": "Decanatura"
   },
   "TABLE": {
     "ID_SOLICITUD": "ID Solicitud",

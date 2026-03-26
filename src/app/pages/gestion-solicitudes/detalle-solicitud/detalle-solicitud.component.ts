@@ -4,26 +4,39 @@ import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 
 import { Role } from '../../../models/roles.model';
-import { EstadoSolicitud } from '../../../models/estados.model';
+import { EstadoSolicitud, EstadoDocumento } from '../../../models/estados.model';
 import { PopUpManager } from '../../../managers/popup.manager';
-import { estadoSolicitudClass } from '../../../utils/estado-solicitud.util';
-import { SolicitudesService } from '../../../services/solicitudes.service';
-import { getDocumento } from '../../../utils/auth.util';
+import { estadoSolicitudClass, estadoDocumentoClass } from '../../../utils/estado-solicitud.util';
 
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
 import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
 
-type DocumentoEstado = 'PENDIENTE' | 'ADJUNTO' | 'VALIDO' | 'NO_VALIDO';
+// Códigos de tipo documental alineados con backend (fase solicitud)
+type TipoDocumentalCode =
+  | 'FR010'
+  | 'CART_INT'
+  | 'CERT_EVAL_DOC'
+  | 'CERT_PUBL_PON'
+  | 'CERT_INV'
+  | 'CART_UNIV_OFER'
+  | 'COT_INS'
+  | 'COT_MAT'
+  | 'COT_PAS'
+  | 'COT_BIB'
+  | 'COT_MED'
+  | 'COT_SEG'
+  | 'OTRO_SOP'
+  | 'SOPORTE_REVISOR';
 
 interface DocumentoItem {
   id: number;
   nombre: string;
   autorSoporte?: string;
-  estado: DocumentoEstado;
+  estado: EstadoDocumento;
   checked: boolean; // usado por revisores
 
-  // nuevos campos para manejo temporal en front
-  code?: 'FR010' | 'CARTA' | 'PLAN' | 'AVAL' | 'SOPORTE_REVISOR';
+  // campos para manejo temporal en front
+  code?: TipoDocumentalCode;
   idTipoDocumento?: number;
   descripcion?: string;
   base64?: string;
@@ -42,7 +55,7 @@ interface ObservacionItem {
 
 type RequiredDocKind = 'FORM' | 'FILE';
 interface RequiredDocOption {
-  code: 'FR010' | 'CARTA' | 'PLAN' | 'AVAL';
+  code: TipoDocumentalCode;
   name: string;
   kind: RequiredDocKind;
   idTipoDocumento?: number;
@@ -62,21 +75,16 @@ export class DetalleSolicitudComponent implements OnInit {
   role: Role = 'DOCENTE';
   mode: 'EDITAR' | 'GESTIONAR' | 'VER' = 'GESTIONAR';
 
-  // Modo creación
-  isCreating = false;
-  guardando = false;
-
   // Solicitud (demo)
   radicado = 'SOL-2026-0001';
-  estadoSolicitud: EstadoSolicitud = 'BORRADOR';
+  estadoSolicitud: EstadoSolicitud = 'NO_ENV';
   docenteNombre = 'María Pérez';
   proyecto = 'Ingeniería de Sistemas';
 
   identificacionDocente = 86064919;
   tipoSolicitudId = 2;
+  guardando = false;
 
-  formularioCompletado = false;
-  
   // Supervisor: fecha inicio contrato
   fechaInicioContrato: Date | null = null;
   tipoFechaSupervisor: 'INICIO' | 'PRORROGA' = 'INICIO';
@@ -86,31 +94,44 @@ export class DetalleSolicitudComponent implements OnInit {
   reviewerUploadCounter = 1000;
   MIN_NOMBRE_SOPORTE_REVISOR = 12;
 
-  // Docs requeridos (para el desplegable)
+  // Tipos documentales de la fase de solicitud (docente)
   requiredDocs: RequiredDocOption[] = [
-    { code: 'FR010', name: 'FR-010 Formulario de solicitud inicial', kind: 'FORM', idTipoDocumento: 1, descripcion: 'Formulario FR-010' },
-    { code: 'CARTA', name: 'Carta de motivación', kind: 'FILE', idTipoDocumento: 2, descripcion: 'Carta de motivación'  },
-    { code: 'PLAN', name: 'Plan de trabajo', kind: 'FILE', idTipoDocumento: 3, descripcion: 'Plan de trabajo' },
-    { code: 'AVAL', name: 'Aval del proyecto curricular', kind: 'FILE', idTipoDocumento: 4, descripcion: 'Aval del proyecto curricular' },
+    { code: 'FR010',           name: 'FR-010 Formulario de solicitud inicial',  kind: 'FORM', idTipoDocumento: 0,  descripcion: 'Formulario FR-010' },
+    { code: 'CART_INT',        name: 'Carta de intención',                      kind: 'FILE', idTipoDocumento: 1,  descripcion: 'Documento de motivación o intención presentado por el solicitante' },
+    { code: 'CERT_EVAL_DOC',   name: 'Certificado de evaluación docente',       kind: 'FILE', idTipoDocumento: 2,  descripcion: 'Certificado de evaluación docente del solicitante' },
+    { code: 'CERT_PUBL_PON',   name: 'Certificado de publicaciones o ponencias', kind: 'FILE', idTipoDocumento: 3,  descripcion: 'Soporte académico de publicaciones o ponencias del solicitante' },
+    { code: 'CERT_INV',        name: 'Certificado de investigación',            kind: 'FILE', idTipoDocumento: 4,  descripcion: 'Soporte de participación o trayectoria investigativa' },
+    { code: 'CART_UNIV_OFER',  name: 'Carta universidad oferente',              kind: 'FILE', idTipoDocumento: 5,  descripcion: 'Carta emitida por la universidad oferente del programa académico' },
+    { code: 'COT_INS',         name: 'Cotización de inscripción',               kind: 'FILE', idTipoDocumento: 6,  descripcion: 'Soporte económico del valor de la inscripción' },
+    { code: 'COT_MAT',         name: 'Cotización de matrícula',                 kind: 'FILE', idTipoDocumento: 7,  descripcion: 'Soporte económico del valor de la matrícula' },
+    { code: 'COT_PAS',         name: 'Cotización de pasajes',                   kind: 'FILE', idTipoDocumento: 8,  descripcion: 'Soporte económico del valor de transporte o pasajes' },
+    { code: 'COT_BIB',         name: 'Cotización apoyo bibliográfico',          kind: 'FILE', idTipoDocumento: 9,  descripcion: 'Soporte económico para apoyo bibliográfico' },
+    { code: 'COT_MED',         name: 'Cotización servicio médico',              kind: 'FILE', idTipoDocumento: 10, descripcion: 'Soporte económico del servicio médico requerido' },
+    { code: 'COT_SEG',         name: 'Cotización seguro',                       kind: 'FILE', idTipoDocumento: 11, descripcion: 'Soporte económico correspondiente al seguro requerido' },
+    { code: 'OTRO_SOP',        name: 'Otro soporte de solicitud',               kind: 'FILE', idTipoDocumento: 12, descripcion: 'Documento adicional asociado a la fase de solicitud' },
   ];
 
   selectedRequiredDoc: RequiredDocOption = this.requiredDocs[0];
 
-  // Tabla docs (demo)
-  documentos: DocumentoItem[] = [
-    { id: 1, nombre: 'FR-010 Formulario de solicitud inicial', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false, code: 'FR010', idTipoDocumento: 1, descripcion: 'Formulario FR-010'},
-    { id: 2, nombre: 'Carta de motivación', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false, code: 'CARTA', idTipoDocumento: 2, descripcion: 'Carta de motivación' },
-    { id: 3, nombre: 'Plan de trabajo', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false, code: 'PLAN', idTipoDocumento: 3, descripcion: 'Plan de trabajo' },
-    { id: 4, nombre: 'Aval del proyecto curricular', autorSoporte: 'Docente', estado: 'PENDIENTE', checked: false, code: 'AVAL', idTipoDocumento: 4, descripcion: 'Aval del proyecto curricular' },
-  ];
+  // Tabla docs — un registro por cada tipo documental, estado PENDIENTE hasta que se cargue
+  documentos: DocumentoItem[] = this.requiredDocs.map((d, i) => ({
+    id: i + 1,
+    nombre: d.name,
+    autorSoporte: 'Docente',
+    estado: 'PENDIENTE' as EstadoDocumento,
+    checked: false,
+    code: d.code,
+    idTipoDocumento: d.idTipoDocumento,
+    descripcion: d.descripcion,
+  }));
 
   // Observaciones
   observacionDocente = 'Aquí el docente describe su solicitud... (demo)';
   observacionRevision = '';
 
   observacionesSubsanacion: ObservacionItem[] = [
-    { fecha: '2026-02-10 10:00', autor: 'COORDINACION', texto: 'Falta anexar plan de trabajo.' },
-    { fecha: '2026-02-11 08:30', autor: 'SECRETARIA_ACADEMICA', texto: 'Verificar formato del FR-010.' },
+    { fecha: '2026-02-10 10:00', autor: 'COORDINACION', texto: 'Falta anexar carta de intención.' },
+    { fecha: '2026-02-11 08:30', autor: 'SECRETARIA_ACADEMICA', texto: 'Verificar certificado de evaluación docente.' },
   ];
 
   fr010Json: any = null;
@@ -121,35 +142,23 @@ export class DetalleSolicitudComponent implements OnInit {
     private dialog: MatDialog,
     private popup: PopUpManager,
     private translate: TranslateService,
-    private solicitudesService: SolicitudesService,
   ) {}
 
   ngOnInit(): void {
-    const rawId = this.route.snapshot.paramMap.get('id');
-    this.isCreating = rawId === 'nuevo';
-    this.id = this.isCreating ? 0 : Number(rawId);
+    this.id = Number(this.route.snapshot.paramMap.get('id'));
 
     const qp = this.route.snapshot.queryParamMap;
     this.role = (qp.get('role') as Role) || 'DOCENTE';
     this.mode = (qp.get('mode') as any) || 'GESTIONAR';
 
-    if (this.isCreating) {
-      this.estadoSolicitud = 'BORRADOR';
-      this.radicado = this.translate.instant('DETALLE.NUEVA_SOLICITUD');
-      this.observacionDocente = '';
-      this.observacionesSubsanacion = [];
-      const doc = getDocumento();
-      if (doc) this.identificacionDocente = Number(doc) || 0;
-    } else {
-      // si es revisor (no docente), simula que ya está en revisión
-      if (this.role !== 'DOCENTE') {
-        this.estadoSolicitud = 'EN_REVISION';
-      }
+    // si es revisor (no docente), simula que ya está en revisión
+    if (this.role !== 'DOCENTE') {
+      this.estadoSolicitud = 'REV_PROY';
+    }
 
-      // Docente VER → muestra estado real de la solicitud (demo: AVALADA)
-      if (this.role === 'DOCENTE' && this.mode === 'VER') {
-        this.estadoSolicitud = 'AVALADA';
-      }
+    // Docente VER → muestra estado real de la solicitud (demo: APROB_EJEC)
+    if (this.role === 'DOCENTE' && this.mode === 'VER') {
+      this.estadoSolicitud = 'APROB_EJEC';
     }
 
     this.selectedRequiredDoc = this.requiredDocs[0];
@@ -168,10 +177,10 @@ export class DetalleSolicitudComponent implements OnInit {
     return this.role === 'SUPERVISION';
   }
 
-  /** Docente editable solo en BORRADOR o POR_SUBSANAR */
+  /** Docente editable solo en NO_ENV o CORR */
   get isDocenteEditable(): boolean {
     return this.isDocente
-      && (this.estadoSolicitud === 'BORRADOR' || this.estadoSolicitud === 'POR_SUBSANAR');
+      && (this.estadoSolicitud === 'NO_ENV' || this.estadoSolicitud === 'CORR');
   }
 
   /** Docente en modo solo lectura (cualquier estado no editable) */
@@ -211,13 +220,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
 
   documentoChipClass(d: DocumentoItem): string {
-    const map: Record<DocumentoEstado, string> = {
-      PENDIENTE: 'doc-chip--pendiente',
-      ADJUNTO: 'doc-chip--adjunto',
-      VALIDO: 'doc-chip--valido',
-      NO_VALIDO: 'doc-chip--no_valido',
-    };
-    return map[d.estado] || '';
+    return estadoDocumentoClass(d.estado);
   }
 
   documentoChip(d: DocumentoItem): string {
@@ -230,33 +233,19 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Checkbox → estado de documento ==========
   onDocCheckedChange(doc: DocumentoItem): void {
-    doc.estado = doc.checked ? 'VALIDO' : 'PENDIENTE';
+    doc.estado = doc.checked ? 'APROB' : 'PENDIENTE';
     // Refresh dataSource reference for mat-table
     this.documentos = [...this.documentos];
   }
 
   // ========== Acciones docente ==========
   guardarDocente(): void {
-    if (this.guardando) return;
-
     const payload = this.construirPayloadCrearSolicitud();
-    console.log('[PAYLOAD GUARDAR BORRADOR]', payload);
+    console.log('[PAYLOAD GUARDAR BORRADOR]', payload)
+    // Si vas a guardar borrador en el MID, aquí sería:
+    // this.solicitudesMidService.crearSolicitud(payload).subscribe(...);
 
-    this.guardando = true;
-    this.solicitudesService.crearSolicitud(payload).subscribe({
-      next: (resp) => {
-        this.guardando = false;
-        if (this.isCreating && resp?.Data?.Id) {
-          this.id = resp.Data.Id;
-          this.isCreating = false;
-        }
-        this.popup.success(this.translate.instant('POPUPS.SOLICITUD_GUARDADA'));
-      },
-      error: () => {
-        this.guardando = false;
-        this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
-      },
-    });
+    this.popup.success(this.translate.instant('POPUPS.GUARDADO'));
   }
 
   enviarDocente(): void {
@@ -265,26 +254,29 @@ export class DetalleSolicitudComponent implements OnInit {
       this.translate.instant('ACTIONS.ENVIAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
-      if (!result.isConfirmed) return;
-
-      if (this.guardando) return;
+      if (!result.isConfirmed) {
+        return;
+      }
 
       const payload = this.construirPayloadCrearSolicitud();
       console.log('[PAYLOAD ENVIAR SOLICITUD]', payload);
 
-      this.guardando = true;
-      this.solicitudesService.crearSolicitud(payload).subscribe({
-        next: () => {
-          this.guardando = false;
-          this.estadoSolicitud = 'RADICADA';
-          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
-          this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
-        },
-        error: () => {
-          this.guardando = false;
-          this.popup.error(this.translate.instant('POPUPS.ERROR_ENVIAR'));
-        },
-      });
+      // cuando se tenga la conexion con el mid aqui se haria el POST real:
+      // this.solicitudesMidService.crearSolicitud(payload).subscribe({
+      //   next: (resp) => {
+      //     this.estadoSolicitud = 'RAD';
+      //     this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
+      //     this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+      //   },
+      //   error: () => {
+      //     this.popup.alertError(this.translate.instant('POPUPS.ERROR_ENVIAR_SOLICITUD'));
+      //   }
+      // });
+
+      // Temporal mientras se conecta con el mid:
+      this.estadoSolicitud = 'RAD';
+      this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA_OK'));
+      this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
     });
   }
 
@@ -331,7 +323,7 @@ export class DetalleSolicitudComponent implements OnInit {
       this.documentoEnCarga.fileName = file.name;
       this.documentoEnCarga.mimeType = file.type;
       this.documentoEnCarga.autorSoporte = 'Docente';
-      this.documentoEnCarga.estado = 'ADJUNTO';
+      this.documentoEnCarga.estado = 'CARG';
       this.documentoEnCarga.metadatos = {
         documento_requerido: this.documentoEnCarga.nombre,
         codigo: this.documentoEnCarga.code,
@@ -407,12 +399,11 @@ export class DetalleSolicitudComponent implements OnInit {
 
   onFr010Saved(payload: any): void {
     this.fr010Json = payload;
-    this.formularioCompletado = this.fr010Comp?.isFormularioCompleto() ?? false;
-    console.log('[FR-010 JSON]', payload, '| completado:', this.formularioCompletado);
+    console.log('[FR-010 JSON]', payload);
 
     const fr = this.documentos.find((d) => d.code === 'FR010');
     if (fr) {
-      fr.estado = 'ADJUNTO';
+      fr.estado = 'CARG';
       fr.autorSoporte = 'Docente';
       fr.metadatos = {
         documento_requerido: fr.nombre,
@@ -429,44 +420,42 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Construcción del payload para el MID ==========
   construirPayloadCrearSolicitud(): any {
-    // FR-010: datos frescos del componente si está visible, o último guardado
-    let fr010Data = this.fr010Json?.fr010 || null;
-    if (this.fr010Comp) {
-      fr010Data = this.fr010Comp.getFormData();
-      this.formularioCompletado = this.fr010Comp.isFormularioCompleto();
-    }
-
-    const identificacion = Number(getDocumento()) || this.identificacionDocente;
-
-    const formulario: any = {
-      formulario_completado: this.formularioCompletado,
-    };
-
-    if (fr010Data) {
-      formulario.solicitante = fr010Data.solicitante;
-      formulario.solicitud = fr010Data.solicitud;
-      formulario.financiacion_colombia = fr010Data.financiacion_colombia;
-      formulario.financiacion_exterior = fr010Data.financiacion_exterior;
-      formulario.beca = fr010Data.beca;
-    }
-
-    const documento_solicitud = this.documentos
+    const documentosAdjuntos = this.documentos
       .filter((d) => d.base64)
       .map((d) => ({
         IdTipoDocumento: d.idTipoDocumento,
-        Nombre: d.fileName || d.nombre,
-        Descripcion: d.descripcion || d.nombre,
-        Metadatos: d.metadatos || {},
-        File: d.base64,
+        nombre: d.fileName || d.nombre,
+        descripcion: d.descripcion || d.nombre,
+        metadatos: {
+          ...(d.metadatos || {}),
+          nombreDocumentoRequerido: d.nombre,
+          tipoMime: d.mimeType,
+        },
+        file: d.base64,
       }));
 
     return {
-      identificacion,
-      tipo_solicitud_id: this.tipoSolicitudId,
-      formulario,
-      observacion: this.observacionDocente || '',
-      cod_abreviacion_rol: 'PROFE',
-      documento_solicitud,
+      Identificacion: this.identificacionDocente,
+      TipoSolicitudId: this.tipoSolicitudId,
+      DetalleSolicitud: {
+        observacionDocente: this.observacionDocente,
+        proyecto: this.proyecto,
+        docenteNombre: this.docenteNombre,
+        fr010: this.fr010Json,
+        documentosResumen: this.documentos.map((d) => ({
+          id: d.id,
+          nombre: d.nombre,
+          estado: d.estado,
+          fileName: d.fileName || null,
+          mimeType: d.mimeType || null,
+          tieneArchivo: !!d.base64,
+          code: d.code,
+        })),
+      },
+
+      // Como en el MID hoy está como string,
+      // aquí enviamos la lista serializada
+      DocumentoSolicitud: JSON.stringify(documentosAdjuntos),
     };
   }
 
@@ -513,7 +502,7 @@ export class DetalleSolicitudComponent implements OnInit {
         nombre: '',
         nombreTemporal: file.name.replace(/\.pdf$/i, ''),
         autorSoporte: this.role,
-        estado: 'ADJUNTO',
+        estado: 'CARG',
         checked: false,
         code: 'SOPORTE_REVISOR',
         descripcion: 'Soporte cargado por revisor',
@@ -556,7 +545,7 @@ actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
-        this.estadoSolicitud = 'POR_SUBSANAR';
+        this.estadoSolicitud = 'CORR';
         if (this.observacionRevision.trim()) {
           this.observacionesSubsanacion.push({
             fecha: new Date().toISOString().slice(0, 16).replace('T', ' '),
@@ -577,7 +566,7 @@ actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
-        this.estadoSolicitud = 'RECHAZADA';
+        this.estadoSolicitud = 'NO_APROB';
         if (this.observacionRevision.trim()) {
           this.observacionesSubsanacion.push({
             fecha: new Date().toISOString().slice(0, 16).replace('T', ' '),
@@ -586,7 +575,7 @@ actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
           });
           this.observacionRevision = '';
         }
-        this.popup.alertError(this.translate.instant('POPUPS.SOLICITUD_RECHAZADA'));
+        this.popup.alertError(this.translate.instant('POPUPS.SOLICITUD_NO_APROBADA'));
       }
     });
   }
@@ -603,7 +592,7 @@ actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
-        this.estadoSolicitud = 'AVALADA';
+        this.estadoSolicitud = 'APROB_EJEC';
         this.popup.alertSuccess(this.translate.instant('POPUPS.DOCS_AVALADOS'));
         this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
       }
@@ -633,4 +622,3 @@ actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
     this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
   }
 }
-

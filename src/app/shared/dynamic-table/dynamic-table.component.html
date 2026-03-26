@@ -54,9 +54,7 @@
 
           <ng-container [ngSwitch]="col.renderAs || 'text'">
             <div *ngSwitchCase="'chip'" class="flex justify-center">
-              <span
-                class="inline-block rounded-full border border-black/10 px-2.5 py-0.5 text-xs font-medium"
-                [ngClass]="col.chipClass ? col.chipClass(row) : ''">
+              <span class="sga-chip" [ngClass]="col.chipClass ? col.chipClass(row) : ''">
                 {{ col.cell(row) | translate }}
               </span>
             </div>
@@ -75,7 +73,7 @@
           *matHeaderCellDef
           class="align-top text-center text-sga px-3 pb-4 border-b border-sga/30 col-acciones">
           <div class="pt-3"></div>
-          <div class="w-full text-center leading-snug font-semibold">{{ 'TABLE.ACCIONES' | translate }}</div>
+          <div class="w-full text-center leading-snug font-semibold">{{ 'TABLE.GESTION' | translate }}</div>
         </th>
 
         <td

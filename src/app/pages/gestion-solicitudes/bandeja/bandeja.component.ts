@@ -17,11 +17,11 @@ export class BandejaComponent {
   selectedRole: Role = 'DOCENTE';
 
   rows: SolicitudRow[] = [
-    { id: 101, radicado: 'SOL-2026-0001', docente: 'María Pérez', proyecto: 'Ingeniería de Sistemas', estado: 'BORRADOR', fecha: '2026-02-01' },
-    { id: 102, radicado: 'SOL-2026-0002', docente: 'Juan Gómez', proyecto: 'Matemáticas', estado: 'RADICADA', fecha: '2026-02-02' },
-    { id: 103, radicado: 'SOL-2026-0003', docente: 'Laura Díaz', proyecto: 'Ingeniería Industrial', estado: 'POR_SUBSANAR', fecha: '2026-02-03' },
-    { id: 104, radicado: 'SOL-2026-0004', docente: 'Carlos Ruiz', proyecto: 'Electrónica', estado: 'EN_REVISION', fecha: '2026-02-04' },
-    { id: 105, radicado: 'SOL-2026-0005', docente: 'Ana Torres', proyecto: 'Sistemas', estado: 'AVALADA', fecha: '2026-02-05' },
+    { id: 101, idDocente: '86064919', docente: 'María Pérez', proyecto: 'Ingeniería de Sistemas', estado: 'NO_ENV', fecha: '2026-02-01' },
+    { id: 102, idDocente: '1032456789', docente: 'Juan Gómez', proyecto: 'Matemáticas', estado: 'RAD', fecha: '2026-02-02' },
+    { id: 103, idDocente: '52834567', docente: 'Laura Díaz', proyecto: 'Ingeniería Industrial', estado: 'CORR', fecha: '2026-02-03' },
+    { id: 104, idDocente: '79512345', docente: 'Carlos Ruiz', proyecto: 'Electrónica', estado: 'REV_PROY', fecha: '2026-02-04' },
+    { id: 105, idDocente: '1019876543', docente: 'Ana Torres', proyecto: 'Sistemas', estado: 'APROB_EJEC', fecha: '2026-02-05' },
   ];
 
   constructor(
@@ -41,7 +41,7 @@ export class BandejaComponent {
   get actions(): TableAction<SolicitudRow>[] {
     if (this.selectedRole === 'DOCENTE') {
       const editable = (row: SolicitudRow) =>
-        row.estado === 'BORRADOR' || row.estado === 'POR_SUBSANAR';
+        row.estado === 'NO_ENV' || row.estado === 'CORR';
 
       return [
         {
@@ -64,7 +64,7 @@ export class BandejaComponent {
           icon: 'delete',
           tooltip: 'TOOLTIPS.ELIMINAR_SOLICITUD',
           color: 'warn',
-          visible: (row: SolicitudRow) => row.estado === 'BORRADOR',
+          visible: (row: SolicitudRow) => row.estado === 'NO_ENV',
         },
         {
           key: 'ENVIAR',
@@ -116,13 +116,13 @@ export class BandejaComponent {
 
     if (a === 'ELIMINAR') {
       this.popup.confirm(
-        this.translate.instant('POPUPS.ELIMINAR_SOLICITUD_MSG', { radicado: row.radicado }),
+        this.translate.instant('POPUPS.ELIMINAR_SOLICITUD_MSG', { id: row.id }),
         this.translate.instant('ACTIONS.ELIMINAR'),
         this.translate.instant('ACTIONS.CANCELAR'),
       ).then((result) => {
         if (result.isConfirmed) {
           this.rows = this.rows.filter((x) => x.id !== row.id);
-          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ELIMINADA', { radicado: row.radicado }));
+          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ELIMINADA', { id: row.id }));
         }
       });
       return;
@@ -130,13 +130,13 @@ export class BandejaComponent {
 
     if (a === 'ENVIAR') {
       this.popup.confirm(
-        this.translate.instant('POPUPS.ENVIAR_SOLICITUD_MSG', { radicado: row.radicado }),
+        this.translate.instant('POPUPS.ENVIAR_SOLICITUD_MSG', { id: row.id }),
         this.translate.instant('ACTIONS.ENVIAR'),
         this.translate.instant('ACTIONS.CANCELAR'),
       ).then((result) => {
         if (result.isConfirmed) {
-          row.estado = 'RADICADA';
-          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA', { radicado: row.radicado }));
+          row.estado = 'RAD';
+          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA', { id: row.id }));
         }
       });
       return;

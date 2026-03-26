@@ -24,6 +24,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   TranslateModule,
   TranslateLoader,
+  TranslateService,
   MissingTranslationHandler,
   MissingTranslationHandlerParams,
 } from '@ngx-translate/core';
@@ -45,6 +46,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule, MatPaginatorIntl } from '@angular/material/paginator';
 
 /**
  * Usa deployUrl del environment para resolver la ruta absoluta de los JSON.
@@ -64,6 +66,27 @@ export class SgaMissingTranslationHandler implements MissingTranslationHandler {
     console.warn(`[i18n] Missing translation: "${params.key}"`);
     return params.key;
   }
+}
+
+export function paginatorIntlFactory(translate: TranslateService): MatPaginatorIntl {
+  const intl = new MatPaginatorIntl();
+  const update = () => {
+    intl.itemsPerPageLabel = translate.instant('PAGINATOR.ITEMS_PER_PAGE');
+    intl.nextPageLabel = translate.instant('PAGINATOR.NEXT_PAGE');
+    intl.previousPageLabel = translate.instant('PAGINATOR.PREV_PAGE');
+    intl.firstPageLabel = translate.instant('PAGINATOR.FIRST_PAGE');
+    intl.lastPageLabel = translate.instant('PAGINATOR.LAST_PAGE');
+    intl.getRangeLabel = (page, pageSize, length) => {
+      if (length === 0 || pageSize === 0) return `0 / ${length}`;
+      const start = page * pageSize + 1;
+      const end = Math.min(start + pageSize - 1, length);
+      return `${start} – ${end} / ${length}`;
+    };
+    intl.changes.next();
+  };
+  translate.onLangChange.subscribe(() => update());
+  update();
+  return intl;
 }
 
 registerLocaleData(localeEs);
@@ -121,10 +144,12 @@ registerLocaleData(localeEs);
     MatDatepickerModule,
     MatNativeDateModule,
     MatTooltipModule,
+    MatPaginatorModule,
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-CO' },
     { provide: MAT_DATE_LOCALE, useValue: 'es-CO' },
+    { provide: MatPaginatorIntl, useFactory: paginatorIntlFactory, deps: [TranslateService] },
   ],
   bootstrap: [AppComponent],
 })

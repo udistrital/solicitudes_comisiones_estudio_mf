@@ -6,7 +6,7 @@
 
     <table
       mat-table
-      [dataSource]="filteredRows"
+      [dataSource]="dataSource"
       class="w-full min-w-0 table-fixed border-separate border-spacing-0 bg-white">
 
       <!-- Columnas dinámicas -->
@@ -31,7 +31,8 @@
                 class="w-full h-10 rounded-md border border-black/30 bg-white px-3 pr-10 text-sm text-black/80
                        placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-sga/20 focus:border-sga"
                 [placeholder]="(col.filterPlaceholder || 'TABLE.FILTER_PLACEHOLDER') | translate"
-                [(ngModel)]="filters[col.key]" />
+                [(ngModel)]="filters[col.key]"
+                (ngModelChange)="onFilterChange()" />
 
               <button
                 type="button"
@@ -124,5 +125,12 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
+
+    <!-- Paginador -->
+    <mat-paginator
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons>
+    </mat-paginator>
   </div>
 </mat-card>

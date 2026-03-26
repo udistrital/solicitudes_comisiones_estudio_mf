@@ -165,8 +165,8 @@
                 [disabled]="guardando"
                 (click)="guardarDocente()">{{ 'ACTIONS.GUARDAR' | translate }}</button>
               <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-                [disabled]="guardando"
-                (click)="enviarDocente()">{{ 'ACTIONS.ENVIAR' | translate }}</button>
+                [disabled]="true"
+                matTooltip="{{ 'POPUPS.ENVIAR_NO_DISPONIBLE' | translate }}">{{ 'ACTIONS.ENVIAR' | translate }}</button>
             </footer>
           </section>
 

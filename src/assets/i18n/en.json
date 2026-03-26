@@ -37,6 +37,13 @@
     "OK": "OK",
     "FILTER_PLACEHOLDER": "Search..."
   },
+  "PAGINATOR": {
+    "ITEMS_PER_PAGE": "Rows per page:",
+    "NEXT_PAGE": "Next page",
+    "PREV_PAGE": "Previous page",
+    "FIRST_PAGE": "First page",
+    "LAST_PAGE": "Last page"
+  },
   "ACTIONS": {
     "VER": "View",
     "EDITAR": "Edit",
@@ -314,7 +321,9 @@
     "SOLICITUD_GUARDADA": "Request saved successfully.",
     "ERROR_GUARDAR": "Could not save the request. Please try again.",
     "ERROR_ENVIAR": "Could not submit the request. Please try again.",
-    "ERROR_CARGAR_TIPOS_DOC": "Could not load document types. Only the FR-010 form will be available."
+    "ERROR_CARGAR_TIPOS_DOC": "Could not load document types. Only the FR-010 form will be available.",
+    "ERROR_SIN_IDENTIFICACION": "Could not retrieve the teacher's identification from the session.",
+    "ENVIAR_NO_DISPONIBLE": "Submitting requests is not yet available."
   },
   "LANG": {
     "ES": "Espaniol",

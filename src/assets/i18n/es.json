@@ -37,6 +37,13 @@
     "OK": "OK",
     "FILTER_PLACEHOLDER": "Buscar..."
   },
+  "PAGINATOR": {
+    "ITEMS_PER_PAGE": "Filas por pagina:",
+    "NEXT_PAGE": "Pagina siguiente",
+    "PREV_PAGE": "Pagina anterior",
+    "FIRST_PAGE": "Primera pagina",
+    "LAST_PAGE": "Ultima pagina"
+  },
   "ACTIONS": {
     "VER": "Ver",
     "EDITAR": "Editar",
@@ -313,7 +320,9 @@
     "SOLICITUD_GUARDADA": "Solicitud guardada exitosamente.",
     "ERROR_GUARDAR": "No fue posible guardar la solicitud. Intente de nuevo.",
     "ERROR_ENVIAR": "No fue posible enviar la solicitud. Intente de nuevo.",
-    "ERROR_CARGAR_TIPOS_DOC": "No fue posible cargar los tipos de documento. Solo el formulario FR-010 estara disponible."
+    "ERROR_CARGAR_TIPOS_DOC": "No fue posible cargar los tipos de documento. Solo el formulario FR-010 estara disponible.",
+    "ERROR_SIN_IDENTIFICACION": "No se pudo obtener la identificacion del docente desde la sesion.",
+    "ENVIAR_NO_DISPONIBLE": "El envio de solicitudes aun no esta habilitado."
   },
   "LANG": {
     "ES": "Espaniol",

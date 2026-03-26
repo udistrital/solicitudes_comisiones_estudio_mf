@@ -605,7 +605,7 @@ export class Fr010FormComponent implements OnInit {
       },
       solicitud: {
         ...raw.solicitud,
-        q13_tipo_estudio: raw.solicitud.q13_tipo_estudio || [],
+        q13_tipo_estudio: raw.solicitud.q13_tipo_estudio || '',
         q19_fecha_aceptacion: this.formatDate(raw.solicitud.q19_fecha_aceptacion),
         q22_tipo_apoyo_requerido: raw.solicitud.q22_tipo_apoyo_requerido || [],
         q23_fecha_inicio_estudios: this.formatDate(raw.solicitud.q23_fecha_inicio_estudios),
@@ -619,10 +619,11 @@ export class Fr010FormComponent implements OnInit {
   }
 
   public save(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+    // TODO: reactivar validación para producción
+    // if (this.form.invalid) {
+    //   this.form.markAllAsTouched();
+    //   return;
+    // }
 
     const payload = {
       meta: {

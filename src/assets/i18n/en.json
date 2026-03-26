@@ -307,7 +307,8 @@
     "DOC_NO_ENCONTRADO": "Selected document not found.",
     "SOLICITUD_GUARDADA": "Request saved successfully.",
     "ERROR_GUARDAR": "Could not save the request. Please try again.",
-    "ERROR_ENVIAR": "Could not submit the request. Please try again."
+    "ERROR_ENVIAR": "Could not submit the request. Please try again.",
+    "ERROR_CARGAR_TIPOS_DOC": "Could not load document types. Only the FR-010 form will be available."
   },
   "LANG": {
     "ES": "Espaniol",

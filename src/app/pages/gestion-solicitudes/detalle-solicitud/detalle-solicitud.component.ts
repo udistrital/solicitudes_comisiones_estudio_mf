@@ -10,23 +10,11 @@ import { estadoSolicitudClass, estadoDocumentoClass } from '../../../utils/estad
 
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
 import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
+import { SolicitudesService } from '../../../services/solicitudes.service';
 
-// Códigos de tipo documental alineados con backend (fase solicitud)
-type TipoDocumentalCode =
-  | 'FR010'
-  | 'CART_INT'
-  | 'CERT_EVAL_DOC'
-  | 'CERT_PUBL_PON'
-  | 'CERT_INV'
-  | 'CART_UNIV_OFER'
-  | 'COT_INS'
-  | 'COT_MAT'
-  | 'COT_PAS'
-  | 'COT_BIB'
-  | 'COT_MED'
-  | 'COT_SEG'
-  | 'OTRO_SOP'
-  | 'SOPORTE_REVISOR';
+// Códigos de tipo documental — FR010 y SOPORTE_REVISOR son fijos del frontend,
+// el resto viene dinámicamente del CRUD (tipo_documento_solicitud)
+type TipoDocumentalCode = 'FR010' | 'SOPORTE_REVISOR' | string;
 
 interface DocumentoItem {
   id: number;
@@ -94,36 +82,19 @@ export class DetalleSolicitudComponent implements OnInit {
   reviewerUploadCounter = 1000;
   MIN_NOMBRE_SOPORTE_REVISOR = 12;
 
-  // Tipos documentales de la fase de solicitud (docente)
-  requiredDocs: RequiredDocOption[] = [
-    { code: 'FR010',           name: 'FR-010 Formulario de solicitud inicial',  kind: 'FORM', idTipoDocumento: 0,  descripcion: 'Formulario FR-010' },
-    { code: 'CART_INT',        name: 'Carta de intención',                      kind: 'FILE', idTipoDocumento: 1,  descripcion: 'Documento de motivación o intención presentado por el solicitante' },
-    { code: 'CERT_EVAL_DOC',   name: 'Certificado de evaluación docente',       kind: 'FILE', idTipoDocumento: 2,  descripcion: 'Certificado de evaluación docente del solicitante' },
-    { code: 'CERT_PUBL_PON',   name: 'Certificado de publicaciones o ponencias', kind: 'FILE', idTipoDocumento: 3,  descripcion: 'Soporte académico de publicaciones o ponencias del solicitante' },
-    { code: 'CERT_INV',        name: 'Certificado de investigación',            kind: 'FILE', idTipoDocumento: 4,  descripcion: 'Soporte de participación o trayectoria investigativa' },
-    { code: 'CART_UNIV_OFER',  name: 'Carta universidad oferente',              kind: 'FILE', idTipoDocumento: 5,  descripcion: 'Carta emitida por la universidad oferente del programa académico' },
-    { code: 'COT_INS',         name: 'Cotización de inscripción',               kind: 'FILE', idTipoDocumento: 6,  descripcion: 'Soporte económico del valor de la inscripción' },
-    { code: 'COT_MAT',         name: 'Cotización de matrícula',                 kind: 'FILE', idTipoDocumento: 7,  descripcion: 'Soporte económico del valor de la matrícula' },
-    { code: 'COT_PAS',         name: 'Cotización de pasajes',                   kind: 'FILE', idTipoDocumento: 8,  descripcion: 'Soporte económico del valor de transporte o pasajes' },
-    { code: 'COT_BIB',         name: 'Cotización apoyo bibliográfico',          kind: 'FILE', idTipoDocumento: 9,  descripcion: 'Soporte económico para apoyo bibliográfico' },
-    { code: 'COT_MED',         name: 'Cotización servicio médico',              kind: 'FILE', idTipoDocumento: 10, descripcion: 'Soporte económico del servicio médico requerido' },
-    { code: 'COT_SEG',         name: 'Cotización seguro',                       kind: 'FILE', idTipoDocumento: 11, descripcion: 'Soporte económico correspondiente al seguro requerido' },
-    { code: 'OTRO_SOP',        name: 'Otro soporte de solicitud',               kind: 'FILE', idTipoDocumento: 12, descripcion: 'Documento adicional asociado a la fase de solicitud' },
-  ];
+  // FR-010 siempre presente como opción fija del frontend
+  private readonly FR010_OPTION: RequiredDocOption = {
+    code: 'FR010', name: 'FR-010 Formulario de solicitud inicial', kind: 'FORM', idTipoDocumento: 0, descripcion: 'Formulario FR-010'
+  };
 
-  selectedRequiredDoc: RequiredDocOption = this.requiredDocs[0];
+  // Tipos documentales: FR-010 fijo + los que vengan del CRUD
+  requiredDocs: RequiredDocOption[] = [this.FR010_OPTION];
+  cargandoTiposDoc = false;
 
-  // Tabla docs — un registro por cada tipo documental, estado PENDIENTE hasta que se cargue
-  documentos: DocumentoItem[] = this.requiredDocs.map((d, i) => ({
-    id: i + 1,
-    nombre: d.name,
-    autorSoporte: 'Docente',
-    estado: 'PENDIENTE' as EstadoDocumento,
-    checked: false,
-    code: d.code,
-    idTipoDocumento: d.idTipoDocumento,
-    descripcion: d.descripcion,
-  }));
+  selectedRequiredDoc: RequiredDocOption = this.FR010_OPTION;
+
+  // Tabla docs — se reconstruye cuando llegan los tipos del CRUD
+  documentos: DocumentoItem[] = this.buildDocumentos(this.requiredDocs);
 
   // Observaciones
   observacionDocente = 'Aquí el docente describe su solicitud... (demo)';
@@ -142,6 +113,7 @@ export class DetalleSolicitudComponent implements OnInit {
     private dialog: MatDialog,
     private popup: PopUpManager,
     private translate: TranslateService,
+    private solicitudesService: SolicitudesService,
   ) {}
 
   ngOnInit(): void {
@@ -162,6 +134,48 @@ export class DetalleSolicitudComponent implements OnInit {
     }
 
     this.selectedRequiredDoc = this.requiredDocs[0];
+
+    this.cargarTiposDocumentoCrud();
+  }
+
+  private cargarTiposDocumentoCrud(): void {
+    this.cargandoTiposDoc = true;
+    this.solicitudesService.listarTiposDocumentoSolicitud().subscribe({
+      next: (resp: any) => {
+        const data: any[] = resp?.Data || [];
+        const activos = data.filter((d: any) => d.Activo === true);
+
+        const docsCrud: RequiredDocOption[] = activos.map((d: any) => ({
+          code: (d.CodigoAbreviacion || d.Nombre) as TipoDocumentalCode,
+          name: d.Nombre,
+          kind: 'FILE' as RequiredDocKind,
+          idTipoDocumento: d.Id,
+          descripcion: d.Descripcion || d.Nombre,
+        }));
+
+        this.requiredDocs = [this.FR010_OPTION, ...docsCrud];
+        this.documentos = this.buildDocumentos(this.requiredDocs);
+        this.selectedRequiredDoc = this.requiredDocs[0];
+        this.cargandoTiposDoc = false;
+      },
+      error: () => {
+        this.cargandoTiposDoc = false;
+        this.popup.error(this.translate.instant('POPUPS.ERROR_CARGAR_TIPOS_DOC'));
+      },
+    });
+  }
+
+  private buildDocumentos(docs: RequiredDocOption[]): DocumentoItem[] {
+    return docs.map((d, i) => ({
+      id: i + 1,
+      nombre: d.name,
+      autorSoporte: 'Docente',
+      estado: 'PENDIENTE' as EstadoDocumento,
+      checked: false,
+      code: d.code,
+      idTipoDocumento: d.idTipoDocumento,
+      descripcion: d.descripcion,
+    }));
   }
 
   // ========== Helpers de UI ==========

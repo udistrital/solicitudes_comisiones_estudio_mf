@@ -1,14 +1,34 @@
 export type Role =
   | 'DOCENTE'
-  | 'COORDINACION'
-  | 'SECRETARIA_ACADEMICA'
-  | 'SECRETARIA_GENERAL'
-  | 'SUPERVISION';
+  | 'COORDINADOR'
+  | 'ADMINISTRADOR'
+  | 'ORDENADOR_GASTO'
+  | 'DECANO';
 
-export const ROLE_OPTIONS: { label: string; value: Role }[] = [
-  { label: 'ROLES.DOCENTE', value: 'DOCENTE' },
-  { label: 'ROLES.COORDINACION', value: 'COORDINACION' },
-  { label: 'ROLES.SECRETARIA_ACADEMICA', value: 'SECRETARIA_ACADEMICA' },
-  { label: 'ROLES.SECRETARIA_GENERAL', value: 'SECRETARIA_GENERAL' },
-  { label: 'ROLES.SUPERVISION', value: 'SUPERVISION' },
+/** Roles válidos del sistema de comisiones, en orden de prioridad ascendente */
+export const VALID_ROLES: Role[] = [
+  'DOCENTE',
+  'COORDINADOR',
+  'ADMINISTRADOR',
+  'ORDENADOR_GASTO',
+  'DECANO',
 ];
+
+const ROLE_PRIORITY: Record<Role, number> = {
+  DOCENTE: 1,
+  COORDINADOR: 2,
+  ADMINISTRADOR: 3,
+  ORDENADOR_GASTO: 4,
+  DECANO: 5,
+};
+
+/**
+ * Dado un array de roles del usuario (desde sesión), retorna el rol
+ * de mayor prioridad que sea válido para este módulo.
+ * Retorna null si ninguno es válido.
+ */
+export function resolverRolEfectivo(roles: string[]): Role | null {
+  const valid = roles.filter((r): r is Role => VALID_ROLES.includes(r as Role));
+  if (valid.length === 0) return null;
+  return valid.sort((a, b) => ROLE_PRIORITY[b] - ROLE_PRIORITY[a])[0];
+}

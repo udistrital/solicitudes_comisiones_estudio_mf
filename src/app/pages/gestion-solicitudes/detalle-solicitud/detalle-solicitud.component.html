@@ -13,9 +13,7 @@
             <span>{{ 'DETALLE.ROL' | translate }}: <b>{{ role }}</b></span>
             <span class="inline-flex items-center gap-1.5">
               {{ 'DETALLE.ESTADO' | translate }}:
-              <span
-                class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
-                [ngClass]="estadoClass">
+              <span class="sga-chip" [ngClass]="estadoClass">
                 {{ estadoLabel | translate }}
               </span>
             </span>
@@ -32,13 +30,13 @@
 
     <!-- ============================
          VISTA DOCENTE EDITABLE
-         (solo BORRADOR / POR_SUBSANAR)
+         (solo NO_ENV / CORR)
     ============================= -->
     <ng-container *ngIf="isDocenteEditable">
 
       <!-- Seleccion de documento + acciones -->
       <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
-        <h3 class="m-0 mb-2 text-base leading-tight font-semibold">{{ 'DETALLE.FR010_TITLE' | translate }}</h3>
+        <h3 class="m-0 mb-2 text-base leading-tight font-semibold">{{ 'DETALLE.DOCS_TITLE' | translate }}</h3>
 
         <div class="flex flex-wrap items-end gap-3">
           <!-- Select -->
@@ -72,11 +70,6 @@
               (click)="adjuntarDocumento(docFileInput)">
               {{ 'ACTIONS.ADJUNTAR_DOC' | translate }}
             </button>
-
-            <button mat-stroked-button class="h-10 px-3.5 rounded-lg border-black/20" 
-              (click)="guardarDocente()">
-              {{ 'ACTIONS.GUARDAR' | translate }}
-            </button>
           </div>
         </div>
       </mat-card>
@@ -108,8 +101,7 @@
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-estado">
                 <div class="flex justify-center">
-                  <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
-                    [ngClass]="documentoChipClass(d)">
+                  <span class="sga-chip" [ngClass]="documentoChipClass(d)">
                     {{ documentoChip(d) | translate }}
                   </span>
                 </div>
@@ -170,9 +162,11 @@
 
             <footer class="px-3 pb-3 flex justify-end gap-2 flex-wrap">
               <button mat-stroked-button class="h-9 px-3.5 rounded-lg border-black/20"
+                [disabled]="guardando"
                 (click)="guardarDocente()">{{ 'ACTIONS.GUARDAR' | translate }}</button>
               <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-                (click)="enviarDocente()">{{ 'ACTIONS.ENVIAR' | translate }}</button>
+                [disabled]="true"
+                matTooltip="{{ 'POPUPS.ENVIAR_NO_DISPONIBLE' | translate }}">{{ 'ACTIONS.ENVIAR' | translate }}</button>
             </footer>
           </section>
 
@@ -204,7 +198,7 @@
 
     <!-- ============================
          VISTA DOCENTE SOLO LECTURA
-         (cualquier estado distinto de BORRADOR/POR_SUBSANAR)
+         (cualquier estado distinto de NO_ENV/CORR)
     ============================= -->
     <ng-container *ngIf="isDocenteReadOnly">
 
@@ -240,8 +234,7 @@
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-estado">
                 <div class="flex justify-center">
-                  <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
-                    [ngClass]="documentoChipClass(d)">
+                  <span class="sga-chip" [ngClass]="documentoChipClass(d)">
                     {{ documentoChip(d) | translate }}
                   </span>
                 </div>
@@ -315,6 +308,13 @@
     ============================= -->
     <ng-container *ngIf="!isDocente">
 
+      <input
+        #reviewerFileInput
+        type="file"
+        accept=".pdf,application/pdf"
+        hidden
+        (change)="onReviewerFileSelected($event)"
+      />
       <!-- Tabla documentos (Revisor) -->
       <mat-card class="p-3 rounded-xl border border-black/10 bg-white mb-3">
         <div class="rounded-xl border-2 border-sga overflow-hidden bg-white">
@@ -328,7 +328,33 @@
                 <div class="text-center text-sga font-semibold">{{ 'TABLE.DOCUMENTO' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-nombre">
-                <span class="block text-left break-words">{{ d.nombre }}</span>
+                <ng-container *ngIf="d.esSoporteRevisor; else nombreNormal">
+                  <div class="flex flex-col gap-1">
+                    <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+                      <input
+                        matInput
+                        [ngModel]="d.nombre"
+                        (ngModelChange)="actualizarNombreSoporteRevisor(d, $event)"
+                        [placeholder]="'DETALLE.NOMBRE_SOPORTE_REVISOR' | translate"
+                        maxlength="120"
+                      />
+                    </mat-form-field>
+
+                    <div class="text-[11px]"
+                      [ngClass]="NombreSoporteRevisorValido(d) ? 'text-green-700' : 'text-red-600'">
+                      <ng-container *ngIf="!NombreSoporteRevisorValido(d)">
+                        {{ 'DETALLE.NOMBRE_MINIMO_SOPORTE' | translate:{ min: MIN_NOMBRE_SOPORTE_REVISOR } }}
+                      </ng-container>
+                      <ng-container *ngIf="NombreSoporteRevisorValido(d)">
+                        {{ 'DETALLE.NOMBRE_VALIDO_SOPORTE' | translate }}
+                      </ng-container>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <ng-template #nombreNormal>
+                  <span class="block text-left break-words">{{ d.nombre }}</span>
+                </ng-template>
               </td>
             </ng-container>
 
@@ -347,8 +373,7 @@
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-estado">
                 <div class="flex justify-center">
-                  <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
-                    [ngClass]="documentoChipClass(d)">
+                  <span class="sga-chip" [ngClass]="documentoChipClass(d)">
                     {{ documentoChip(d) | translate }}
                   </span>
                 </div>
@@ -420,7 +445,7 @@
 
             <footer class="px-3 pb-3 flex flex-wrap items-center justify-between gap-2">
               <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20 inline-flex items-center"
-                (click)="adjuntarSoporteRevisor()">
+                (click)="adjuntarSoporteRevisor(reviewerFileInput)">
                 <mat-icon class="mr-1 text-[18px]">attach_file</mat-icon>
                 {{ 'ACTIONS.ADJUNTAR_DOCS' | translate }}
               </button>
@@ -429,14 +454,15 @@
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
                   (click)="regresar()">{{ 'ACTIONS.REGRESAR' | translate }}</button>
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="rechazarSolicitud()">{{ 'ACTIONS.RECHAZAR' | translate }}</button>
+                  (click)="rechazarSolicitud()" [disabled]="!puedeContinuarRevisor">
+                 {{ 'ACTIONS.RECHAZAR' | translate }}</button>
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="retornarSolicitud()">{{ 'ACTIONS.RETORNAR' | translate }}</button>
+                  (click)="retornarSolicitud()" [disabled]="!puedeContinuarRevisor">
+                  {{ 'ACTIONS.RETORNAR' | translate }}</button>
                 <!-- Enviar solo para revisores no-supervisor -->
                 <button *ngIf="!isSupervisor" mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-                  (click)="enviarRevisor()" [disabled]="!allDocsChecked">
-                  {{ 'ACTIONS.ENVIAR' | translate }}
-                </button>
+                  (click)="enviarRevisor()" [disabled]="!allDocsChecked || !puedeContinuarRevisor">
+                  {{ 'ACTIONS.ENVIAR' | translate }}</button>
               </div>
             </footer>
 
@@ -444,7 +470,12 @@
               {{ 'DETALLE.ENVIAR_HABILITADO_MSG' | translate }}
             </div>
           </section>
-
+          <div *ngIf="haySoportesRevisorInvalidos" class="px-3 pb-1 text-xs text-red-600">
+            {{ 'DETALLE.BLOQUEO_NOMBRE_SOPORTE' | translate:{ min: MIN_NOMBRE_SOPORTE_REVISOR } }}
+          </div>
+          <div *ngIf="!haySoportesRevisorInvalidos && !isSupervisor" class="px-3 pb-1 text-xs text-black/50">
+            {{ 'DETALLE.ENVIAR_HABILITADO_MSG' | translate }}
+          </div>
         </div>
       </mat-card>
 
@@ -489,7 +520,7 @@
           <!-- Adjuntar docs -->
           <div class="mb-[22px]">
             <button mat-stroked-button class="h-10 px-3 rounded-lg border-black/20 inline-flex items-center"
-              (click)="adjuntarSoporteRevisor()">
+              (click)="adjuntarSoporteRevisor(reviewerFileInput)">
               <mat-icon class="mr-1 text-[18px]">attach_file</mat-icon>
               {{ 'ACTIONS.ADJUNTAR_DOCS' | translate }}
             </button>
@@ -499,7 +530,7 @@
           <div class="mb-[22px]">
             <button mat-flat-button color="primary" class="h-10 px-5 rounded-lg"
               (click)="darInicioComision()"
-              [disabled]="!allDocsChecked || !fechaInicioContrato">
+              [disabled]="!allDocsChecked || !fechaInicioContrato || !puedeContinuarRevisor">
               {{ 'ACTIONS.DAR_INICIO' | translate }}
             </button>
           </div>

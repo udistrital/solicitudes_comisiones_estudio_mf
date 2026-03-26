@@ -583,32 +583,54 @@ export class Fr010FormComponent implements OnInit {
     return this.translate.instant('VALIDATIONS.INVALID_FIELD');
   }
 
-  public save(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+  public isFormularioCompleto(): boolean {
+    if (this.form.invalid) return false;
 
+    const sol = this.form.getRawValue().solicitante;
+    const camposClave = [
+      'q2_facultad', 'q3_nombres_apellidos', 'q4_documento_identificacion',
+      'q6_correo', 'q7_proyecto',
+    ];
+    return camposClave.every(
+      (key) => String((sol as any)[key] ?? '').trim().length > 0,
+    );
+  }
+
+  public getFormData(): any {
     const raw = this.form.getRawValue();
+    return {
+      solicitante: {
+        ...raw.solicitante,
+        q10_fecha_ingreso_universidad: this.formatDate(raw.solicitante.q10_fecha_ingreso_universidad),
+      },
+      solicitud: {
+        ...raw.solicitud,
+        q13_tipo_estudio: raw.solicitud.q13_tipo_estudio || '',
+        q19_fecha_aceptacion: this.formatDate(raw.solicitud.q19_fecha_aceptacion),
+        q22_tipo_apoyo_requerido: raw.solicitud.q22_tipo_apoyo_requerido || [],
+        q23_fecha_inicio_estudios: this.formatDate(raw.solicitud.q23_fecha_inicio_estudios),
+        q24_fecha_culminacion_estudios: this.formatDate(raw.solicitud.q24_fecha_culminacion_estudios),
+      },
+      financiacion_colombia: raw.financiacion_colombia,
+      financiacion_exterior: raw.financiacion_exterior,
+      beca: raw.beca,
+      observaciones: raw.observaciones,
+    };
+  }
+
+  public save(): void {
+    // TODO: reactivar validación para producción
+    // if (this.form.invalid) {
+    //   this.form.markAllAsTouched();
+    //   return;
+    // }
 
     const payload = {
       meta: {
         codigo: 'GD-PR-013-FR-010',
         version: '02',
       },
-      fr010: {
-        ...raw,
-        solicitante: {
-          ...raw.solicitante,
-          q10_fecha_ingreso_universidad: this.formatDate(raw.solicitante.q10_fecha_ingreso_universidad),
-        },
-        solicitud: {
-          ...raw.solicitud,
-          q19_fecha_aceptacion: this.formatDate(raw.solicitud.q19_fecha_aceptacion),
-          q23_fecha_inicio_estudios: this.formatDate(raw.solicitud.q23_fecha_inicio_estudios),
-          q24_fecha_culminacion_estudios: this.formatDate(raw.solicitud.q24_fecha_culminacion_estudios),
-        },
-      },
+      fr010: this.getFormData(),
     };
 
     console.log('[FR-010 JSON]', payload);

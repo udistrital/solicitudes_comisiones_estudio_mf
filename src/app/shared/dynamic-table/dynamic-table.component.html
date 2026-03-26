@@ -6,7 +6,7 @@
 
     <table
       mat-table
-      [dataSource]="filteredRows"
+      [dataSource]="dataSource"
       class="w-full min-w-0 table-fixed border-separate border-spacing-0 bg-white">
 
       <!-- Columnas dinámicas -->
@@ -31,7 +31,8 @@
                 class="w-full h-10 rounded-md border border-black/30 bg-white px-3 pr-10 text-sm text-black/80
                        placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-sga/20 focus:border-sga"
                 [placeholder]="(col.filterPlaceholder || 'TABLE.FILTER_PLACEHOLDER') | translate"
-                [(ngModel)]="filters[col.key]" />
+                [(ngModel)]="filters[col.key]"
+                (ngModelChange)="onFilterChange()" />
 
               <button
                 type="button"
@@ -54,9 +55,7 @@
 
           <ng-container [ngSwitch]="col.renderAs || 'text'">
             <div *ngSwitchCase="'chip'" class="flex justify-center">
-              <span
-                class="inline-block rounded-full border border-black/10 px-2.5 py-0.5 text-xs font-medium"
-                [ngClass]="col.chipClass ? col.chipClass(row) : ''">
+              <span class="sga-chip" [ngClass]="col.chipClass ? col.chipClass(row) : ''">
                 {{ col.cell(row) | translate }}
               </span>
             </div>
@@ -75,7 +74,7 @@
           *matHeaderCellDef
           class="align-top text-center text-sga px-3 pb-4 border-b border-sga/30 col-acciones">
           <div class="pt-3"></div>
-          <div class="w-full text-center leading-snug font-semibold">{{ 'TABLE.ACCIONES' | translate }}</div>
+          <div class="w-full text-center leading-snug font-semibold">{{ 'TABLE.GESTION' | translate }}</div>
         </th>
 
         <td
@@ -126,5 +125,12 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
+
+    <!-- Paginador -->
+    <mat-paginator
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons>
+    </mat-paginator>
   </div>
 </mat-card>

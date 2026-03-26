@@ -48,15 +48,33 @@ tr.mat-mdc-row:hover {
   margin-top: 4px;
 }
 
-// --- Chips de estado de solicitud ---
-.st-borrador {
-  background-color: var(--st-borrador-bg) !important;
-  color: var(--st-borrador-text) !important;
+// --- Chip base uniforme ---
+// min-width da uniformidad a estados cortos; estados largos crecen sin cortar texto.
+.sga-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  height: 22px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
-.st-radicada {
-  background-color: var(--st-radicada-bg) !important;
-  color: var(--st-radicada-text) !important;
+// --- Chips de estado de solicitud ---
+.st-no-env {
+  background-color: var(--st-no-env-bg) !important;
+  color: var(--st-no-env-text) !important;
+}
+
+.st-rad {
+  background-color: var(--st-rad-bg) !important;
+  color: var(--st-rad-text) !important;
 }
 
 .st-revision {
@@ -64,19 +82,24 @@ tr.mat-mdc-row:hover {
   color: var(--st-revision-text) !important;
 }
 
+.st-corr {
+  background-color: var(--st-corr-bg) !important;
+  color: var(--st-corr-text) !important;
+}
+
 .st-subsanar {
   background-color: var(--st-subsanar-bg) !important;
   color: var(--st-subsanar-text) !important;
 }
 
-.st-avalada {
-  background-color: var(--st-avalada-bg) !important;
-  color: var(--st-avalada-text) !important;
+.st-aprob {
+  background-color: var(--st-aprob-bg) !important;
+  color: var(--st-aprob-text) !important;
 }
 
-.st-rechazada {
-  background-color: var(--st-rechazada-bg) !important;
-  color: var(--st-rechazada-text) !important;
+.st-no-aprob {
+  background-color: var(--st-no-aprob-bg) !important;
+  color: var(--st-no-aprob-text) !important;
 }
 
 // --- Chips de estado de documento ---
@@ -85,19 +108,24 @@ tr.mat-mdc-row:hover {
   color: var(--doc-pendiente-text) !important;
 }
 
-.doc-chip--adjunto {
-  background-color: var(--doc-adjunto-bg) !important;
-  color: var(--doc-adjunto-text) !important;
+.doc-chip--carg {
+  background-color: var(--doc-carg-bg) !important;
+  color: var(--doc-carg-text) !important;
 }
 
-.doc-chip--valido {
-  background-color: var(--doc-valido-bg) !important;
-  color: var(--doc-valido-text) !important;
+.doc-chip--aprob {
+  background-color: var(--doc-aprob-bg) !important;
+  color: var(--doc-aprob-text) !important;
 }
 
-.doc-chip--no_valido {
-  background-color: var(--doc-no-valido-bg) !important;
-  color: var(--doc-no-valido-text) !important;
+.doc-chip--corr {
+  background-color: var(--doc-corr-bg) !important;
+  color: var(--doc-corr-text) !important;
+}
+
+.doc-chip--no-aprob {
+  background-color: var(--doc-no-aprob-bg) !important;
+  color: var(--doc-no-aprob-text) !important;
 }
 
 // --- Botones de acción en tabla (nativos, no mat-icon-button) ---

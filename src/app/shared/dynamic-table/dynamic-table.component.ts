@@ -1,4 +1,6 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, ViewChild, AfterViewInit } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { ColumnDef, TableAction } from './dynamic-table.types';
 
 @Component({
@@ -6,26 +8,37 @@ import { ColumnDef, TableAction } from './dynamic-table.types';
   templateUrl: './dynamic-table.component.html',
   styleUrls: ['./dynamic-table.component.scss'],
 })
-export class DynamicTableComponent<T extends Record<string, any>> implements OnChanges {
+export class DynamicTableComponent<T extends Record<string, any>> implements OnChanges, AfterViewInit {
   @Input() rows: T[] = [];
   @Input() columns: ColumnDef<T>[] = [];
   @Input() actions: TableAction<T>[] = [];
-
-  // Activar filtros por columna
   @Input() enableColumnFilters = false;
+  @Input() pageSize = 10;
+  @Input() pageSizeOptions: number[] = [5, 10, 25, 50];
 
   @Output() actionClick = new EventEmitter<{ action: string; row: T }>();
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  dataSource = new MatTableDataSource<T>([]);
 
   // filtros por columna (key -> texto)
   filters: Record<string, string> = {};
 
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
-    // Si cambian columnas, limpia filtros que ya no existen
     if (changes['columns']) {
       const keys = new Set(this.columns.map(c => c.key));
       Object.keys(this.filters).forEach(k => {
         if (!keys.has(k)) delete this.filters[k];
       });
+    }
+
+    if (changes['rows'] || changes['columns']) {
+      this.applyFilter();
     }
   }
 
@@ -50,35 +63,42 @@ export class DynamicTableComponent<T extends Record<string, any>> implements OnC
   }
 
   isFilterable(col: ColumnDef<T>): boolean {
-    // por defecto true; si alguien pone filterable:false lo respeta
     return col.filterable !== false;
   }
 
-  // Filtra filas con base en TODOS los filtros activos
-  get filteredRows(): T[] {
-    if (!this.enableColumnFilters) return this.rows;
+  onFilterChange(): void {
+    this.applyFilter();
+  }
+
+  clearFilter(key: string): void {
+    this.filters[key] = '';
+    this.applyFilter();
+  }
+
+  private applyFilter(): void {
+    if (!this.enableColumnFilters) {
+      this.dataSource.data = this.rows;
+      return;
+    }
 
     const active = Object.entries(this.filters)
       .map(([k, v]) => [k, (v ?? '').trim().toLowerCase()] as const)
       .filter(([, v]) => v.length > 0);
 
-    if (active.length === 0) return this.rows;
+    if (active.length === 0) {
+      this.dataSource.data = this.rows;
+      return;
+    }
 
-    // solo columnas que existan
     const colMap = new Map(this.columns.map(c => [c.key, c]));
 
-    return this.rows.filter(row => {
+    this.dataSource.data = this.rows.filter(row => {
       return active.every(([key, value]) => {
         const col = colMap.get(key);
         if (!col) return true;
-
         const cellText = (col.cell(row) ?? '').toString().toLowerCase();
         return cellText.includes(value);
       });
     });
-  }
-
-  clearFilter(key: string) {
-    this.filters[key] = '';
   }
 }

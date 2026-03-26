@@ -1,41 +1,76 @@
 <section class="w-full">
   <div class="max-w-[1280px] mx-auto p-4">
 
-    <!-- Header -->
-    <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-4 border-l-[6px] border-l-sga">
-      <div class="flex flex-wrap items-center gap-4">
-        <div class="flex-1 min-w-[280px]">
-          <h2 class="m-0 text-[22px] leading-tight font-semibold">{{ title | translate }}</h2>
-          <p class="mt-1 mb-0 text-black/70">
-            {{ 'BANDEJA.SUBTITLE' | translate }}
-          </p>
-        </div>
+    <!-- Sin rol válido -->
+    <ng-container *ngIf="!selectedRole">
+      <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-4 border-l-[6px] border-l-sga">
+        <h2 class="m-0 text-[22px] leading-tight font-semibold">{{ 'BANDEJA.TITLE_SIN_ROL' | translate }}</h2>
+        <p class="mt-2 mb-0 text-black/70">{{ 'BANDEJA.SIN_ROL_MSG' | translate }}</p>
+      </mat-card>
+    </ng-container>
 
-        <!-- Selector de rol -->
-        <div class="flex items-center justify-end min-w-[320px]">
-          <div class="w-full max-w-[360px]">
-            <div class="text-xs text-black/60 mb-1">{{ 'BANDEJA.ROLE_LABEL' | translate }}</div>
+    <!-- Con rol válido -->
+    <ng-container *ngIf="selectedRole">
 
-            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-role">
-              <mat-select [value]="selectedRole" (selectionChange)="onRoleChange($event.value)">
-                <mat-option *ngFor="let r of roleOptions" [value]="r.value">
-                  {{ r.label | translate }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+      <!-- Header -->
+      <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-4 border-l-[6px] border-l-sga">
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex-1 min-w-[280px]">
+            <h2 class="m-0 text-[22px] leading-tight font-semibold">{{ title | translate }}</h2>
+            <p class="mt-1 mb-0 text-black/70">
+              {{ 'BANDEJA.SUBTITLE' | translate }}
+            </p>
+          </div>
+
+          <!-- Crear solicitud (solo DOCENTE, reemplaza el selector de rol) -->
+          <div *ngIf="isDocente" class="flex items-center justify-end">
+            <button mat-flat-button color="primary" class="h-9 px-4 rounded-lg inline-flex items-center"
+              (click)="crearSolicitud()">
+              <mat-icon class="mr-1 text-[18px]">add</mat-icon>
+              {{ 'ACTIONS.CREAR_SOLICITUD' | translate }}
+            </button>
           </div>
         </div>
-      </div>
-    </mat-card>
+      </mat-card>
 
-    <!-- Tabla -->
-    <app-dynamic-table
-      [rows]="rows"
-      [columns]="columnDefs"
-      [actions]="actions"
-      [enableColumnFilters]="selectedRole !== 'DOCENTE'"
-      (actionClick)="onAction($event.action, $event.row)">
-    </app-dynamic-table>
+      <!-- Loading -->
+      <div *ngIf="cargando" class="text-center py-8 text-black/60">
+        <p>{{ 'BANDEJA.CARGANDO' | translate }}</p>
+      </div>
+
+      <!-- Sin integración (ORDENADOR_GASTO / DECANO) -->
+      <mat-card *ngIf="sinIntegracion" class="bg-white border border-black/10 rounded-xl px-4 py-6 text-center">
+        <mat-icon class="text-[48px] text-black/30 mb-2">engineering</mat-icon>
+        <p class="text-black/70 m-0">{{ 'BANDEJA.SIN_INTEGRACION' | translate }}</p>
+      </mat-card>
+
+      <!-- Error de carga -->
+      <mat-card *ngIf="errorCarga && !cargando" class="bg-white border border-black/10 rounded-xl px-4 py-6 text-center">
+        <mat-icon class="text-[48px] text-red-400 mb-2">error_outline</mat-icon>
+        <p class="text-black/70 m-0">{{ 'BANDEJA.ERROR_CARGAR' | translate }}</p>
+      </mat-card>
+
+      <!-- Tabla (solo si hay endpoint, no está cargando y no hay error) -->
+      <ng-container *ngIf="tieneEndpoint && !cargando && !errorCarga">
+        <!-- Sin resultados -->
+        <mat-card *ngIf="rows.length === 0" class="bg-white border border-black/10 rounded-xl px-4 py-6 text-center">
+          <mat-icon class="text-[48px] text-black/30 mb-2">inbox</mat-icon>
+          <p class="text-black/70 m-0">
+            {{ (isDocente ? 'BANDEJA.SIN_SOLICITUDES_DOCENTE' : 'BANDEJA.SIN_SOLICITUDES_REVISOR') | translate }}
+          </p>
+        </mat-card>
+
+        <!-- Tabla con datos -->
+        <app-dynamic-table *ngIf="rows.length > 0"
+          [rows]="rows"
+          [columns]="columnDefs"
+          [actions]="actions"
+          [enableColumnFilters]="!isDocente"
+          (actionClick)="onAction($event.action, $event.row)">
+        </app-dynamic-table>
+      </ng-container>
+
+    </ng-container>
 
   </div>
 </section>

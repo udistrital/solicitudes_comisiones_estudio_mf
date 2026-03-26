@@ -1,7 +1,9 @@
+import { EstadoDocumento } from './estados.model';
+
 export interface DocumentoItem {
   id: number;
   nombre: string;
-  estado: 'PENDIENTE' | 'ADJUNTO' | 'VALIDADO' | 'RECHAZADO';
+  estado: EstadoDocumento;
   checked?: boolean;
   autorSoporte?: string;
 

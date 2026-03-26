@@ -12,26 +12,42 @@
   --sga-primary-040: rgba(var(--sga-primary-rgb), 0.04);
 
   // --- Estados de solicitud ---
-  --st-borrador-bg: #e0e0e0;
-  --st-borrador-text: #424242;
-  --st-radicada-bg: #bbdefb;
-  --st-radicada-text: #0d47a1;
+  // Gris: no enviada
+  --st-no-env-bg: #e0e0e0;
+  --st-no-env-text: #424242;
+  // Azul: radicada
+  --st-rad-bg: #bbdefb;
+  --st-rad-text: #0d47a1;
+  // Amarillo: en revisión/gestión
   --st-revision-bg: #fff9c4;
   --st-revision-text: #f57f17;
+  // Naranja: por corregir
+  --st-corr-bg: #ffe0b2;
+  --st-corr-text: #e65100;
+  // Naranja: subsanación (mismo tono)
   --st-subsanar-bg: #ffe0b2;
   --st-subsanar-text: #e65100;
-  --st-avalada-bg: #c8e6c9;
-  --st-avalada-text: #1b5e20;
-  --st-rechazada-bg: #ffcdd2;
-  --st-rechazada-text: #b71c1c;
+  // Verde: aprobada
+  --st-aprob-bg: #c8e6c9;
+  --st-aprob-text: #1b5e20;
+  // Rojo: no aprobada
+  --st-no-aprob-bg: #ffcdd2;
+  --st-no-aprob-text: #b71c1c;
 
   // --- Estados de documento ---
+  // Gris: pendiente (no cargado)
   --doc-pendiente-bg: #e0e0e0;
   --doc-pendiente-text: #424242;
-  --doc-adjunto-bg: #bbdefb;
-  --doc-adjunto-text: #0d47a1;
-  --doc-valido-bg: #c8e6c9;
-  --doc-valido-text: #1b5e20;
-  --doc-no-valido-bg: #ffcdd2;
-  --doc-no-valido-text: #b71c1c;
+  // Azul: cargado / enviado para revisión
+  --doc-carg-bg: #bbdefb;
+  --doc-carg-text: #0d47a1;
+  // Verde: aprobado
+  --doc-aprob-bg: #c8e6c9;
+  --doc-aprob-text: #1b5e20;
+  // Naranja: por corregir / subsanado
+  --doc-corr-bg: #ffe0b2;
+  --doc-corr-text: #e65100;
+  // Rojo: no aprobado / anulado
+  --doc-no-aprob-bg: #ffcdd2;
+  --doc-no-aprob-text: #b71c1c;
 }

@@ -13,6 +13,21 @@ export function getDocumento(): string | null {
   }
 }
 
+export function getRolesUsuario(): string[] {
+  try {
+    const raw = localStorage.getItem('user');
+    if (!raw) return [];
+    const parsed = JSON.parse(atob(raw));
+    const roles = parsed?.userService?.role
+      || parsed?.user?.role
+      || parsed?.role
+      || [];
+    return Array.isArray(roles) ? roles : (typeof roles === 'string' ? [roles] : []);
+  } catch {
+    return [];
+  }
+}
+
 export function getCorreoSesion(): string | null {
   try {
     const raw = localStorage.getItem('user');

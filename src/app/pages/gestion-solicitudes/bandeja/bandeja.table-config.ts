@@ -5,51 +5,50 @@ import { estadoSolicitudClass } from '../../../utils/estado-solicitud.util';
 
 export type BandejaActionKey = 'EDITAR' | 'ELIMINAR' | 'ENVIAR' | 'VER' | 'GESTIONAR';
 
+// Columnas comunes reutilizables
+const COL_ID: ColumnDef<SolicitudRow> = {
+  key: 'id', header: 'TABLE.ID_SOLICITUD', cell: (r) => String(r.id),
+};
+const COL_FECHA: ColumnDef<SolicitudRow> = {
+  key: 'fecha', header: 'TABLE.FECHA_SOLICITUD', cell: (r) => r.fecha,
+};
+const COL_ESTADO: ColumnDef<SolicitudRow> = {
+  key: 'estado', header: 'TABLE.ESTADO_SOLICITUD',
+  cell: (r) => `ESTADOS.${r.estado}`,
+  renderAs: 'chip',
+  chipClass: (r) => estadoSolicitudClass(r.estado),
+};
+const COL_DOCENTE: ColumnDef<SolicitudRow> = {
+  key: 'docente', header: 'TABLE.NOMBRE_DOCENTE', cell: (r) => r.docente,
+};
+const COL_ID_DOCENTE: ColumnDef<SolicitudRow> = {
+  key: 'idDocente', header: 'TABLE.ID_DOCENTE', cell: (r) => r.idDocente,
+};
+
+// Columnas para roles no-docente (todos comparten la misma estructura)
+const COLUMNS_REVIEWER: ColumnDef<SolicitudRow>[] = [
+  COL_ID, COL_FECHA, COL_DOCENTE, COL_ID_DOCENTE, COL_ESTADO,
+];
+
 export const ROLE_TABLE_CONFIGS: Record<Role, { title: string; columns: ColumnDef<SolicitudRow>[] }> = {
   DOCENTE: {
     title: 'BANDEJA.TITLE_DOCENTE',
-    columns: [
-      { key: 'radicado', header: 'TABLE.RADICADO', cell: (r) => r.radicado },
-      { key: 'estado', header: 'TABLE.ESTADO', cell: (r) => `ESTADOS.${r.estado}`, renderAs: 'chip', chipClass: (r) => estadoSolicitudClass(r.estado) },
-      { key: 'fecha', header: 'TABLE.FECHA', cell: (r) => r.fecha },
-    ],
+    columns: [COL_ID, COL_FECHA, COL_ESTADO],
   },
-  COORDINACION: {
-    title: 'BANDEJA.TITLE_COORDINACION',
-    columns: [
-      { key: 'radicado', header: 'TABLE.RADICADO', cell: (r) => r.radicado },
-      { key: 'docente', header: 'TABLE.DOCENTE', cell: (r) => r.docente },
-      { key: 'proyecto', header: 'TABLE.PROYECTO', cell: (r) => r.proyecto },
-      { key: 'estado', header: 'TABLE.ESTADO', cell: (r) => `ESTADOS.${r.estado}`, renderAs: 'chip', chipClass: (r) => estadoSolicitudClass(r.estado) },
-      { key: 'fecha', header: 'TABLE.FECHA', cell: (r) => r.fecha },
-    ],
+  COORDINADOR: {
+    title: 'BANDEJA.TITLE_COORDINADOR',
+    columns: COLUMNS_REVIEWER,
   },
-  SECRETARIA_ACADEMICA: {
-    title: 'BANDEJA.TITLE_SECRETARIA_ACADEMICA',
-    columns: [
-      { key: 'radicado', header: 'TABLE.RADICADO', cell: (r) => r.radicado },
-      { key: 'docente', header: 'TABLE.DOCENTE', cell: (r) => r.docente },
-      { key: 'estado', header: 'TABLE.ESTADO', cell: (r) => `ESTADOS.${r.estado}`, renderAs: 'chip', chipClass: (r) => estadoSolicitudClass(r.estado) },
-      { key: 'fecha', header: 'TABLE.FECHA', cell: (r) => r.fecha },
-    ],
+  ADMINISTRADOR: {
+    title: 'BANDEJA.TITLE_ADMINISTRADOR',
+    columns: COLUMNS_REVIEWER,
   },
-  SECRETARIA_GENERAL: {
-    title: 'BANDEJA.TITLE_SECRETARIA_GENERAL',
-    columns: [
-      { key: 'radicado', header: 'TABLE.RADICADO', cell: (r) => r.radicado },
-      { key: 'docente', header: 'TABLE.DOCENTE', cell: (r) => r.docente },
-      { key: 'estado', header: 'TABLE.ESTADO', cell: (r) => `ESTADOS.${r.estado}`, renderAs: 'chip', chipClass: (r) => estadoSolicitudClass(r.estado) },
-      { key: 'fecha', header: 'TABLE.FECHA', cell: (r) => r.fecha },
-    ],
+  ORDENADOR_GASTO: {
+    title: 'BANDEJA.TITLE_ORDENADOR_GASTO',
+    columns: COLUMNS_REVIEWER,
   },
-  SUPERVISION: {
-    title: 'BANDEJA.TITLE_SUPERVISION',
-    columns: [
-      { key: 'radicado', header: 'TABLE.RADICADO', cell: (r) => r.radicado },
-      { key: 'docente', header: 'TABLE.DOCENTE', cell: (r) => r.docente },
-      { key: 'proyecto', header: 'TABLE.PROYECTO', cell: (r) => r.proyecto },
-      { key: 'estado', header: 'TABLE.ESTADO', cell: (r) => `ESTADOS.${r.estado}`, renderAs: 'chip', chipClass: (r) => estadoSolicitudClass(r.estado) },
-      { key: 'fecha', header: 'TABLE.FECHA', cell: (r) => r.fecha },
-    ],
+  DECANO: {
+    title: 'BANDEJA.TITLE_DECANO',
+    columns: COLUMNS_REVIEWER,
   },
 };

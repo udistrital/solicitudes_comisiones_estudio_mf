@@ -28,11 +28,16 @@
       </div>
     </mat-card>
 
+    <!-- Cargando detalle -->
+    <div *ngIf="cargandoDetalle" class="text-center py-8 text-black/60">
+      <p>{{ 'DETALLE.CARGANDO_DETALLE' | translate }}</p>
+    </div>
+
     <!-- ============================
          VISTA DOCENTE EDITABLE
          (solo NO_ENV / CORR)
     ============================= -->
-    <ng-container *ngIf="isDocenteEditable">
+    <ng-container *ngIf="isDocenteEditable && !cargandoDetalle">
 
       <!-- Seleccion de documento + acciones -->
       <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
@@ -75,7 +80,9 @@
       </mat-card>
 
       <!-- FR-010 DIGITAL -->
-      <app-fr010-form *ngIf="isFR010Selected()" (saved)="onFr010Saved($event)">
+      <app-fr010-form *ngIf="isFR010Selected()"
+        [datosIniciales]="formularioRecuperado"
+        (saved)="onFr010Saved($event)">
       </app-fr010-form>
 
       <!-- Tabla de documentos (Docente editable) -->
@@ -200,7 +207,7 @@
          VISTA DOCENTE SOLO LECTURA
          (cualquier estado distinto de NO_ENV/CORR)
     ============================= -->
-    <ng-container *ngIf="isDocenteReadOnly">
+    <ng-container *ngIf="isDocenteReadOnly && !cargandoDetalle">
 
       <!-- Tabla de documentos (solo lectura, sin eliminar) -->
       <mat-card class="p-3 rounded-xl border border-black/10 bg-white mb-3">
@@ -306,7 +313,7 @@
     <!-- ============================
          VISTA REVISOR (no docente)
     ============================= -->
-    <ng-container *ngIf="!isDocente">
+    <ng-container *ngIf="!isDocente && !cargandoDetalle">
 
       <input
         #reviewerFileInput

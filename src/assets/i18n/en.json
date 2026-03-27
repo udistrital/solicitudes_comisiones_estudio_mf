@@ -97,7 +97,8 @@
     "NOMBRE_SOPORTE_REVISOR": "Enter a descriptive name for the document",
     "NOMBRE_MINIMO_SOPORTE": "Name must have at least 12 characters.",
     "NOMBRE_VALIDO_SOPORTE": "Valid name.",
-    "BLOQUEO_NOMBRE_SOPORTE": "Each reviewer support must have a descriptive name of at least 12 characters."
+    "BLOQUEO_NOMBRE_SOPORTE": "Each reviewer support must have a descriptive name of at least 12 characters.",
+    "CARGANDO_DETALLE": "Loading request details..."
   },
   "SUPERVISOR": {
     "TITLE": "Commission execution start",
@@ -322,6 +323,7 @@
     "ERROR_GUARDAR": "Could not save the request. Please try again.",
     "ERROR_ENVIAR": "Could not submit the request. Please try again.",
     "ERROR_CARGAR_TIPOS_DOC": "Could not load document types. Only the FR-010 form will be available.",
+    "ERROR_CARGAR_DETALLE": "Could not load request details.",
     "ERROR_SIN_IDENTIFICACION": "Could not retrieve the teacher's identification from the session.",
     "ENVIAR_NO_DISPONIBLE": "Submitting requests is not yet available."
   },

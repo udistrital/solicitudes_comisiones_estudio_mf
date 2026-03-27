@@ -71,8 +71,12 @@ export class DetalleSolicitudComponent implements OnInit {
   proyecto = '';
 
   isCreating = false;
+  cargandoDetalle = false;
   identificacionDocente = 0;
   guardando = false;
+
+  /** Datos del formulario FR-010 recuperados del backend (para pasar al componente hijo) */
+  formularioRecuperado: any = null;
 
   // Supervisor: fecha inicio contrato
   fechaInicioContrato: Date | null = null;
@@ -134,16 +138,7 @@ export class DetalleSolicitudComponent implements OnInit {
       this.observacionesSubsanacion = [];
     } else {
       this.id = Number(rawId);
-
-      // si es revisor (no docente), simula que ya está en revisión
-      if (this.role !== 'DOCENTE') {
-        this.estadoSolicitud = 'REV_PROY';
-      }
-
-      // Docente VER → muestra estado real de la solicitud (demo: APROB_EJEC)
-      if (this.role === 'DOCENTE' && this.mode === 'VER') {
-        this.estadoSolicitud = 'APROB_EJEC';
-      }
+      this.cargarDetalleSolicitud(this.id);
     }
 
     this.selectedRequiredDoc = this.requiredDocs[0];
@@ -176,6 +171,73 @@ export class DetalleSolicitudComponent implements OnInit {
         this.popup.error(this.translate.instant('POPUPS.ERROR_CARGAR_TIPOS_DOC'));
       },
     });
+  }
+
+  // ========== Carga de detalle de solicitud existente ==========
+
+  private cargarDetalleSolicitud(id: number): void {
+    this.cargandoDetalle = true;
+
+    this.solicitudesService.obtenerDetalleSolicitud(id).subscribe({
+      next: (resp: any) => {
+        const data = resp?.Data;
+        if (!data) {
+          this.cargandoDetalle = false;
+          this.popup.error(this.translate.instant('POPUPS.ERROR_CARGAR_DETALLE'));
+          return;
+        }
+        this.poblarDesdeDetalle(data);
+        this.cargandoDetalle = false;
+      },
+      error: () => {
+        this.cargandoDetalle = false;
+        this.popup.error(this.translate.instant('POPUPS.ERROR_CARGAR_DETALLE'));
+      },
+    });
+  }
+
+  private poblarDesdeDetalle(data: any): void {
+    // --- Solicitud ---
+    const sol = data.Solicitud || {};
+    this.id = sol.Id || this.id;
+    this.radicado = sol.Id ? `SOL-${sol.Id}` : '';
+    this.identificacionDocente = sol.TerceroId || this.identificacionDocente;
+
+    // ObservacionCierre como observación del docente si existe
+    if (sol.ObservacionCierre) {
+      this.observacionDocente = sol.ObservacionCierre;
+    }
+
+    // --- Estado ---
+    const estado = data.EstadoSolicitud || {};
+    if (estado.CodigoAbreviacion) {
+      this.estadoSolicitud = estado.CodigoAbreviacion as EstadoSolicitud;
+    }
+
+    // --- Formulario (viene como string JSON) ---
+    if (data.Formulario && typeof data.Formulario === 'string') {
+      try {
+        const parsed = JSON.parse(data.Formulario);
+        this.formularioRecuperado = parsed;
+
+        // Guardar como fr010Json para que construirPayloadCrearSolicitud() lo use
+        this.fr010Json = {
+          meta: { codigo: 'GD-PR-013-FR-010', version: '02' },
+          fr010: parsed,
+        };
+
+        console.log('[detalle] Formulario parseado:', parsed);
+      } catch (e) {
+        console.error('[detalle] Error parseando Formulario:', e);
+      }
+    }
+
+    // --- Documentos ---
+    // Hoy puede venir null — se mantiene la lista de requiredDocs con estado PENDIENTE
+    if (data.Documentos && Array.isArray(data.Documentos)) {
+      // Futuro: poblar documentos reales desde backend
+      console.log('[detalle] Documentos recibidos:', data.Documentos);
+    }
   }
 
   private buildDocumentos(docs: RequiredDocOption[]): DocumentoItem[] {

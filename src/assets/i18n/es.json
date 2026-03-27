@@ -96,7 +96,8 @@
     "NOMBRE_SOPORTE_REVISOR": "Escriba un nombre descriptivo del documento",
     "NOMBRE_MINIMO_SOPORTE": "El nombre debe tener al menos 12 caracteres.",
     "NOMBRE_VALIDO_SOPORTE": "Nombre válido.",
-    "BLOQUEO_NOMBRE_SOPORTE": "Debe asignar a cada soporte del revisor un nombre descriptivo de mínimo 12 caracteres."
+    "BLOQUEO_NOMBRE_SOPORTE": "Debe asignar a cada soporte del revisor un nombre descriptivo de mínimo 12 caracteres.",
+    "CARGANDO_DETALLE": "Cargando detalle de la solicitud..."
   },
   "SUPERVISOR": {
     "TITLE": "Inicio de ejecucion de la comision",
@@ -321,6 +322,7 @@
     "ERROR_GUARDAR": "No fue posible guardar la solicitud. Intente de nuevo.",
     "ERROR_ENVIAR": "No fue posible enviar la solicitud. Intente de nuevo.",
     "ERROR_CARGAR_TIPOS_DOC": "No fue posible cargar los tipos de documento. Solo el formulario FR-010 estara disponible.",
+    "ERROR_CARGAR_DETALLE": "No fue posible cargar el detalle de la solicitud.",
     "ERROR_SIN_IDENTIFICACION": "No se pudo obtener la identificacion del docente desde la sesion.",
     "ENVIAR_NO_DISPONIBLE": "El envio de solicitudes aun no esta habilitado."
   },

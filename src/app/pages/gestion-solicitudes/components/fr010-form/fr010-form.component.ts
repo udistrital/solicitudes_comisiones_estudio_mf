@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -19,6 +19,9 @@ import { PopUpManager } from 'src/app/managers/popup.manager';
   styleUrls: ['./fr010-form.component.scss'],
 })
 export class Fr010FormComponent implements OnInit {
+  /** Datos existentes del formulario (modo edición). Si se pasa, no consulta el servicio de docente. */
+  @Input() datosIniciales: any = null;
+
   @Output() saved = new EventEmitter<any>();
 
   form!: FormGroup;
@@ -175,7 +178,57 @@ export class Fr010FormComponent implements OnInit {
     });
 
     this.configureConditionalValidators();
-    this.loadDocenteInfo();
+
+    if (this.datosIniciales) {
+      this.patchFromExisting(this.datosIniciales);
+    } else {
+      this.loadDocenteInfo();
+    }
+  }
+
+  /**
+   * Rellena el formulario desde datos ya persistidos en el backend.
+   * Habilita todos los campos editables (solicitante excepto q1_fecha).
+   */
+  public patchFromExisting(data: any): void {
+    if (data.solicitante) {
+      const sol = this.form.get('solicitante') as FormGroup;
+      // Habilitar todos excepto q1_fecha antes de patchear
+      Object.keys(sol.controls).forEach((key) => {
+        if (key !== 'q1_fecha') sol.get(key)?.enable();
+      });
+      sol.patchValue(data.solicitante);
+    }
+
+    if (data.solicitud) {
+      const solicitud = this.form.get('solicitud') as FormGroup;
+      // Para fechas que vienen como string, convertir a Date si es necesario
+      const patched = { ...data.solicitud };
+      ['q19_fecha_aceptacion', 'q23_fecha_inicio_estudios', 'q24_fecha_culminacion_estudios'].forEach((key) => {
+        if (patched[key] && typeof patched[key] === 'string' && patched[key].trim()) {
+          patched[key] = new Date(patched[key]);
+        }
+      });
+      solicitud.patchValue(patched);
+    }
+
+    if (data.financiacion_colombia) {
+      this.form.get('financiacion_colombia')?.patchValue(data.financiacion_colombia);
+    }
+
+    if (data.financiacion_exterior) {
+      this.form.get('financiacion_exterior')?.patchValue(data.financiacion_exterior);
+    }
+
+    if (data.beca) {
+      this.form.get('beca')?.patchValue(data.beca);
+    }
+
+    if (data.observaciones) {
+      this.form.get('observaciones')?.patchValue(data.observaciones);
+    }
+
+    this.loadingSolicitante = false;
   }
 
   // ── Carga de datos del docente ─────────────────────────────────────

@@ -13,8 +13,8 @@ export class SolicitudesService {
     this.apiCrud = this.request.client('COMISIONES_CRUD_SERVICE');
   }
 
-  obtenerDetalle(id: number) {
-    return this.api.get<any>(`/solicitudes/${id}`);
+  obtenerDetalleSolicitud(id: number) {
+    return this.apiMid.get<any>(`v1/solicitud/detalles_solicitud/${id}`);
   }
 
   crearSolicitud(payload: any) {

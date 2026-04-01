@@ -13,6 +13,8 @@ import { Fr010FormComponent } from '../components/fr010-form/fr010-form.componen
 import { SolicitudesService } from '../../../services/solicitudes.service';
 import { getDocumento } from '../../../utils/auth.util';
 
+type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
+
 // Códigos de tipo documental — FR010 y SOPORTE_REVISOR son fijos del frontend,
 // el resto viene dinámicamente del CRUD (tipo_documento_solicitud)
 type TipoDocumentalCode = 'FR010' | 'SOPORTE_REVISOR' | string;
@@ -74,6 +76,7 @@ export class DetalleSolicitudComponent implements OnInit {
   cargandoDetalle = false;
   identificacionDocente = 0;
   guardando = false;
+  cambiandoEstado = false;
 
   /** Datos del formulario FR-010 recuperados del backend (para pasar al componente hijo) */
   formularioRecuperado: any = null;
@@ -307,6 +310,10 @@ export class DetalleSolicitudComponent implements OnInit {
     return !this.haySoportesRevisorInvalidos;
   }
 
+  get puedeEnviarDocente(): boolean {
+    return !!this.id && !!this.fr010Json && !!this.identificacionDocente && !this.cambiandoEstado;
+  }
+
 
   documentoChipClass(d: DocumentoItem): string {
     return estadoDocumentoClass(d.estado);
@@ -352,7 +359,15 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   enviarDocente(): void {
-    // Endpoint de envío no disponible aún — botón deshabilitado en HTML
+    this.popup.confirm(
+      this.translate.instant('POPUPS.CONFIRMAR_ENVIO'),
+      this.translate.instant('ACTIONS.ENVIAR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.ejecutarCambioEstado('ENVIAR', this.observacionDocente, 'POPUPS.SOLICITUD_ENVIADA_OK');
+      }
+    });
   }
 
   adjuntarDocumento(fileInput: HTMLInputElement): void {
@@ -506,6 +521,87 @@ export class DetalleSolicitudComponent implements OnInit {
     return this.TIPO_ESTUDIO_MAP[q13];
   }
 
+  // ========== Cambio de estado — mapeos y payload ==========
+
+  private readonly ESTADO_ENVIAR: Record<Role, EstadoSolicitud> = {
+    DOCENTE: 'REV_PROY',
+    COORDINADOR: 'REV_SEC_ACAD',
+    ADMINISTRADOR: 'REV_SEC_GRAL',
+    ORDENADOR_GASTO: 'REV_DEC',
+    DECANO: 'APROB_EJEC',
+  };
+
+  private readonly ESTADO_RETORNAR: Partial<Record<Role, EstadoSolicitud>> = {
+    COORDINADOR: 'SUBS_PROY',
+    ADMINISTRADOR: 'SUBS_SEC_ACAD',
+    ORDENADOR_GASTO: 'SUBS_SEC_GRAL',
+    DECANO: 'SUBS_DEC',
+  };
+
+  private readonly ROL_USUARIO_MAP: Record<Role, string> = {
+    DOCENTE: 'DOCENTE',
+    COORDINADOR: 'COORDINADOR',
+    ADMINISTRADOR: 'ADMINISTRADOR',
+    ORDENADOR_GASTO: 'ORDENADOR_GASTO',
+    DECANO: 'DECANATURA',
+  };
+
+  private resolverNuevoEstado(accion: AccionEstado): EstadoSolicitud | null {
+    switch (accion) {
+      case 'ENVIAR':
+      case 'DAR_INICIO':
+        return this.ESTADO_ENVIAR[this.role];
+      case 'RETORNAR':
+        return this.ESTADO_RETORNAR[this.role] ?? null;
+      case 'RECHAZAR':
+        return 'NO_APROB';
+      default:
+        return null;
+    }
+  }
+
+  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): any {
+    const documentosRevisor = this.documentos
+      .filter((d) => d.esSoporteRevisor && d.base64)
+      .map((d) => ({
+        IdTipoDocumento: 193,
+        TipoDocumento: 'OTRO_SOP',
+        EstadoDocumento: 'CARG',
+        NombreArchivo: d.fileName || d.nombre,
+        Metadatos: {},
+        File: d.base64,
+      }));
+
+    return {
+      SolicitudId: this.id,
+      NuevoEstado: nuevoEstado,
+      RolUsuario: this.ROL_USUARIO_MAP[this.role],
+      NumeroIdentificacion: getDocumento() || '',
+      Observacion: observacion?.trim() || '',
+      Documentos: documentosRevisor,
+    };
+  }
+
+  private ejecutarCambioEstado(accion: AccionEstado, observacion: string, mensajeExito: string): void {
+    const nuevoEstado = this.resolverNuevoEstado(accion);
+    if (!nuevoEstado) return;
+
+    const payload = this.construirPayloadCambioEstado(nuevoEstado, observacion);
+
+    this.cambiandoEstado = true;
+    this.solicitudesService.cambiarEstadoSolicitud(payload).subscribe({
+      next: () => {
+        this.cambiandoEstado = false;
+        this.popup.alertSuccess(this.translate.instant(mensajeExito));
+        this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+      },
+      error: () => {
+        this.cambiandoEstado = false;
+        this.popup.error(this.translate.instant('POPUPS.ERROR_CAMBIAR_ESTADO'));
+      },
+    });
+  }
+
   // ========== Construcción del payload para el MID ==========
   construirPayloadCrearSolicitud(): any {
     // Validar identificación
@@ -636,16 +732,7 @@ actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
-        this.estadoSolicitud = 'CORR';
-        if (this.observacionRevision.trim()) {
-          this.observacionesSubsanacion.push({
-            fecha: new Date().toISOString().slice(0, 16).replace('T', ' '),
-            autor: this.role,
-            texto: this.observacionRevision.trim(),
-          });
-          this.observacionRevision = '';
-        }
-        this.popup.alertError(this.translate.instant('POPUPS.SOLICITUD_RETORNADA'));
+        this.ejecutarCambioEstado('RETORNAR', this.observacionRevision, 'POPUPS.SOLICITUD_RETORNADA_OK');
       }
     });
   }
@@ -657,16 +744,7 @@ actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
-        this.estadoSolicitud = 'NO_APROB';
-        if (this.observacionRevision.trim()) {
-          this.observacionesSubsanacion.push({
-            fecha: new Date().toISOString().slice(0, 16).replace('T', ' '),
-            autor: this.role,
-            texto: `[RECHAZO] ${this.observacionRevision.trim()}`,
-          });
-          this.observacionRevision = '';
-        }
-        this.popup.alertError(this.translate.instant('POPUPS.SOLICITUD_NO_APROBADA'));
+        this.ejecutarCambioEstado('RECHAZAR', this.observacionRevision, 'POPUPS.SOLICITUD_RECHAZADA_OK');
       }
     });
   }
@@ -683,9 +761,7 @@ actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
-        this.estadoSolicitud = 'APROB_EJEC';
-        this.popup.alertSuccess(this.translate.instant('POPUPS.DOCS_AVALADOS'));
-        this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+        this.ejecutarCambioEstado('ENVIAR', this.observacionRevision, 'POPUPS.SOLICITUD_AVALADA_OK');
       }
     });
   }
@@ -703,8 +779,13 @@ actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
-        this.popup.alertSuccess(this.translate.instant('POPUPS.INICIO_REGISTRADO'));
-        this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+        const fechaStr = this.fechaInicioContrato!.toISOString().slice(0, 10);
+        const tipoLabel = this.tipoFechaSupervisor === 'INICIO' ? 'Fecha inicio contrato' : 'Fecha fin prórroga';
+        const obs = this.observacionRevision?.trim()
+          ? `${this.observacionRevision.trim()} | ${tipoLabel}: ${fechaStr}`
+          : `${tipoLabel}: ${fechaStr}`;
+
+        this.ejecutarCambioEstado('DAR_INICIO', obs, 'POPUPS.INICIO_REGISTRADO_OK');
       }
     });
   }

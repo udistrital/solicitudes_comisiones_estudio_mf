@@ -38,4 +38,8 @@ export class SolicitudesService {
   listarPendientesSecretaria(cedula: string) {
     return this.apiMid.get<any>(`v1/solicitud/pendientes_secretaria/${cedula}`);
   }
+
+  cambiarEstadoSolicitud(payload: any) {
+    return this.apiMid.post<any>('v1/solicitud/estados', payload);
+  }
 }

@@ -325,7 +325,13 @@
     "ERROR_CARGAR_TIPOS_DOC": "Could not load document types. Only the FR-010 form will be available.",
     "ERROR_CARGAR_DETALLE": "Could not load request details.",
     "ERROR_SIN_IDENTIFICACION": "Could not retrieve the teacher's identification from the session.",
-    "ENVIAR_NO_DISPONIBLE": "Submitting requests is not yet available."
+    "ENVIAR_NO_DISPONIBLE": "Submitting requests is not yet available.",
+    "ERROR_CAMBIAR_ESTADO": "Could not update request status. Please try again.",
+    "SOLICITUD_ENVIADA_OK": "Request submitted successfully.",
+    "SOLICITUD_RETORNADA_OK": "Request returned for correction successfully.",
+    "SOLICITUD_RECHAZADA_OK": "Request rejected successfully.",
+    "SOLICITUD_AVALADA_OK": "Request approved and submitted successfully.",
+    "INICIO_REGISTRADO_OK": "Commission start registered successfully."
   },
   "LANG": {
     "ES": "Espaniol",

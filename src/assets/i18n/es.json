@@ -324,7 +324,13 @@
     "ERROR_CARGAR_TIPOS_DOC": "No fue posible cargar los tipos de documento. Solo el formulario FR-010 estara disponible.",
     "ERROR_CARGAR_DETALLE": "No fue posible cargar el detalle de la solicitud.",
     "ERROR_SIN_IDENTIFICACION": "No se pudo obtener la identificacion del docente desde la sesion.",
-    "ENVIAR_NO_DISPONIBLE": "El envio de solicitudes aun no esta habilitado."
+    "ENVIAR_NO_DISPONIBLE": "El envio de solicitudes aun no esta habilitado.",
+    "ERROR_CAMBIAR_ESTADO": "No fue posible actualizar el estado de la solicitud. Intente de nuevo.",
+    "SOLICITUD_ENVIADA_OK": "Solicitud enviada exitosamente.",
+    "SOLICITUD_RETORNADA_OK": "Solicitud retornada para correccion exitosamente.",
+    "SOLICITUD_RECHAZADA_OK": "Solicitud rechazada exitosamente.",
+    "SOLICITUD_AVALADA_OK": "Solicitud avalada y enviada exitosamente.",
+    "INICIO_REGISTRADO_OK": "Inicio de comision registrado exitosamente."
   },
   "LANG": {
     "ES": "Espaniol",

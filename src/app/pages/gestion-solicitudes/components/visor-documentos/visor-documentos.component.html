@@ -1,7 +1,7 @@
 <h2
   mat-dialog-title
   class="m-0 pl-3 border-l-[6px] border-l-sga text-[20px] font-semibold">
-  {{ 'VISOR.TITLE' | translate }}
+  {{ (isFR010 ? 'DETALLE.FR010_TITLE' : 'VISOR.TITLE') | translate }}
 </h2>
 
 <div mat-dialog-content class="pt-2 grid gap-3">
@@ -31,40 +31,39 @@
     </div>
   </section>
 
-  <!-- Panel: Visor -->
-  
-  <section class="border border-black/10 rounded-xl overflow-hidden bg-gradient-to-b from-sga/5 to-white">
-    <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-      <div class="font-semibold">{{ 'VISOR.VISOR_LABEL' | translate }}</div>
-    <!--class="text-xs text-black/60">{{ 'VISOR.PDF_PENDIENTE' | translate }}</div>-->
-    </header>
+  <!-- Panel: FR-010 formulario en solo lectura -->
+  <ng-container *ngIf="isFR010">
+    <app-fr010-form
+      [datosIniciales]="data.formData"
+      [readOnly]="true">
+    </app-fr010-form>
+  </ng-container>
 
-    <!--<div class="p-3">
-      <div class="border border-dashed border-sga/40 rounded-xl bg-sga/5 p-4 flex gap-3 items-center">
-        <mat-icon class="text-sga">picture_as_pdf</mat-icon>
-        <div class="text-black/70">
-          {{ 'VISOR.PDF_PLACEHOLDER' | translate }}
-        </div>
-      </div>
-    </div>-->
-    <mat-dialog-content class="visor-content">
-      <ng-container *ngIf="pdfUrl; else sinDocumento">
-        <iframe
-          [src]="pdfUrl"
-          width="100%"
-          height="700"
-          style="border: none;">
-        </iframe>
-      </ng-container>
+  <!-- Panel: Visor PDF -->
+  <ng-container *ngIf="!isFR010">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-gradient-to-b from-sga/5 to-white">
+      <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold">{{ 'VISOR.VISOR_LABEL' | translate }}</div>
+      </header>
 
-      <ng-template #sinDocumento>
-        <div class="p-4">
-          No hay documento disponible para visualizar.
-        </div>
-      </ng-template>
-    </mat-dialog-content>
+      <mat-dialog-content class="visor-content">
+        <ng-container *ngIf="pdfUrl; else sinDocumento">
+          <iframe
+            [src]="pdfUrl"
+            width="100%"
+            height="700"
+            style="border: none;">
+          </iframe>
+        </ng-container>
 
-  </section>
+        <ng-template #sinDocumento>
+          <div class="p-4">
+            No hay documento disponible para visualizar.
+          </div>
+        </ng-template>
+      </mat-dialog-content>
+    </section>
+  </ng-container>
 
 </div>
 

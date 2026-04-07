@@ -90,6 +90,9 @@ export class DetalleSolicitudComponent implements OnInit {
   reviewerUploadCounter = 1000;
   MIN_NOMBRE_SOPORTE_REVISOR = 12;
 
+  /** Id del tipo documental DE_SOL_COM resuelto desde documento_crud */
+  private idTipoDocumentoSoporte: number | null = null;
+
   // FR-010 siempre presente como opción fija del frontend
   private readonly FR010_OPTION: RequiredDocOption = {
     code: 'FR010', name: 'FR-010 Formulario de solicitud inicial', kind: 'FORM', idTipoDocumento: 0, descripcion: 'Formulario FR-010'
@@ -147,6 +150,22 @@ export class DetalleSolicitudComponent implements OnInit {
     this.selectedRequiredDoc = this.requiredDocs[0];
 
     this.cargarTiposDocumentoCrud();
+    this.cargarIdTipoDocumentoSoporte();
+  }
+
+  private cargarIdTipoDocumentoSoporte(): void {
+    this.solicitudesService.obtenerTipoDocumentoPorCodigo('DE_SOL_COM').subscribe({
+      next: (resp: any) => {
+        const data: any[] = Array.isArray(resp) ? resp : resp?.Data || [];
+        const match = data.find((d: any) => d.CodigoAbreviacion === 'DE_SOL_COM');
+        if (match?.Id != null) {
+          this.idTipoDocumentoSoporte = match.Id;
+        }
+      },
+      error: () => {
+        // Se maneja en ejecutarCambioEstado si hay soportes del revisor
+      },
+    });
   }
 
   private cargarTiposDocumentoCrud(): void {
@@ -461,20 +480,42 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   verDocumento(doc: DocumentoItem): void {
+    // FR-010: abrir formulario en modo solo lectura (no es PDF)
+    if (doc.code === 'FR010') {
+      const formData = this.formularioRecuperado || this.fr010Json?.fr010;
+      if (!formData) {
+        this.popup.error(this.translate.instant('POPUPS.DOC_NO_DISPONIBLE'));
+        return;
+      }
+      this.dialog.open(VisorDocumentosComponent, {
+        width: '1100px',
+        maxWidth: '95vw',
+        maxHeight: '90vh',
+        data: {
+          nombre: doc.nombre,
+          estado: doc.estado,
+          autor: doc.autorSoporte,
+          isFR010: true,
+          formData,
+        },
+      });
+      return;
+    }
+
     if (!doc.base64) {
       this.popup.error(this.translate.instant('POPUPS.DOC_NO_DISPONIBLE'));
       return;
     }
 
     this.dialog.open(VisorDocumentosComponent, {
-    width: '900px',
-    maxWidth: '95vw',
-    data: {
-      nombre: doc.fileName || doc.nombre,
-      mimeType: doc.mimeType || 'application/pdf',
-      base64: doc.base64,
-      estado: doc.estado,
-      autor: doc.autorSoporte,
+      width: '900px',
+      maxWidth: '95vw',
+      data: {
+        nombre: doc.fileName || doc.nombre,
+        mimeType: doc.mimeType || 'application/pdf',
+        base64: doc.base64,
+        estado: doc.estado,
+        autor: doc.autorSoporte,
       },
     });
   }
@@ -527,14 +568,14 @@ export class DetalleSolicitudComponent implements OnInit {
     DOCENTE: 'REV_PROY',
     COORDINADOR: 'REV_SEC_ACAD',
     ADMINISTRADOR: 'REV_SEC_GRAL',
-    ORDENADOR_GASTO: 'REV_DEC',
+    ADMIN_SGA: 'REV_DEC',
     DECANO: 'APROB_EJEC',
   };
 
   private readonly ESTADO_RETORNAR: Partial<Record<Role, EstadoSolicitud>> = {
     COORDINADOR: 'SUBS_PROY',
     ADMINISTRADOR: 'SUBS_SEC_ACAD',
-    ORDENADOR_GASTO: 'SUBS_SEC_GRAL',
+    ADMIN_SGA: 'SUBS_SEC_GRAL',
     DECANO: 'SUBS_DEC',
   };
 
@@ -542,7 +583,7 @@ export class DetalleSolicitudComponent implements OnInit {
     DOCENTE: 'DOCENTE',
     COORDINADOR: 'COORDINADOR',
     ADMINISTRADOR: 'ADMINISTRADOR',
-    ORDENADOR_GASTO: 'ORDENADOR_GASTO',
+    ADMIN_SGA: 'ADMIN_SGA',
     DECANO: 'DECANATURA',
   };
 
@@ -560,17 +601,24 @@ export class DetalleSolicitudComponent implements OnInit {
     }
   }
 
-  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): any {
+  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): any | null {
     const documentosRevisor = this.documentos
-      .filter((d) => d.esSoporteRevisor && d.base64)
-      .map((d) => ({
-        IdTipoDocumento: 193,
-        TipoDocumento: 'OTRO_SOP',
-        EstadoDocumento: 'CARG',
-        NombreArchivo: d.fileName || d.nombre,
-        Metadatos: {},
-        File: d.base64,
-      }));
+      .filter((d) => d.esSoporteRevisor && d.base64);
+
+    // Si hay soportes del revisor, el id de tipo documental debe estar resuelto
+    if (documentosRevisor.length > 0 && !this.idTipoDocumentoSoporte) {
+      this.popup.error(this.translate.instant('POPUPS.ERROR_TIPO_DOC_NO_RESUELTO'));
+      return null;
+    }
+
+    const documentosMapeados = documentosRevisor.map((d) => ({
+      IdTipoDocumento: this.idTipoDocumentoSoporte,
+      TipoDocumento: 'OTRO_SOP',
+      EstadoDocumento: 'CARG',
+      NombreArchivo: d.fileName || d.nombre,
+      Metadatos: {},
+      File: d.base64,
+    }));
 
     return {
       SolicitudId: this.id,
@@ -578,7 +626,7 @@ export class DetalleSolicitudComponent implements OnInit {
       RolUsuario: this.ROL_USUARIO_MAP[this.role],
       NumeroIdentificacion: getDocumento() || '',
       Observacion: observacion?.trim() || '',
-      Documentos: documentosRevisor,
+      Documentos: documentosMapeados,
     };
   }
 
@@ -587,6 +635,7 @@ export class DetalleSolicitudComponent implements OnInit {
     if (!nuevoEstado) return;
 
     const payload = this.construirPayloadCambioEstado(nuevoEstado, observacion);
+    if (!payload) return;
 
     this.cambiandoEstado = true;
     this.solicitudesService.cambiarEstadoSolicitud(payload).subscribe({

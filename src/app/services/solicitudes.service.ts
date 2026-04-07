@@ -25,6 +25,10 @@ export class SolicitudesService {
     return this.apiCrud.get<any>('v1/tipo_documento_solicitud');
   }
 
+  eliminarSolicitudDocente(id: number){
+    return this.apiMid.put<any>(`v1/solicitud/cancelar/${id}`, {});
+  }
+
   // ========== Bandeja por rol ==========
 
   listarSolicitudesDocente(cedula: string) {

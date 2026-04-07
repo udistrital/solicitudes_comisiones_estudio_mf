@@ -235,8 +235,14 @@ export class BandejaComponent implements OnInit {
         this.translate.instant('ACTIONS.CANCELAR'),
       ).then((result) => {
         if (result.isConfirmed) {
-          this.rows = this.rows.filter((x) => x.id !== row.id);
-          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ELIMINADA', { id: row.id }));
+          this.cargando = true;
+          this.solicitudesService.eliminarSolicitudDocente(row.id).subscribe({
+            next: () => {
+              this.rows = this.rows.filter((x) => x.id !== row.id);
+              this.cargando = false;
+              this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ELIMINADA', { id: row.id }));
+            },
+          });
         }
       });
       return;

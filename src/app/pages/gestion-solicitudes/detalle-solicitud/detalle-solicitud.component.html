@@ -169,11 +169,11 @@
 
             <footer class="px-3 pb-3 flex justify-end gap-2 flex-wrap">
               <button mat-stroked-button class="h-9 px-3.5 rounded-lg border-black/20"
-                [disabled]="guardando"
+                [disabled]="guardando || cambiandoEstado"
                 (click)="guardarDocente()">{{ 'ACTIONS.GUARDAR' | translate }}</button>
               <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-                [disabled]="true"
-                matTooltip="{{ 'POPUPS.ENVIAR_NO_DISPONIBLE' | translate }}">{{ 'ACTIONS.ENVIAR' | translate }}</button>
+                [disabled]="!puedeEnviarDocente"
+                (click)="enviarDocente()">{{ 'ACTIONS.ENVIAR' | translate }}</button>
             </footer>
           </section>
 
@@ -461,14 +461,14 @@
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
                   (click)="regresar()">{{ 'ACTIONS.REGRESAR' | translate }}</button>
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="rechazarSolicitud()" [disabled]="!puedeContinuarRevisor">
+                  (click)="rechazarSolicitud()" [disabled]="!puedeContinuarRevisor || cambiandoEstado">
                  {{ 'ACTIONS.RECHAZAR' | translate }}</button>
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="retornarSolicitud()" [disabled]="!puedeContinuarRevisor">
+                  (click)="retornarSolicitud()" [disabled]="!puedeContinuarRevisor || cambiandoEstado">
                   {{ 'ACTIONS.RETORNAR' | translate }}</button>
                 <!-- Enviar solo para revisores no-supervisor -->
                 <button *ngIf="!isSupervisor" mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-                  (click)="enviarRevisor()" [disabled]="!allDocsChecked || !puedeContinuarRevisor">
+                  (click)="enviarRevisor()" [disabled]="!allDocsChecked || !puedeContinuarRevisor || cambiandoEstado">
                   {{ 'ACTIONS.ENVIAR' | translate }}</button>
               </div>
             </footer>
@@ -537,7 +537,7 @@
           <div class="mb-[22px]">
             <button mat-flat-button color="primary" class="h-10 px-5 rounded-lg"
               (click)="darInicioComision()"
-              [disabled]="!allDocsChecked || !fechaInicioContrato || !puedeContinuarRevisor">
+              [disabled]="!allDocsChecked || !fechaInicioContrato || !puedeContinuarRevisor || cambiandoEstado">
               {{ 'ACTIONS.DAR_INICIO' | translate }}
             </button>
           </div>

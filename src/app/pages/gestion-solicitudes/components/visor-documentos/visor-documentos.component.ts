@@ -11,13 +11,18 @@ export class VisorDocumentosComponent implements OnInit, OnDestroy {
   pdfUrl?: SafeResourceUrl;
   private objectUrl?: string;
 
+  /** Indica si se debe mostrar el formulario FR-010 en lugar del visor PDF */
+  get isFR010(): boolean {
+    return !!this.data?.isFR010;
+  }
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {
-    if (!this.data?.base64) {
+    if (this.isFR010 || !this.data?.base64) {
       return;
     }
 

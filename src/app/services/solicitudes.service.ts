@@ -6,11 +6,13 @@ export class SolicitudesService {
   private api: ReturnType<RequestManager['client']>;
   private apiMid: ReturnType<RequestManager['client']>;
   private apiCrud: ReturnType<RequestManager['client']>;
+  private apiDocCrud: ReturnType<RequestManager['client']>;
 
   constructor(private request: RequestManager) {
     this.api = this.request.client('SOLICITUDES_SERVICE');
     this.apiMid = this.request.client('COMISIONES_MID_SERVICE');
     this.apiCrud = this.request.client('COMISIONES_CRUD_SERVICE');
+    this.apiDocCrud = this.request.client('DOCUMENTO_CRUD_SERVICE');
   }
 
   obtenerDetalleSolicitud(id: number) {
@@ -25,6 +27,10 @@ export class SolicitudesService {
     return this.apiCrud.get<any>('v1/tipo_documento_solicitud');
   }
 
+  eliminarSolicitudDocente(id: number){
+    return this.apiMid.put<any>(`v1/solicitud/cancelar/${id}`, {});
+  }
+
   // ========== Bandeja por rol ==========
 
   listarSolicitudesDocente(cedula: string) {
@@ -37,5 +43,21 @@ export class SolicitudesService {
 
   listarPendientesSecretaria(cedula: string) {
     return this.apiMid.get<any>(`v1/solicitud/pendientes_secretaria/${cedula}`);
+  }
+
+  listarSolicitudesActivasCrud() {
+    return this.apiCrud.get<any>('v1/solicitud?query=Activo:true&limit=-1');
+  }
+
+  cambiarEstadoSolicitud(payload: any) {
+    return this.apiMid.post<any>('v1/solicitud/estados', payload);
+  }
+
+  // ========== Documento CRUD ==========
+
+  obtenerTipoDocumentoPorCodigo(codigoAbreviacion: string) {
+    return this.apiDocCrud.get<any>(
+      `v2/tipo_documento?query=CodigoAbreviacion%3A${codigoAbreviacion}`
+    );
   }
 }

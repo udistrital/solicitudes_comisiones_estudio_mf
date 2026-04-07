@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { forkJoin } from 'rxjs';
 
 import { Role, resolverRolEfectivo } from '../../../models/roles.model';
 import { SolicitudRow } from '../../../models/solicitud.model';
@@ -125,8 +126,15 @@ export class BandejaComponent implements OnInit {
 
     switch (this.selectedRole) {
       case 'DOCENTE':
-        this.solicitudesService.listarSolicitudesDocente(cedula).subscribe({
-          next: (resp) => this.procesarRespuestaDocente(resp),
+        forkJoin({
+          mid: this.solicitudesService.listarSolicitudesDocente(cedula),
+          crud: this.solicitudesService.listarSolicitudesActivasCrud(),
+        }).subscribe({
+          next: ({ mid, crud }) => {
+            const activasCrud: any[] = crud?.Data || [];
+            const idsActivos = new Set<number>(activasCrud.map((s: any) => s.Id));
+            this.procesarRespuestaDocente(mid, idsActivos);
+          },
           error: () => this.onErrorCarga(),
         });
         break;
@@ -147,8 +155,8 @@ export class BandejaComponent implements OnInit {
     }
   }
 
-  private procesarRespuestaDocente(resp: any): void {
-    const data: any[] = resp?.Data || [];
+  private procesarRespuestaDocente(resp: any, idsActivos: Set<number>): void {
+    const data: any[] = (resp?.Data || []).filter((item: any) => idsActivos.has(item.id));
     this.rows = data.map((item) => {
       // esado_solicitud (typo del backend) puede ser objeto o null
       const estadoObj = item.esado_solicitud || item.estado_solicitud || null;

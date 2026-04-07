@@ -22,6 +22,9 @@ export class Fr010FormComponent implements OnInit {
   /** Datos existentes del formulario (modo edición). Si se pasa, no consulta el servicio de docente. */
   @Input() datosIniciales: any = null;
 
+  /** Modo solo lectura: todos los campos deshabilitados, sin acciones de guardado. */
+  @Input() readOnly = false;
+
   @Output() saved = new EventEmitter<any>();
 
   form!: FormGroup;
@@ -181,8 +184,13 @@ export class Fr010FormComponent implements OnInit {
 
     if (this.datosIniciales) {
       this.patchFromExisting(this.datosIniciales);
-    } else {
+    } else if (!this.readOnly) {
       this.loadDocenteInfo();
+    }
+
+    if (this.readOnly) {
+      this.form.disable();
+      this.loadingSolicitante = false;
     }
   }
 
@@ -637,16 +645,43 @@ export class Fr010FormComponent implements OnInit {
   }
 
   public isFormularioCompleto(): boolean {
+    this.form.updateValueAndValidity({ emitEvent: false });
     if (this.form.invalid) return false;
 
-    const sol = this.form.getRawValue().solicitante;
-    const camposClave = [
+    const raw = this.form.getRawValue();
+
+    // Verificar campos clave del solicitante (disabled, no validados por Angular)
+    const camposSolicitante = [
       'q2_facultad', 'q3_nombres_apellidos', 'q4_documento_identificacion',
       'q6_correo', 'q7_proyecto',
     ];
-    return camposClave.every(
-      (key) => String((sol as any)[key] ?? '').trim().length > 0,
+    const solicitanteOk = camposSolicitante.every(
+      (key) => String((raw.solicitante as any)[key] ?? '').trim().length > 0,
     );
+    if (!solicitanteOk) return false;
+
+    // Verificar campos obligatorios de la solicitud (pueden tener valor vacio sin activar required)
+    const camposSolicitudTexto = [
+      'q14_nombre_programa', 'q15_titulo_aspira', 'q16_universidad',
+      'q17_pais', 'q18_ciudad', 'q20_num_semestres',
+      'q25_tiempo_requerido_culminacion', 'q26_costo_total_requerido',
+    ];
+    const camposSolicitudSelect = ['q13_tipo_estudio', 'q22_tipo_apoyo_requerido'];
+    const camposSolicitudFecha = [
+      'q19_fecha_aceptacion', 'q23_fecha_inicio_estudios', 'q24_fecha_culminacion_estudios',
+    ];
+
+    const solicitudOk = camposSolicitudTexto.every(
+      (key) => String((raw.solicitud as any)[key] ?? '').trim().length > 0,
+    ) && camposSolicitudSelect.every(
+      (key) => !!(raw.solicitud as any)[key],
+    ) && camposSolicitudFecha.every((key) => {
+      const val = (raw.solicitud as any)[key];
+      if (val instanceof Date) return !isNaN(val.getTime());
+      return val != null && String(val).trim().length > 0;
+    });
+
+    return solicitudOk;
   }
 
   public getFormData(): any {

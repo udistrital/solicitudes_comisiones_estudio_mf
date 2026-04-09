@@ -13,7 +13,7 @@ import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
 
 /** Roles que ya tienen endpoint de bandeja */
-const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR'];
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'ADMIN_SGA'];
 
 @Component({
   selector: 'app-bandeja',
@@ -152,6 +152,13 @@ export class BandejaComponent implements OnInit {
           error: () => this.onErrorCarga(),
         });
         break;
+
+      case 'ADMIN_SGA':
+        this.solicitudesService.listarHistoricoEstadoPorCodigo('REV_SEC_GRAL').subscribe({
+          next: (resp) => this.procesarRespuestaHistorico(resp),
+          error: () => this.onErrorCarga(),
+        });
+        break;
     }
   }
 
@@ -190,6 +197,88 @@ export class BandejaComponent implements OnInit {
       };
     });
     this.cargando = false;
+  }
+
+  private procesarRespuestaHistorico(resp: any): void {
+    const data: any[] = resp?.Data || [];
+
+    // Deduplicar por SolicitudId.Id: conservar el registro más reciente
+    const porSolicitud = new Map<number, any>();
+    for (const item of data) {
+      const solId = item.SolicitudId?.Id;
+      if (!solId) continue;
+      const existente = porSolicitud.get(solId);
+      if (!existente || (item.FechaCreacion > existente.FechaCreacion)) {
+        porSolicitud.set(solId, item);
+      }
+    }
+
+    const items = Array.from(porSolicitud.values());
+    if (items.length === 0) {
+      this.rows = [];
+      this.cargando = false;
+      return;
+    }
+
+    // Obtener detalle de cada solicitud para resolver nombre y cédula del docente
+    const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
+    for (const item of items) {
+      const solId = item.SolicitudId.Id;
+      detalleCalls[String(solId)] = this.solicitudesService.obtenerDetalleSolicitud(solId);
+    }
+
+    forkJoin(detalleCalls).subscribe({
+      next: (detalles) => {
+        this.rows = items.map((item) => {
+          const solId = item.SolicitudId.Id;
+          const detalle = detalles[String(solId)]?.Data;
+          const { nombre, documento } = this.extraerDocenteDeDetalle(detalle);
+
+          return {
+            id: solId,
+            docente: nombre,
+            idDocente: documento,
+            proyecto: '',
+            estado: item.EstadoSolicitudId?.CodigoAbreviacion || 'NO_ENV',
+            fecha: this.formatFecha(item.SolicitudId?.FechaCreacion),
+          };
+        });
+        this.cargando = false;
+      },
+      error: () => {
+        // Si falla la consulta de detalles, mostrar filas sin datos de docente
+        this.rows = items.map((item) => ({
+          id: item.SolicitudId.Id,
+          docente: '',
+          idDocente: item.SolicitudId.TerceroId ? String(item.SolicitudId.TerceroId) : '',
+          proyecto: '',
+          estado: item.EstadoSolicitudId?.CodigoAbreviacion || 'NO_ENV',
+          fecha: this.formatFecha(item.SolicitudId?.FechaCreacion),
+        }));
+        this.cargando = false;
+      },
+    });
+  }
+
+  private extraerDocenteDeDetalle(data: any): { nombre: string; documento: string } {
+    if (!data) return { nombre: '', documento: '' };
+
+    // Intentar extraer del Formulario (JSON string con datos del FR-010)
+    if (data.Formulario && typeof data.Formulario === 'string') {
+      try {
+        const parsed = JSON.parse(data.Formulario);
+        const sol = parsed.solicitante || {};
+        const nombre = sol.q3_nombres_apellidos || '';
+        const documento = sol.q4_documento_identificacion || '';
+        if (nombre || documento) {
+          return { nombre, documento };
+        }
+      } catch { /* fallback abajo */ }
+    }
+
+    // Fallback: TerceroId de la solicitud
+    const terceroId = data.Solicitud?.TerceroId;
+    return { nombre: '', documento: terceroId ? String(terceroId) : '' };
   }
 
   private onErrorCarga(): void {

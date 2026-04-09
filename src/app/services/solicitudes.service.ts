@@ -53,6 +53,12 @@ export class SolicitudesService {
     return this.apiMid.post<any>('v1/solicitud/estados', payload);
   }
 
+  listarHistoricoEstadoPorCodigo(codigoEstado: string) {
+    return this.apiCrud.get<any>(
+      `v1/historico_estado_solicitud?query=Activo:true,EstadoSolicitudId__CodigoAbreviacion:${codigoEstado}&limit=-1`
+    );
+  }
+
   // ========== Documento CRUD ==========
 
   obtenerTipoDocumentoPorCodigo(codigoAbreviacion: string) {

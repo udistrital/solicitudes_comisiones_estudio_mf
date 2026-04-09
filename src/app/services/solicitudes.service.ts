@@ -7,12 +7,15 @@ export class SolicitudesService {
   private apiMid: ReturnType<RequestManager['client']>;
   private apiCrud: ReturnType<RequestManager['client']>;
   private apiDocCrud: ReturnType<RequestManager['client']>;
+  private apiGestorDocMid: ReturnType<RequestManager['client']>;
 
   constructor(private request: RequestManager) {
     this.api = this.request.client('SOLICITUDES_SERVICE');
     this.apiMid = this.request.client('COMISIONES_MID_SERVICE');
     this.apiCrud = this.request.client('COMISIONES_CRUD_SERVICE');
     this.apiDocCrud = this.request.client('DOCUMENTO_CRUD_SERVICE');
+    this.apiGestorDocMid = this.request.client('GESTOR_DOCUMENTAL_MID_SERVICE');
+
   }
 
   obtenerDetalleSolicitud(id: number) {
@@ -31,6 +34,10 @@ export class SolicitudesService {
     return this.apiMid.put<any>(`v1/solicitud/cancelar/${id}`, {});
   }
 
+  editarSolicitud(id: number, payload: any) {
+    return this.apiMid.put<any>(`v1/solicitud/${id}`, payload);
+  }
+  
   // ========== Bandeja por rol ==========
 
   listarSolicitudesDocente(cedula: string) {
@@ -65,5 +72,9 @@ export class SolicitudesService {
     return this.apiDocCrud.get<any>(
       `v2/tipo_documento?query=CodigoAbreviacion%3A${codigoAbreviacion}`
     );
+  }
+
+  obtenerDocumentoPorEnlace(enlace: string) {
+    return this.apiGestorDocMid.get<any>(`v1/document/${encodeURIComponent(enlace)}`);
   }
 }

@@ -13,7 +13,7 @@ import { Fr010FormComponent } from '../components/fr010-form/fr010-form.componen
 import { SolicitudesService } from '../../../services/solicitudes.service';
 import { getDocumento } from '../../../utils/auth.util';
 
-import { forkJoin, of } from 'rxjs';
+import { firstValueFrom, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
@@ -445,20 +445,38 @@ export class DetalleSolicitudComponent implements OnInit {
     }
 
     try {
+      const docActual = this.documentoEnCarga;
+
+      const debeDesactivarDocumentoActual =
+        !this.isCreating
+        && !!this.id
+        && !docActual.pendienteCrear
+        && (!!docActual.documentoSolicitudId || !!docActual.documentoId);
+
+      if (debeDesactivarDocumentoActual) {
+        const desactivacionRegistrada = await this.agregarDocumentoActualADesactivar(docActual);
+
+        if (!desactivacionRegistrada) {
+          this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
+          input.value = '';
+          return;
+        }
+      }
+
       const base64 = await this.fileToBase64(file);
 
-      this.documentoEnCarga.base64 = base64;
-      this.documentoEnCarga.fileName = file.name;
-      this.documentoEnCarga.mimeType = file.type;
-      this.documentoEnCarga.autorSoporte = 'Docente';
-      this.documentoEnCarga.estado = 'CARG';
-      this.documentoEnCarga.pendienteCrear = true;
-      this.documentoEnCarga.enlace = undefined;
-      this.documentoEnCarga.documentoSolicitudId = undefined;
-      this.documentoEnCarga.documentoId = undefined;
-      this.documentoEnCarga.metadatos = {
-        documento_requerido: this.documentoEnCarga.nombre,
-        codigo: this.documentoEnCarga.code,
+      docActual.base64 = base64;
+      docActual.fileName = file.name;
+      docActual.mimeType = file.type;
+      docActual.autorSoporte = 'Docente';
+      docActual.estado = 'CARG';
+      docActual.pendienteCrear = true;
+      docActual.enlace = undefined;
+      docActual.documentoSolicitudId = undefined;
+      docActual.documentoId = undefined;
+      docActual.metadatos = {
+        documento_requerido: docActual.nombre,
+        codigo: docActual.code,
         cargadoPor: 'DOCENTE',
         fechaCarga: new Date().toISOString(),
       };
@@ -488,7 +506,7 @@ export class DetalleSolicitudComponent implements OnInit {
       this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre || doc.fileName || 'documento' }),
       this.translate.instant('ACTIONS.ELIMINAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
-    ).then((result) => {
+    ).then(async (result) => {
       if (!result.isConfirmed) return;
 
       if (doc.esSoporteRevisor) {
@@ -497,8 +515,19 @@ export class DetalleSolicitudComponent implements OnInit {
         return;
       }
 
-      if (!this.isCreating && this.id && doc.documentoSolicitudId) {
-        this.agregarDocumentoAEliminar(doc.documentoSolicitudId);
+      const debeDesactivarDocumentoPersistido =
+        !this.isCreating
+        && !!this.id
+        && !doc.pendienteCrear
+        && (!!doc.documentoSolicitudId || !!doc.documentoId);
+
+      if (debeDesactivarDocumentoPersistido) {
+        const desactivacionRegistrada = await this.agregarDocumentoActualADesactivar(doc);
+
+        if (!desactivacionRegistrada) {
+          this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
+          return;
+        }
       }
 
       doc.estado = 'PENDIENTE';
@@ -507,6 +536,8 @@ export class DetalleSolicitudComponent implements OnInit {
       doc.fileName = undefined;
       doc.mimeType = undefined;
       doc.metadatos = undefined;
+      doc.enlace = undefined;
+      doc.pendienteCrear = false;
       doc.documentoSolicitudId = undefined;
       doc.documentoId = undefined;
 
@@ -892,14 +923,14 @@ export class DetalleSolicitudComponent implements OnInit {
 
       return {
         ...baseDoc,
-        nombre: match?.Nombre || baseDoc.nombre,
+        nombre: baseDoc.nombre,
         estado: this.extraerEstadoDocumento(match),
         autorSoporte: 'Docente',
         enlace: match?.Enlace,
         fileName: match?.Nombre || baseDoc.nombre,
         mimeType: 'application/pdf',
         documentoSolicitudId: this.extraerDocumentoSolicitudId(match),
-        documentoId: match?.DocumentoId || match?.documento_id,
+        documentoId: this.extraerDocumentoId(match),
         cargandoArchivo: false,
         pendienteCrear: false,
       };
@@ -913,8 +944,28 @@ export class DetalleSolicitudComponent implements OnInit {
     this.documentosDesactivarIds.push(id);
   }
 
+  private toNumber(value: any): number | undefined {
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  }
+
   private extraerDocumentoSolicitudId(doc: any): number | undefined {
-    return doc?.DocumentoSolicitudId || doc?.Id || doc?.id;
+    return this.toNumber(
+      doc?.DocumentoSolicitudId
+      || doc?.DocumentoSolicitud?.Id
+      || doc?.documento_solicitud_id
+    );
+  }
+
+  private extraerDocumentoId(doc: any): number | undefined {
+    return this.toNumber(
+      doc?.DocumentoId
+      || doc?.Documento?.Id
+      || doc?.IdDocumento
+      || doc?.id_documento
+      || doc?.Id
+      || doc?.id
+    );
   }
 
   private extraerTipoDocumentoId(doc: any): number | undefined {
@@ -1031,17 +1082,61 @@ export class DetalleSolicitudComponent implements OnInit {
     }
   }
 
-NombreSoporteRevisorValido(doc: DocumentoItem): boolean {
-  if (!doc.esSoporteRevisor) {
+  private extraerPrimerIdDocumentoSolicitud(resp: any): number | null {
+    const data = Array.isArray(resp)
+      ? resp
+      : resp?.Data;
+
+    const row = Array.isArray(data)
+      ? data[0]
+      : data;
+
+    const id = this.toNumber(row?.Id || row?.id);
+
+    return id || null;
+  }
+
+  private async resolverDocumentoSolicitudId(doc: DocumentoItem): Promise<number | null> {
+    if (doc.documentoSolicitudId) {
+      return doc.documentoSolicitudId;
+    }
+
+    if (!this.id || !doc.documentoId) {
+      return null;
+    }
+
+    const resp = await firstValueFrom(
+      this.solicitudesService.obtenerDocumentoSolicitudActivoPorDocumento(this.id, doc.documentoId)
+    );
+
+    return this.extraerPrimerIdDocumentoSolicitud(resp);
+  }
+
+  private async agregarDocumentoActualADesactivar(doc: DocumentoItem): Promise<boolean> {
+    const documentoSolicitudId = await this.resolverDocumentoSolicitudId(doc);
+
+    if (!documentoSolicitudId) {
+      return false;
+    }
+
+    this.agregarDocumentoAEliminar(documentoSolicitudId);
+    doc.documentoSolicitudId = documentoSolicitudId;
+
     return true;
   }
-  return !!doc.nombre && doc.nombre.trim().length >= this.MIN_NOMBRE_SOPORTE_REVISOR;
-}
 
-actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
-  doc.nombre = value;
-  this.documentos = [...this.documentos];
-}
+  NombreSoporteRevisorValido(doc: DocumentoItem): boolean {
+    if (!doc.esSoporteRevisor) {
+      return true;
+    }
+    return !!doc.nombre && doc.nombre.trim().length >= this.MIN_NOMBRE_SOPORTE_REVISOR;
+  }
+
+  actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
+    doc.nombre = value;
+    this.documentos = [...this.documentos];
+  }
+  
   retornarSolicitud() {
     this.popup.confirm(
       this.translate.instant('POPUPS.RETORNAR_MSG'),

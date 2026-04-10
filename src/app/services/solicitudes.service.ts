@@ -71,4 +71,10 @@ export class SolicitudesService {
   obtenerDocumentoPorEnlace(enlace: string) {
     return this.apiGestorDocMid.get<any>(`v1/document/${encodeURIComponent(enlace)}`);
   }
+  
+  obtenerDocumentoSolicitudActivoPorDocumento(idSolicitud: number, idDocumento: number) {
+    return this.apiCrud.get<any>(
+      `v1/documento_solicitud?query=DocumentoId:${idDocumento},HistoricoEstadoSolicitudId__SolicitudId__Id:${idSolicitud},Activo:true&limit=1`
+    );
+  }
 }

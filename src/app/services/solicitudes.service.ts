@@ -77,4 +77,5 @@ export class SolicitudesService {
   obtenerDocumentoPorEnlace(enlace: string) {
     return this.apiGestorDocMid.get<any>(`v1/document/${encodeURIComponent(enlace)}`);
   }
+  
 }

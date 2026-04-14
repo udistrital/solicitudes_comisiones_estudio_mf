@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 
-import { Role } from '../../../models/roles.model';
+import { Role, resolverRolEfectivo } from '../../../models/roles.model';
 import { EstadoSolicitud, EstadoDocumento } from '../../../models/estados.model';
 import { PopUpManager } from '../../../managers/popup.manager';
 import { estadoSolicitudClass, estadoDocumentoClass } from '../../../utils/estado-solicitud.util';
@@ -11,7 +11,7 @@ import { estadoSolicitudClass, estadoDocumentoClass } from '../../../utils/estad
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
 import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
 import { SolicitudesService } from '../../../services/solicitudes.service';
-import { getDocumento } from '../../../utils/auth.util';
+import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -141,9 +141,8 @@ export class DetalleSolicitudComponent implements OnInit {
 
     const rawId = this.route.snapshot.paramMap.get('id');
 
-    const qp = this.route.snapshot.queryParamMap;
-    this.role = (qp.get('role') as Role) || 'DOCENTE';
-    this.mode = (qp.get('mode') as any) || 'GESTIONAR';
+    this.role = resolverRolEfectivo(getRolesUsuario()) ?? 'DOCENTE';
+    this.mode = (this.route.snapshot.queryParamMap.get('mode') as any) || 'GESTIONAR';
 
     if (rawId === 'nuevo') {
       // Modo creación
@@ -693,7 +692,7 @@ export class DetalleSolicitudComponent implements OnInit {
       IdTipoDocumento: this.idTipoDocumentoSoporte,
       TipoDocumento: 'OTRO_SOP',
       EstadoDocumento: 'CARG',
-      NombreArchivo: d.fileName || d.nombre,
+      Nombre: d.fileName || d.nombre,
       Metadatos: {},
       File: d.base64,
     }));

@@ -297,7 +297,7 @@ export class BandejaComponent implements OnInit {
 
   crearSolicitud(): void {
     this.router.navigate(['/solicitudes', 'nuevo'], {
-      queryParams: { role: 'DOCENTE', mode: 'EDITAR' },
+      queryParams: { mode: 'EDITAR' },
     });
   }
 
@@ -306,21 +306,21 @@ export class BandejaComponent implements OnInit {
 
     if (a === 'VER') {
       this.router.navigate(['/solicitudes', row.id], {
-        queryParams: { role: this.selectedRole, mode: 'VER' },
+        queryParams: { mode: 'VER' },
       });
       return;
     }
 
     if (a === 'EDITAR') {
       this.router.navigate(['/solicitudes', row.id], {
-        queryParams: { role: this.selectedRole, mode: 'EDITAR' },
+        queryParams: { mode: 'EDITAR' },
       });
       return;
     }
 
     if (a === 'GESTIONAR') {
       this.router.navigate(['/solicitudes', row.id], {
-        queryParams: { role: this.selectedRole, mode: 'GESTIONAR' },
+        queryParams: { mode: 'GESTIONAR' },
       });
       return;
     }

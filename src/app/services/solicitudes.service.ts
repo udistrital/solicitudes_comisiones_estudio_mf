@@ -52,6 +52,10 @@ export class SolicitudesService {
     return this.apiMid.get<any>(`v1/solicitud/pendientes_secretaria/${cedula}`);
   }
 
+  listarPendientesDecano(cedula: string) {
+    return this.apiMid.get<any>(`v1/solicitud/pendientes_decano/${cedula}`);
+  }
+
   listarSolicitudesActivasCrud() {
     return this.apiCrud.get<any>('v1/solicitud?query=Activo:true&limit=-1');
   }

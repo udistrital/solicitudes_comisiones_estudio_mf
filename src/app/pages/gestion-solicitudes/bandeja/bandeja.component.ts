@@ -13,7 +13,7 @@ import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
 
 /** Roles que ya tienen endpoint de bandeja */
-const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'ADMIN_SGA'];
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'ADMIN_SGA', 'DECANO'];
 
 @Component({
   selector: 'app-bandeja',
@@ -159,6 +159,14 @@ export class BandejaComponent implements OnInit {
           error: () => this.onErrorCarga(),
         });
         break;
+      
+      case 'DECANO':
+        this.solicitudesService.listarPendientesDecano(cedula).subscribe({
+          next: (resp) => this.procesarRespuestaRevisor(resp),
+          error: () => this.onErrorCarga(),
+        });
+        break;
+      
     }
   }
 

@@ -3,11 +3,11 @@ import { RequestManager } from '../managers/request.manager';
 
 @Injectable({ providedIn: 'root' })
 export class SolicitudesService {
-  private api: ReturnType<RequestManager['client']>;
-  private apiMid: ReturnType<RequestManager['client']>;
-  private apiCrud: ReturnType<RequestManager['client']>;
-  private apiDocCrud: ReturnType<RequestManager['client']>;
-  private apiGestorDocMid: ReturnType<RequestManager['client']>;
+  private readonly api: ReturnType<RequestManager['client']>;
+  private readonly apiMid: ReturnType<RequestManager['client']>;
+  private readonly apiCrud: ReturnType<RequestManager['client']>;
+  private readonly apiDocCrud: ReturnType<RequestManager['client']>;
+  private readonly apiGestorDocMid: ReturnType<RequestManager['client']>;
 
   constructor(private request: RequestManager) {
     this.api = this.request.client('SOLICITUDES_SERVICE');

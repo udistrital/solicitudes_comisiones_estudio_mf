@@ -18,7 +18,7 @@ export class VisorDocumentosComponent implements OnInit, OnDestroy {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private sanitizer: DomSanitizer,
+    private readonly sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {

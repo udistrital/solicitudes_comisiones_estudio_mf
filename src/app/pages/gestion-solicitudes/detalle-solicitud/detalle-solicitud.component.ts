@@ -20,7 +20,8 @@ type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
 
 // Códigos de tipo documental — FR010 y SOPORTE_REVISOR son fijos del frontend,
 // el resto viene dinámicamente del CRUD (tipo_documento_solicitud)
-type TipoDocumentalCode = 'FR010' | 'SOPORTE_REVISOR' | string;
+type TipoDocumentalFijo = 'FR010' | 'SOPORTE_REVISOR';
+type TipoDocumentalCode = TipoDocumentalFijo | (string & {});
 
 interface DocumentoItem {
   id: number;
@@ -128,12 +129,12 @@ export class DetalleSolicitudComponent implements OnInit {
   private detalleSolicitudActual: any = null;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private dialog: MatDialog,
-    private popup: PopUpManager,
-    private translate: TranslateService,
-    private solicitudesService: SolicitudesService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly dialog: MatDialog,
+    private readonly popup: PopUpManager,
+    private readonly translate: TranslateService,
+    private readonly solicitudesService: SolicitudesService,
   ) {}
 
   ngOnInit(): void {

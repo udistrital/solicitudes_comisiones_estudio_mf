@@ -28,10 +28,10 @@ export class BandejaComponent implements OnInit {
   errorCarga = false;
 
   constructor(
-    private router: Router,
-    private popup: PopUpManager,
-    private translate: TranslateService,
-    private solicitudesService: SolicitudesService,
+    private readonly router: Router,
+    private readonly popup: PopUpManager,
+    private readonly translate: TranslateService,
+    private readonly solicitudesService: SolicitudesService,
   ) {}
 
   ngOnInit(): void {
@@ -357,7 +357,6 @@ export class BandejaComponent implements OnInit {
           this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA', { id: row.id }));
         }
       });
-      return;
     }
   }
 }

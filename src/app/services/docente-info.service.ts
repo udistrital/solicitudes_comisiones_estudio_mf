@@ -15,7 +15,7 @@ interface DatosDocenteResponse {
 export class DocenteInfoService {
   private readonly baseUrl = ((environment as any)['ACADEMICA_JBPM_SERVICE'] ?? '') as string;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   consultarDocentePlanta(documento: string): Observable<DocenteInfo | null> {
     const url = `${this.baseUrl.replace(/\/+$/, '')}/consulta_datos_docente_planta/${encodeURIComponent(documento)}`;

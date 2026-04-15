@@ -55,10 +55,10 @@ export class Fr010FormComponent implements OnInit {
   ];
 
   constructor(
-    private fb: FormBuilder,
-    private translate: TranslateService,
-    private docenteInfoService: DocenteInfoService,
-    private popup: PopUpManager,
+    private readonly fb: FormBuilder,
+    private readonly translate: TranslateService,
+    private readonly docenteInfoService: DocenteInfoService,
+    private readonly popup: PopUpManager,
   ) {}
 
   ngOnInit(): void {
@@ -523,7 +523,8 @@ export class Fr010FormComponent implements OnInit {
 
     const raw = String(value).trim();
 
-    const matchDdMmYyyy = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const regexDate = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const matchDdMmYyyy = regexDate.exec(raw);
     if (matchDdMmYyyy) {
       const day = Number(matchDdMmYyyy[1]);
       const month = Number(matchDdMmYyyy[2]);
@@ -538,7 +539,8 @@ export class Fr010FormComponent implements OnInit {
       return isValid ? date : null;
     }
 
-    const matchIso = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const regexIso = /^(\d{4})-(\d{2})-(\d{2})$/;
+    const matchIso = regexIso.exec(raw);
     if (matchIso) {
       const year = Number(matchIso[1]);
       const month = Number(matchIso[2]);

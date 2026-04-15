@@ -86,7 +86,7 @@ steps:
       from_secret: aws_secret_access_key
     region: us-east-1
     source: dist/**/*
-    target: /${DRONE_REPO_NAME}
+    target: sga/${DRONE_REPO_NAME}
     strip_prefix: dist/
   when:
     branch:

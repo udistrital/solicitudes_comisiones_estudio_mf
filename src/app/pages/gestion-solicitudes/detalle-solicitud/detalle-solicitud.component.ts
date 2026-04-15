@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 
-import { Role } from '../../../models/roles.model';
+import { Role, resolverRolEfectivo } from '../../../models/roles.model';
 import { EstadoSolicitud, EstadoDocumento } from '../../../models/estados.model';
 import { PopUpManager } from '../../../managers/popup.manager';
 import { estadoSolicitudClass, estadoDocumentoClass } from '../../../utils/estado-solicitud.util';
@@ -11,7 +11,7 @@ import { estadoSolicitudClass, estadoDocumentoClass } from '../../../utils/estad
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
 import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
 import { SolicitudesService } from '../../../services/solicitudes.service';
-import { getDocumento } from '../../../utils/auth.util';
+import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -141,9 +141,8 @@ export class DetalleSolicitudComponent implements OnInit {
 
     const rawId = this.route.snapshot.paramMap.get('id');
 
-    const qp = this.route.snapshot.queryParamMap;
-    this.role = (qp.get('role') as Role) || 'DOCENTE';
-    this.mode = (qp.get('mode') as any) || 'GESTIONAR';
+    this.role = resolverRolEfectivo(getRolesUsuario()) ?? 'DOCENTE';
+    this.mode = (this.route.snapshot.queryParamMap.get('mode') as any) || 'GESTIONAR';
 
     if (rawId === 'nuevo') {
       // Modo creación
@@ -445,20 +444,32 @@ export class DetalleSolicitudComponent implements OnInit {
     }
 
     try {
+      const docActual = this.documentoEnCarga;
+
+      const debeDesactivarDocumentoActual =
+        !this.isCreating
+        && !!this.id
+        && !docActual.pendienteCrear
+        && !!docActual.documentoSolicitudId;
+
+      if (debeDesactivarDocumentoActual) {
+        this.agregarDocumentoAEliminar(docActual.documentoSolicitudId);
+      }
+
       const base64 = await this.fileToBase64(file);
 
-      this.documentoEnCarga.base64 = base64;
-      this.documentoEnCarga.fileName = file.name;
-      this.documentoEnCarga.mimeType = file.type;
-      this.documentoEnCarga.autorSoporte = 'Docente';
-      this.documentoEnCarga.estado = 'CARG';
-      this.documentoEnCarga.pendienteCrear = true;
-      this.documentoEnCarga.enlace = undefined;
-      this.documentoEnCarga.documentoSolicitudId = undefined;
-      this.documentoEnCarga.documentoId = undefined;
-      this.documentoEnCarga.metadatos = {
-        documento_requerido: this.documentoEnCarga.nombre,
-        codigo: this.documentoEnCarga.code,
+      docActual.base64 = base64;
+      docActual.fileName = file.name;
+      docActual.mimeType = file.type;
+      docActual.autorSoporte = 'Docente';
+      docActual.estado = 'CARG';
+      docActual.pendienteCrear = true;
+      docActual.enlace = undefined;
+      docActual.documentoSolicitudId = undefined;
+      docActual.documentoId = undefined;
+      docActual.metadatos = {
+        documento_requerido: docActual.nombre,
+        codigo: docActual.code,
         cargadoPor: 'DOCENTE',
         fechaCarga: new Date().toISOString(),
       };
@@ -483,7 +494,7 @@ export class DetalleSolicitudComponent implements OnInit {
     }
   }
 
-  eliminarDocumento(doc: DocumentoItem) {
+  eliminarDocumento(doc: DocumentoItem): void {
     this.popup.confirm(
       this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre || doc.fileName || 'documento' }),
       this.translate.instant('ACTIONS.ELIMINAR'),
@@ -493,11 +504,21 @@ export class DetalleSolicitudComponent implements OnInit {
 
       if (doc.esSoporteRevisor) {
         this.documentos = this.documentos.filter((d) => d.id !== doc.id);
-        this.popup.success(this.translate.instant('POPUPS.DOC_ELIMINADO', { nombre: doc.nombre || doc.fileName || 'documento' }));
+        this.popup.success(
+          this.translate.instant('POPUPS.DOC_ELIMINADO', {
+            nombre: doc.nombre || doc.fileName || 'documento',
+          }),
+        );
         return;
       }
 
-      if (!this.isCreating && this.id && doc.documentoSolicitudId) {
+      const debeDesactivarDocumentoPersistido =
+        !this.isCreating
+        && !!this.id
+        && !doc.pendienteCrear
+        && !!doc.documentoSolicitudId;
+
+      if (debeDesactivarDocumentoPersistido) {
         this.agregarDocumentoAEliminar(doc.documentoSolicitudId);
       }
 
@@ -507,6 +528,8 @@ export class DetalleSolicitudComponent implements OnInit {
       doc.fileName = undefined;
       doc.mimeType = undefined;
       doc.metadatos = undefined;
+      doc.enlace = undefined;
+      doc.pendienteCrear = false;
       doc.documentoSolicitudId = undefined;
       doc.documentoId = undefined;
 
@@ -516,7 +539,12 @@ export class DetalleSolicitudComponent implements OnInit {
         this.persistirEdicionDocente('POPUPS.DOC_ELIMINADO');
         return;
       }
-      this.popup.success(this.translate.instant('POPUPS.DOC_ELIMINADO', { nombre: doc.nombre || doc.fileName || 'documento' }));
+
+      this.popup.success(
+        this.translate.instant('POPUPS.DOC_ELIMINADO', {
+          nombre: doc.nombre || doc.fileName || 'documento',
+        }),
+      );
     });
   }
 
@@ -902,7 +930,7 @@ export class DetalleSolicitudComponent implements OnInit {
         fileName: match?.Nombre || baseDoc.nombre,
         mimeType: 'application/pdf',
         documentoSolicitudId: this.extraerDocumentoSolicitudId(match),
-        documentoId: match?.DocumentoId || match?.documento_id,
+        documentoId: this.extraerDocumentoId(match),
         cargandoArchivo: false,
         pendienteCrear: false,
       };
@@ -938,8 +966,28 @@ export class DetalleSolicitudComponent implements OnInit {
     this.documentosDesactivarIds.push(id);
   }
 
+  private toNumber(value: any): number | undefined {
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  }
+
   private extraerDocumentoSolicitudId(doc: any): number | undefined {
-    return doc?.DocumentoSolicitudId || doc?.Id || doc?.id;
+    return this.toNumber(
+      doc?.DocumentoSolicitudId
+      || doc?.DocumentoSolicitud?.Id
+      || doc?.documento_solicitud_id
+      || doc?.Id
+      || doc?.id
+    );
+  }
+
+  private extraerDocumentoId(doc: any): number | undefined {
+    return this.toNumber(
+      doc?.IdDocumento
+      || doc?.DocumentoId
+      || doc?.Documento?.Id
+      || doc?.id_documento
+    );
   }
 
   private extraerTipoDocumentoId(doc: any): number | undefined {
@@ -1119,10 +1167,11 @@ NombreSoporteRevisorValido(doc: DocumentoItem): boolean {
   return !!doc.nombre && doc.nombre.trim().length >= this.MIN_NOMBRE_SOPORTE_REVISOR;
 }
 
-actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
-  doc.nombre = value;
-  this.documentos = [...this.documentos];
-}
+  actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
+    doc.nombre = value;
+    this.documentos = [...this.documentos];
+  }
+  
   retornarSolicitud() {
     this.popup.confirm(
       this.translate.instant('POPUPS.RETORNAR_MSG'),

@@ -9,7 +9,7 @@ export class SolicitudesService {
   private readonly apiDocCrud: ReturnType<RequestManager['client']>;
   private readonly apiGestorDocMid: ReturnType<RequestManager['client']>;
 
-  constructor(private request: RequestManager) {
+  constructor(private readonly request: RequestManager) {
     this.api = this.request.client('SOLICITUDES_SERVICE');
     this.apiMid = this.request.client('COMISIONES_MID_SERVICE');
     this.apiCrud = this.request.client('COMISIONES_CRUD_SERVICE');

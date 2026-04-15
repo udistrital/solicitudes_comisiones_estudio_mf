@@ -21,7 +21,10 @@ type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
 // Códigos de tipo documental — FR010 y SOPORTE_REVISOR son fijos del frontend,
 // el resto viene dinámicamente del CRUD (tipo_documento_solicitud)
 type TipoDocumentalFijo = 'FR010' | 'SOPORTE_REVISOR';
-type TipoDocumentalCode = TipoDocumentalFijo | string;
+
+type TipoDocumentalCode =
+  | TipoDocumentalFijo
+  | (string & {});
 
 interface DocumentoItem {
   id: number;

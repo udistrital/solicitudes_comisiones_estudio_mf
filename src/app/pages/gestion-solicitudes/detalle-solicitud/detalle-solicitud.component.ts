@@ -21,7 +21,7 @@ type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
 // Códigos de tipo documental — FR010 y SOPORTE_REVISOR son fijos del frontend,
 // el resto viene dinámicamente del CRUD (tipo_documento_solicitud)
 type TipoDocumentalFijo = 'FR010' | 'SOPORTE_REVISOR';
-type TipoDocumentalCode = TipoDocumentalFijo | (string & {});
+type TipoDocumentalCode = TipoDocumentalFijo | string;
 
 interface DocumentoItem {
   id: number;
@@ -47,6 +47,24 @@ interface DocumentoItem {
   documentoId?: number;
   pendienteCrear?: boolean;
 }
+
+
+interface CambioEstadoPayload {
+  SolicitudId: number;
+  NuevoEstado: EstadoSolicitud;
+  RolUsuario: string;
+  NumeroIdentificacion: string;
+  Observacion: string;
+  Documentos: {
+    IdTipoDocumento: number | null;
+    TipoDocumento: string;
+    EstadoDocumento: string;
+    Nombre: string;
+    Metadatos: any;
+    File: string | undefined;
+  }[];
+}
+
 
 interface ObservacionItem {
   fecha: string;
@@ -679,7 +697,7 @@ export class DetalleSolicitudComponent implements OnInit {
     }
   }
 
-  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): any | null {
+  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): CambioEstadoPayload | null {
     const documentosRevisor = this.documentos
       .filter((d) => d.esSoporteRevisor && d.base64);
 
@@ -793,7 +811,9 @@ export class DetalleSolicitudComponent implements OnInit {
         resolve(base64);
       };
 
-      reader.onerror = (error) => reject(error);
+      reader.onerror = () => {
+        reject(reader.error ?? new Error('Error leyendo el archivo'));
+      };
       reader.readAsDataURL(file);
     });
   }

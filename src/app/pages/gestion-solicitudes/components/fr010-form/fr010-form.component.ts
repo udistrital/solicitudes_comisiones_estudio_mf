@@ -709,12 +709,6 @@ export class Fr010FormComponent implements OnInit {
   }
 
   public save(): void {
-    // TODO: reactivar validación para producción
-    // if (this.form.invalid) {
-    //   this.form.markAllAsTouched();
-    //   return;
-    // }
-
     const payload = {
       meta: {
         codigo: 'GD-PR-013-FR-010',

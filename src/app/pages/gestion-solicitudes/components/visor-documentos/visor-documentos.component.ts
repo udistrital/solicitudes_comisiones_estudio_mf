@@ -22,15 +22,21 @@ export class VisorDocumentosComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    if (this.isFR010 || !this.data?.base64) {
+    if (this.isFR010 || !this.data?.base64) return;
+
+    const mimeType = this.data?.mimeType;
+
+    if (mimeType !== 'application/pdf') {
       return;
     }
 
-    const mimeType = this.data?.mimeType || 'application/pdf';
     const blob = this.base64ToBlob(this.data.base64, mimeType);
 
     this.objectUrl = URL.createObjectURL(blob);
-    this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl);
+
+    this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      this.objectUrl
+    );
   }
 
   ngOnDestroy(): void {

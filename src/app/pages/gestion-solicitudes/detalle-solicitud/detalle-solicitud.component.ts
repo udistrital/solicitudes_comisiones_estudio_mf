@@ -518,7 +518,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   eliminarDocumento(doc: DocumentoItem): void {
     this.popup.confirm(
-      this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre || doc.fileName || 'documento' }),
+      this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre ?? doc.fileName ?? 'documento' }),
       this.translate.instant('ACTIONS.ELIMINAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
@@ -528,7 +528,7 @@ export class DetalleSolicitudComponent implements OnInit {
         this.documentos = this.documentos.filter((d) => d.id !== doc.id);
         this.popup.success(
           this.translate.instant('POPUPS.DOC_ELIMINADO', {
-            nombre: doc.nombre || doc.fileName || 'documento',
+            nombre: doc.nombre ?? doc.fileName ?? 'documento',
           }),
         );
         return;
@@ -564,7 +564,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
       this.popup.success(
         this.translate.instant('POPUPS.DOC_ELIMINADO', {
-          nombre: doc.nombre || doc.fileName || 'documento',
+          nombre: doc.nombre ?? doc.fileName ?? 'documento',
         }),
       );
     });
@@ -602,8 +602,8 @@ export class DetalleSolicitudComponent implements OnInit {
       width: '900px',
       maxWidth: '95vw',
       data: {
-        nombre: doc.fileName || doc.nombre,
-        mimeType: doc.mimeType || 'application/pdf',
+        nombre: doc.fileName ?? doc.nombre,
+        mimeType: doc.mimeType ?? 'application/pdf',
         base64: doc.base64,
         estado: doc.estado,
         autor: doc.autorSoporte,
@@ -723,8 +723,8 @@ export class DetalleSolicitudComponent implements OnInit {
       SolicitudId: this.id,
       NuevoEstado: nuevoEstado,
       RolUsuario: this.ROL_USUARIO_MAP[this.role],
-      NumeroIdentificacion: getDocumento() || '',
-      Observacion: observacion?.trim() || '',
+      NumeroIdentificacion: getDocumento() ?? '',
+      Observacion: observacion?.trim() ?? '',
       Documentos: documentosMapeados,
     };
   }
@@ -788,9 +788,9 @@ export class DetalleSolicitudComponent implements OnInit {
       IdTipoDocumento: d.idTipoDocumento,
       TipoDocumento: String(d.code || ''),
       EstadoDocumento: 'CARG',
-      Nombre: d.fileName || d.nombre,
-      Descripcion: d.descripcion || d.nombre,
-      Metadatos: d.metadatos || {},
+      Nombre: d.fileName ?? d.nombre,
+      Descripcion: d.descripcion ?? d.nombre,
+      Metadatos: d.metadatos ?? {},
       File: d.base64,
     }));
 

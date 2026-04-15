@@ -213,7 +213,7 @@ export class DetalleSolicitudComponent implements OnInit {
           name: d.Nombre,
           kind: 'FILE' as RequiredDocKind,
           idTipoDocumento: d.Id,
-          descripcion: d.Descripcion || d.Nombre,
+          descripcion: d.Descripcion ?? d.Nombre,
         }));
 
         this.requiredDocs = [this.FR010_OPTION, ...docsCrud];
@@ -714,7 +714,7 @@ export class DetalleSolicitudComponent implements OnInit {
       IdTipoDocumento: this.idTipoDocumentoSoporte,
       TipoDocumento: 'OTRO_SOP',
       EstadoDocumento: 'CARG',
-      Nombre: d.fileName || d.nombre,
+      Nombre: d.fileName ?? d.nombre,
       Metadatos: {},
       File: d.base64,
     }));
@@ -786,7 +786,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
     const documentoSolicitud = documentosParaCrear.map((d) => ({
       IdTipoDocumento: d.idTipoDocumento,
-      TipoDocumento: String(d.code || ''),
+      TipoDocumento: String(d.code ?? ''),
       EstadoDocumento: 'CARG',
       Nombre: d.fileName ?? d.nombre,
       Descripcion: d.descripcion ?? d.nombre,
@@ -796,7 +796,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
     return {
       identificacion: this.identificacionDocente,
-      tipo_solicitud_id: tipoSolicitudId || 2,
+      tipo_solicitud_id: tipoSolicitudId ?? 2,
       formulario,
       observacion: this.observacionDocente?.trim() || '',
       cod_abreviacion_rol: 'PROFE',
@@ -860,10 +860,10 @@ export class DetalleSolicitudComponent implements OnInit {
 
     const documentosNuevos = documentosParaCrear.map((d) => ({
       IdTipoDocumento: d.idTipoDocumento,
-      TipoDocumento: String(d.code || ''),
+      TipoDocumento: String(d.code ?? ''),
       EstadoDocumento: 'CARG',
-      Nombre: d.fileName || d.nombre,
-      Descripcion: d.descripcion || d.nombre,
+      Nombre: d.fileName ?? d.nombre,
+      Descripcion: d.descripcion ?? d.nombre,
       Metadatos: d.metadatos || {},
       File: d.base64,
     }));
@@ -873,7 +873,7 @@ export class DetalleSolicitudComponent implements OnInit {
     )];
 
     return {
-      tipo_solicitud_id: tipoSolicitudId || 2,
+      tipo_solicitud_id: tipoSolicitudId ?? 2,
       formulario,
       observacion: this.observacionDocente?.trim() || '',
       documentos_nuevos: documentosNuevos,

@@ -1,0 +1,95 @@
+kind: pipeline
+name: oas_cliente_ci
+
+steps:
+- name: run_sonar_scanner
+  image: sonarsource/sonar-scanner-cli:latest
+  environment:
+    SONAR_HOST_URL:
+      from_secret: SONAR_HOST
+    SONAR_TOKEN:
+      from_secret: SONAR_TOKEN
+    SONAR_SCANNER_OPTS: "-Dsonar.working.directory=/tmp/.scannerwork"
+  commands:
+    - sonar-scanner
+  when:
+    branch:
+      - feature/*
+      - develop
+      - release/*
+      - hotfix/*
+      - master
+    event:
+    - push
+
+- name: nodejs_develop
+  image: node:lts-bullseye
+  commands:
+  - node --version
+  - npm i
+  - npm run build
+  when:
+    branch:
+    - develop
+    event:
+    - push    
+
+- name: nodejs_release
+  image: node:lts-bullseye
+  commands:
+  - node --version
+  - npm i
+  - npm run build:test
+  when:
+    branch:
+    - release/*
+    event:
+    - push
+
+- name: nodejs_master
+  image: node:lts-bullseye
+  commands:
+  - node --version
+  - npm i
+  - npm run build:prod
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+- name: publish_s3_release
+  image: plugins/s3
+  settings:
+    bucket: cliente-pruebas
+    access_key:
+      from_secret: aws_access_key_id
+    secret_key:
+      from_secret: aws_secret_access_key
+    region: us-east-1
+    source: dist/**/*
+    target: /sga/${DRONE_REPO_NAME}
+    strip_prefix: dist/
+  when:
+    branch:
+    - release/*
+    event:
+    - push
+
+- name: publish_s3_master
+  image: plugins/s3
+  settings:
+    bucket: cliente-prod
+    access_key:
+      from_secret: aws_access_key_id
+    secret_key:
+      from_secret: aws_secret_access_key
+    region: us-east-1
+    source: dist/**/*
+    target: /sga/${DRONE_REPO_NAME}
+    strip_prefix: dist/
+  when:
+    branch:
+    - master
+    event:
+    - push

@@ -1,0 +1,371 @@
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { forkJoin } from 'rxjs';
+
+import { Role, resolverRolEfectivo } from '../../../models/roles.model';
+import { SolicitudRow } from '../../../models/solicitud.model';
+import { ColumnDef, TableAction } from '../../../shared/dynamic-table/dynamic-table.types';
+import { BandejaActionKey, ROLE_TABLE_CONFIGS } from './bandeja.table-config';
+import { PopUpManager } from '../../../managers/popup.manager';
+import { SolicitudesService } from '../../../services/solicitudes.service';
+import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
+import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
+
+/** Roles que ya tienen endpoint de bandeja */
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'ADMIN_SGA', 'DECANO'];
+
+@Component({
+  selector: 'app-bandeja',
+  templateUrl: './bandeja.component.html',
+  styleUrls: ['./bandeja.component.scss'],
+})
+export class BandejaComponent implements OnInit {
+  selectedRole: Role | null = null;
+  rows: SolicitudRow[] = [];
+  cargando = false;
+  sinIntegracion = false;
+  errorCarga = false;
+
+  constructor(
+    private router: Router,
+    private popup: PopUpManager,
+    private translate: TranslateService,
+    private solicitudesService: SolicitudesService,
+  ) {}
+
+  ngOnInit(): void {
+    const rolesUsuario = getRolesUsuario();
+    this.selectedRole = resolverRolEfectivo(rolesUsuario);
+
+    if (!this.selectedRole) {
+      return;
+    }
+
+    if (!ROLES_CON_ENDPOINT.includes(this.selectedRole)) {
+      this.sinIntegracion = true;
+      return;
+    }
+
+    this.cargarSolicitudes();
+  }
+
+  // ========== Getters UI ==========
+
+  get title(): string {
+    if (!this.selectedRole) return 'BANDEJA.TITLE_SIN_ROL';
+    return ROLE_TABLE_CONFIGS[this.selectedRole].title;
+  }
+
+  get columnDefs(): ColumnDef<SolicitudRow>[] {
+    if (!this.selectedRole) return [];
+    return ROLE_TABLE_CONFIGS[this.selectedRole].columns;
+  }
+
+  get actions(): TableAction<SolicitudRow>[] {
+    if (this.selectedRole === 'DOCENTE') {
+      const editable = (row: SolicitudRow) =>
+        row.estado === 'NO_ENV' || row.estado === 'CORR';
+
+      return [
+        {
+          key: 'VER',
+          label: 'ACTIONS.VER',
+          icon: 'visibility',
+          tooltip: 'TOOLTIPS.VER_SOLICITUD',
+          visible: (row: SolicitudRow) => !editable(row),
+        },
+        {
+          key: 'EDITAR',
+          label: 'ACTIONS.EDITAR',
+          icon: 'edit',
+          tooltip: 'TOOLTIPS.EDITAR_SOLICITUD',
+          visible: editable,
+        },
+        {
+          key: 'ELIMINAR',
+          label: 'ACTIONS.ELIMINAR',
+          icon: 'delete',
+          tooltip: 'TOOLTIPS.ELIMINAR_SOLICITUD',
+          color: 'warn',
+          visible: (row: SolicitudRow) => row.estado === 'NO_ENV',
+        },
+        {
+          key: 'ENVIAR',
+          label: 'ACTIONS.ENVIAR',
+          icon: 'send',
+          tooltip: 'TOOLTIPS.ENVIAR_SOLICITUD',
+          color: 'primary',
+          visible: editable,
+        },
+      ];
+    }
+
+    return [{ key: 'GESTIONAR', label: 'ACTIONS.GESTIONAR', icon: 'manage_search', tooltip: 'TOOLTIPS.GESTIONAR_SOLICITUD' }];
+  }
+
+  get isDocente(): boolean {
+    return this.selectedRole === 'DOCENTE';
+  }
+
+  get tieneEndpoint(): boolean {
+    return !!this.selectedRole && ROLES_CON_ENDPOINT.includes(this.selectedRole);
+  }
+
+  // ========== Carga de datos ==========
+
+  private cargarSolicitudes(): void {
+    const cedula = getDocumento();
+    if (!cedula) {
+      this.errorCarga = true;
+      return;
+    }
+
+    this.cargando = true;
+    this.errorCarga = false;
+
+    switch (this.selectedRole) {
+      case 'DOCENTE':
+        forkJoin({
+          mid: this.solicitudesService.listarSolicitudesDocente(cedula),
+          crud: this.solicitudesService.listarSolicitudesActivasCrud(),
+        }).subscribe({
+          next: ({ mid, crud }) => {
+            const activasCrud: any[] = crud?.Data || [];
+            const idsActivos = new Set<number>(activasCrud.map((s: any) => s.Id));
+            this.procesarRespuestaDocente(mid, idsActivos);
+          },
+          error: () => this.onErrorCarga(),
+        });
+        break;
+
+      case 'COORDINADOR':
+        this.solicitudesService.listarPendientesCoordinador(cedula).subscribe({
+          next: (resp) => this.procesarRespuestaRevisor(resp),
+          error: () => this.onErrorCarga(),
+        });
+        break;
+
+      case 'ADMINISTRADOR':
+        this.solicitudesService.listarPendientesSecretaria(cedula).subscribe({
+          next: (resp) => this.procesarRespuestaRevisor(resp),
+          error: () => this.onErrorCarga(),
+        });
+        break;
+
+      case 'ADMIN_SGA':
+        this.solicitudesService.listarHistoricoEstadoPorCodigo('REV_SEC_GRAL').subscribe({
+          next: (resp) => this.procesarRespuestaHistorico(resp),
+          error: () => this.onErrorCarga(),
+        });
+        break;
+      
+      case 'DECANO':
+        this.solicitudesService.listarPendientesDecano(cedula).subscribe({
+          next: (resp) => this.procesarRespuestaRevisor(resp),
+          error: () => this.onErrorCarga(),
+        });
+        break;
+      
+    }
+  }
+
+  private procesarRespuestaDocente(resp: any, idsActivos: Set<number>): void {
+    const data: any[] = (resp?.Data || []).filter((item: any) => idsActivos.has(item.id));
+    this.rows = data.map((item) => {
+      // esado_solicitud (typo del backend) puede ser objeto o null
+      const estadoObj = item.esado_solicitud || item.estado_solicitud || null;
+      const estadoNombre = estadoObj?.Nombre || null;
+      const estadoCodigo = mapEstadoNombreACodigo(estadoNombre);
+
+      return {
+        id: item.id,
+        docente: item.nombre || '',
+        idDocente: '',
+        proyecto: item.programa || '',
+        estado: estadoCodigo,
+        fecha: this.formatFecha(item.fecha_creacion),
+      };
+    });
+    this.cargando = false;
+  }
+
+  private procesarRespuestaRevisor(resp: any): void {
+    const data: any[] = resp?.Data || [];
+    this.rows = data.map((item) => {
+      const estadoCodigo = mapEstadoNombreACodigo(item.estado_solicitud);
+
+      return {
+        id: item.id,
+        docente: item.nombre_docente || '',
+        idDocente: item.documento_docente || '',
+        proyecto: '',
+        estado: estadoCodigo,
+        fecha: this.formatFecha(item.fecha_creacion),
+      };
+    });
+    this.cargando = false;
+  }
+
+  private procesarRespuestaHistorico(resp: any): void {
+    const data: any[] = resp?.Data || [];
+
+    // Deduplicar por SolicitudId.Id: conservar el registro más reciente
+    const porSolicitud = new Map<number, any>();
+    for (const item of data) {
+      const solId = item.SolicitudId?.Id;
+      if (!solId) continue;
+      const existente = porSolicitud.get(solId);
+      if (!existente || (item.FechaCreacion > existente.FechaCreacion)) {
+        porSolicitud.set(solId, item);
+      }
+    }
+
+    const items = Array.from(porSolicitud.values());
+    if (items.length === 0) {
+      this.rows = [];
+      this.cargando = false;
+      return;
+    }
+
+    // Obtener detalle de cada solicitud para resolver nombre y cédula del docente
+    const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
+    for (const item of items) {
+      const solId = item.SolicitudId.Id;
+      detalleCalls[String(solId)] = this.solicitudesService.obtenerDetalleSolicitud(solId);
+    }
+
+    forkJoin(detalleCalls).subscribe({
+      next: (detalles) => {
+        this.rows = items.map((item) => {
+          const solId = item.SolicitudId.Id;
+          const detalle = detalles[String(solId)]?.Data;
+          const { nombre, documento } = this.extraerDocenteDeDetalle(detalle);
+
+          return {
+            id: solId,
+            docente: nombre,
+            idDocente: documento,
+            proyecto: '',
+            estado: item.EstadoSolicitudId?.CodigoAbreviacion || 'NO_ENV',
+            fecha: this.formatFecha(item.SolicitudId?.FechaCreacion),
+          };
+        });
+        this.cargando = false;
+      },
+      error: () => {
+        // Si falla la consulta de detalles, mostrar filas sin datos de docente
+        this.rows = items.map((item) => ({
+          id: item.SolicitudId.Id,
+          docente: '',
+          idDocente: item.SolicitudId.TerceroId ? String(item.SolicitudId.TerceroId) : '',
+          proyecto: '',
+          estado: item.EstadoSolicitudId?.CodigoAbreviacion || 'NO_ENV',
+          fecha: this.formatFecha(item.SolicitudId?.FechaCreacion),
+        }));
+        this.cargando = false;
+      },
+    });
+  }
+
+  private extraerDocenteDeDetalle(data: any): { nombre: string; documento: string } {
+    if (!data) return { nombre: '', documento: '' };
+
+    // Intentar extraer del Formulario (JSON string con datos del FR-010)
+    if (data.Formulario && typeof data.Formulario === 'string') {
+      try {
+        const parsed = JSON.parse(data.Formulario);
+        const sol = parsed.solicitante || {};
+        const nombre = sol.q3_nombres_apellidos || '';
+        const documento = sol.q4_documento_identificacion || '';
+        if (nombre || documento) {
+          return { nombre, documento };
+        }
+      } catch { /* fallback abajo */ }
+    }
+
+    // Fallback: TerceroId de la solicitud
+    const terceroId = data.Solicitud?.TerceroId;
+    return { nombre: '', documento: terceroId ? String(terceroId) : '' };
+  }
+
+  private onErrorCarga(): void {
+    this.cargando = false;
+    this.errorCarga = true;
+    this.popup.error(this.translate.instant('BANDEJA.ERROR_CARGAR'));
+  }
+
+  private formatFecha(raw: string | null | undefined): string {
+    if (!raw) return '';
+    // Backend: "2026-03-20 09:13:44.51431 +0000 +0000" → extraer YYYY-MM-DD
+    return raw.split(' ')[0] || '';
+  }
+
+  // ========== Acciones ==========
+
+  crearSolicitud(): void {
+    this.router.navigate(['/solicitudes', 'nuevo'], {
+      queryParams: { mode: 'EDITAR' },
+    });
+  }
+
+  onAction(action: string, row: SolicitudRow) {
+    const a = action as BandejaActionKey;
+
+    if (a === 'VER') {
+      this.router.navigate(['/solicitudes', row.id], {
+        queryParams: { mode: 'VER' },
+      });
+      return;
+    }
+
+    if (a === 'EDITAR') {
+      this.router.navigate(['/solicitudes', row.id], {
+        queryParams: { mode: 'EDITAR' },
+      });
+      return;
+    }
+
+    if (a === 'GESTIONAR') {
+      this.router.navigate(['/solicitudes', row.id], {
+        queryParams: { mode: 'GESTIONAR' },
+      });
+      return;
+    }
+
+    if (a === 'ELIMINAR') {
+      this.popup.confirm(
+        this.translate.instant('POPUPS.ELIMINAR_SOLICITUD_MSG', { id: row.id }),
+        this.translate.instant('ACTIONS.ELIMINAR'),
+        this.translate.instant('ACTIONS.CANCELAR'),
+      ).then((result) => {
+        if (result.isConfirmed) {
+          this.cargando = true;
+          this.solicitudesService.eliminarSolicitudDocente(row.id).subscribe({
+            next: () => {
+              this.rows = this.rows.filter((x) => x.id !== row.id);
+              this.cargando = false;
+              this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ELIMINADA', { id: row.id }));
+            },
+          });
+        }
+      });
+      return;
+    }
+
+    if (a === 'ENVIAR') {
+      this.popup.confirm(
+        this.translate.instant('POPUPS.ENVIAR_SOLICITUD_MSG', { id: row.id }),
+        this.translate.instant('ACTIONS.ENVIAR'),
+        this.translate.instant('ACTIONS.CANCELAR'),
+      ).then((result) => {
+        if (result.isConfirmed) {
+          row.estado = 'RAD';
+          this.rows = [...this.rows];
+          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA', { id: row.id }));
+        }
+      });
+      return;
+    }
+  }
+}

@@ -1,0 +1,53 @@
+// ============================================================
+// SGA Variables Globales
+// Centraliza colores, opacidades y tokens reutilizables.
+// ============================================================
+
+:root {
+  // --- Primario SGA ---
+  --sga-primary: #03678f;
+  --sga-primary-rgb: 3, 103, 143;
+  --sga-primary-100: rgba(var(--sga-primary-rgb), 0.10);
+  --sga-primary-060: rgba(var(--sga-primary-rgb), 0.06);
+  --sga-primary-040: rgba(var(--sga-primary-rgb), 0.04);
+
+  // --- Estados de solicitud ---
+  // Gris: no enviada
+  --st-no-env-bg: #e0e0e0;
+  --st-no-env-text: #424242;
+  // Azul: radicada
+  --st-rad-bg: #bbdefb;
+  --st-rad-text: #0d47a1;
+  // Amarillo: en revisión/gestión
+  --st-revision-bg: #fff9c4;
+  --st-revision-text: #f57f17;
+  // Naranja: por corregir
+  --st-corr-bg: #ffe0b2;
+  --st-corr-text: #e65100;
+  // Naranja: subsanación (mismo tono)
+  --st-subsanar-bg: #ffe0b2;
+  --st-subsanar-text: #e65100;
+  // Verde: aprobada
+  --st-aprob-bg: #c8e6c9;
+  --st-aprob-text: #1b5e20;
+  // Rojo: no aprobada
+  --st-no-aprob-bg: #ffcdd2;
+  --st-no-aprob-text: #b71c1c;
+
+  // --- Estados de documento ---
+  // Gris: pendiente (no cargado)
+  --doc-pendiente-bg: #e0e0e0;
+  --doc-pendiente-text: #424242;
+  // Azul: cargado / enviado para revisión
+  --doc-carg-bg: #bbdefb;
+  --doc-carg-text: #0d47a1;
+  // Verde: aprobado
+  --doc-aprob-bg: #c8e6c9;
+  --doc-aprob-text: #1b5e20;
+  // Naranja: por corregir / subsanado
+  --doc-corr-bg: #ffe0b2;
+  --doc-corr-text: #e65100;
+  // Rojo: no aprobado / anulado
+  --doc-no-aprob-bg: #ffcdd2;
+  --doc-no-aprob-text: #b71c1c;
+}

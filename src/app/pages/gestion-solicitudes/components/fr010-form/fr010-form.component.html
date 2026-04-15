@@ -1,0 +1,735 @@
+<form [formGroup]="form" class="block space-y-3">
+
+  <!-- ===== IDENTIFICACIÓN DEL SOLICITANTE ===== -->
+  <mat-card class="bg-white border border-black/10 rounded-xl p-3">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header
+        class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold text-sm">{{ 'FR010.ID_SOLICITANTE' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.ID_SOLICITANTE_NOTA' | translate }}</div>
+      </header>
+
+      <div class="p-3">
+        <div *ngIf="loadingSolicitante" class="text-xs text-sga animate-pulse mb-2">
+          {{ 'FR010.LOADING_DATOS' | translate }}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="solicitante">
+
+          <!-- 1 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q1_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q1_fecha" [placeholder]="'FR010.Q1_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 2 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q2_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q2_facultad" [placeholder]="'FR010.Q2_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 3 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q3_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q3_nombres_apellidos" [placeholder]="'FR010.Q3_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 4 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q4_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q4_documento_identificacion" [placeholder]="'FR010.Q4_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 5 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q5_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q5_edad" [placeholder]="'FR010.Q5_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 6 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q6_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q6_correo" [placeholder]="'FR010.Q6_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 7 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q7_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q7_proyecto" [placeholder]="'FR010.Q7_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 8 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q8_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q8_telefono" [placeholder]="'FR010.Q8_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 9 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q9_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q9_celular" [placeholder]="'FR010.Q9_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 10 fecha ingreso -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q10A_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                [matDatepicker]="pickerQ10"
+                formControlName="q10_fecha_ingreso_universidad"
+                [placeholder]="'FR010.PH_SELECT_DATE' | translate"
+                readonly />
+              <mat-datepicker-toggle matSuffix [for]="pickerQ10"></mat-datepicker-toggle>
+              <mat-datepicker #pickerQ10></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <!-- 10 resolución -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q10B_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q10_resolucion_rh" [placeholder]="'FR010.Q10B_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 11 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q11_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q11_categoria_ingreso" [placeholder]="'FR010.Q11_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+          <!-- 12 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q12_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input matInput formControlName="q12_categoria_actual" [placeholder]="'FR010.Q12_PH' | translate" />
+            </mat-form-field>
+          </div>
+
+        </div>
+
+        <div class="mt-2 p-2.5 rounded-lg border border-dashed border-sga/40 bg-sga/5 text-xs text-black/70">
+          {{ 'FR010.TERCEROS_NOTA' | translate }}
+        </div>
+      </div>
+    </section>
+  </mat-card>
+
+  <!-- ===== IDENTIFICACIÓN DE LA SOLICITUD ===== -->
+  <mat-card class="bg-white border border-black/10 rounded-xl p-3">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header
+        class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold text-sm">{{ 'FR010.ID_SOLICITUD' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.ID_SOLICITUD_NOTA' | translate }}</div>
+      </header>
+
+      <div class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="solicitud">
+
+          <!-- 13 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q13_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <mat-select formControlName="q13_tipo_estudio" [placeholder]="'FR010.Q13_PH' | translate">
+                <mat-option *ngFor="let o of tipoEstudioOptions" [value]="o.value">{{ o.label | translate }}</mat-option>
+              </mat-select>
+              <mat-error *ngIf="isInvalid('solicitud.q13_tipo_estudio')">
+                {{ getError('solicitud.q13_tipo_estudio') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 14 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q14_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q14_nombre_programa"
+                [placeholder]="'FR010.Q14_PH' | translate"
+                maxlength="120"
+                (blur)="normalizeText('solicitud.q14_nombre_programa')" />
+              <mat-error *ngIf="isInvalid('solicitud.q14_nombre_programa')">
+                {{ getError('solicitud.q14_nombre_programa') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 15 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q15_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q15_titulo_aspira"
+                [placeholder]="'FR010.Q15_PH' | translate"
+                maxlength="120"
+                (blur)="normalizeText('solicitud.q15_titulo_aspira')" />
+              <mat-error *ngIf="isInvalid('solicitud.q15_titulo_aspira')">
+                {{ getError('solicitud.q15_titulo_aspira') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 16 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q16_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q16_universidad"
+                [placeholder]="'FR010.Q16_PH' | translate"
+                maxlength="120"
+                (blur)="normalizeText('solicitud.q16_universidad')" />
+              <mat-error *ngIf="isInvalid('solicitud.q16_universidad')">
+                {{ getError('solicitud.q16_universidad') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 17 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q17_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q17_pais"
+                [placeholder]="'FR010.Q17_PH' | translate"
+                maxlength="60"
+                (blur)="normalizeText('solicitud.q17_pais')" />
+              <mat-error *ngIf="isInvalid('solicitud.q17_pais')">
+                {{ getError('solicitud.q17_pais') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 18 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q18_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q18_ciudad"
+                [placeholder]="'FR010.Q18_PH' | translate"
+                maxlength="60"
+                (blur)="normalizeText('solicitud.q18_ciudad')" />
+              <mat-error *ngIf="isInvalid('solicitud.q18_ciudad')">
+                {{ getError('solicitud.q18_ciudad') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 19 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q19_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                [matDatepicker]="pickerQ19"
+                formControlName="q19_fecha_aceptacion"
+                [placeholder]="'FR010.PH_SELECT_DATE' | translate"
+                readonly />
+              <mat-datepicker-toggle matSuffix [for]="pickerQ19"></mat-datepicker-toggle>
+              <mat-datepicker #pickerQ19></mat-datepicker>
+              <mat-error *ngIf="isInvalid('solicitud.q19_fecha_aceptacion')">
+                {{ getError('solicitud.q19_fecha_aceptacion') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 20 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q20_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q20_num_semestres"
+                [placeholder]="'FR010.Q20_PH' | translate"
+                inputmode="numeric"
+                maxlength="2"
+                (input)="onlyDigits($event, 'solicitud.q20_num_semestres', 2)" />
+              <mat-error *ngIf="isInvalid('solicitud.q20_num_semestres')">
+                {{ getError('solicitud.q20_num_semestres') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 22 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q22_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <mat-select formControlName="q22_tipo_apoyo_requerido" [placeholder]="'FR010.Q22_PH' | translate">
+                <mat-option *ngFor="let o of tipoApoyoOptions" [value]="o.value">{{ o.label | translate }}</mat-option>
+              </mat-select>
+              <mat-error *ngIf="isInvalid('solicitud.q22_tipo_apoyo_requerido')">
+                {{ getError('solicitud.q22_tipo_apoyo_requerido') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 23 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q23_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                [matDatepicker]="pickerQ23"
+                formControlName="q23_fecha_inicio_estudios"
+                [placeholder]="'FR010.PH_SELECT_DATE' | translate"
+                readonly />
+              <mat-datepicker-toggle matSuffix [for]="pickerQ23"></mat-datepicker-toggle>
+              <mat-datepicker #pickerQ23></mat-datepicker>
+              <mat-error *ngIf="isInvalid('solicitud.q23_fecha_inicio_estudios')">
+                {{ getError('solicitud.q23_fecha_inicio_estudios') }}
+              </mat-error>
+            </mat-form-field>
+            <div *ngIf="hasSolicitudGroupError('acceptanceAfterStart')" class="mt-1 text-xs text-red-600">
+              {{ 'VALIDATIONS.ACCEPTANCE_AFTER_START' | translate }}
+            </div>
+          </div>
+
+          <!-- 24 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q24_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                [matDatepicker]="pickerQ24"
+                formControlName="q24_fecha_culminacion_estudios"
+                [placeholder]="'FR010.PH_SELECT_DATE' | translate"
+                readonly />
+              <mat-datepicker-toggle matSuffix [for]="pickerQ24"></mat-datepicker-toggle>
+              <mat-datepicker #pickerQ24></mat-datepicker>
+              <mat-error *ngIf="isInvalid('solicitud.q24_fecha_culminacion_estudios')">
+                {{ getError('solicitud.q24_fecha_culminacion_estudios') }}
+              </mat-error>
+            </mat-form-field>
+            <div *ngIf="hasSolicitudGroupError('endBeforeStart')" class="mt-1 text-xs text-red-600">
+              {{ 'VALIDATIONS.END_BEFORE_START' | translate }}
+            </div>
+          </div>
+
+          <!-- 25 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q25_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q25_tiempo_requerido_culminacion"
+                [placeholder]="'FR010.Q25_PH' | translate"
+                maxlength="20"
+                (blur)="normalizeText('solicitud.q25_tiempo_requerido_culminacion')" />
+              <mat-error *ngIf="isInvalid('solicitud.q25_tiempo_requerido_culminacion')">
+                {{ getError('solicitud.q25_tiempo_requerido_culminacion') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 26 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q26_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q26_costo_total_requerido"
+                [placeholder]="'FR010.Q26_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'solicitud.q26_costo_total_requerido', 12)" />
+              <mat-error *ngIf="isInvalid('solicitud.q26_costo_total_requerido')">
+                {{ getError('solicitud.q26_costo_total_requerido') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </mat-card>
+
+  <!-- ===== FINANCIACIÓN COLOMBIA ===== -->
+  <mat-card class="bg-white border border-black/10 rounded-xl p-3">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header
+        class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold text-sm">{{ 'FR010.FINANCIACION' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.FINANCIACION_COL_NOTA' | translate }}</div>
+      </header>
+
+      <div class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="financiacion_colombia">
+
+          <!-- 27 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q27_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q27_pago_matricula_valor"
+                [placeholder]="'FR010.Q27_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_colombia.q27_pago_matricula_valor', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_colombia.q27_pago_matricula_valor')">
+                {{ getError('financiacion_colombia.q27_pago_matricula_valor') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 28 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q28_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q28_pago_matricula_total"
+                [placeholder]="'FR010.Q28_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_colombia.q28_pago_matricula_total', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_colombia.q28_pago_matricula_total')">
+                {{ getError('financiacion_colombia.q28_pago_matricula_total') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 29 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q29_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q29_tiquetes"
+                [placeholder]="'FR010.Q29_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_colombia.q29_tiquetes', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_colombia.q29_tiquetes')">
+                {{ getError('financiacion_colombia.q29_tiquetes') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 30 -->
+          <div>
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q30_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q30_descarga_academica_horas"
+                [placeholder]="'FR010.Q30_PH' | translate"
+                inputmode="numeric"
+                maxlength="2"
+                (input)="onlyDigits($event, 'financiacion_colombia.q30_descarga_academica_horas', 2)" />
+              <mat-error *ngIf="isInvalid('financiacion_colombia.q30_descarga_academica_horas')">
+                {{ getError('financiacion_colombia.q30_descarga_academica_horas') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 31 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q31_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q31_descarga_academica_valor_total"
+                [placeholder]="'FR010.Q31_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_colombia.q31_descarga_academica_valor_total', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_colombia.q31_descarga_academica_valor_total')">
+                {{ getError('financiacion_colombia.q31_descarga_academica_valor_total') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 32 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q32_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q32_costo_reemplazo_docente"
+                [placeholder]="'FR010.Q32_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_colombia.q32_costo_reemplazo_docente', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_colombia.q32_costo_reemplazo_docente')">
+                {{ getError('financiacion_colombia.q32_costo_reemplazo_docente') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </mat-card>
+
+  <!-- ===== FINANCIACIÓN EXTERIOR ===== -->
+  <mat-card class="bg-white border border-black/10 rounded-xl p-3">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header
+        class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold text-sm">{{ 'FR010.FINANCIACION' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.FINANCIACION_EXT_NOTA' | translate }}</div>
+      </header>
+
+      <div class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="financiacion_exterior">
+
+          <!-- 33 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q33_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q33_valor_salario_tiempo_comision"
+                [placeholder]="'FR010.Q33_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_exterior.q33_valor_salario_tiempo_comision', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_exterior.q33_valor_salario_tiempo_comision')">
+                {{ getError('financiacion_exterior.q33_valor_salario_tiempo_comision') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 34 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q34_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q34_pago_matricula_valor"
+                [placeholder]="'FR010.Q34_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_exterior.q34_pago_matricula_valor', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_exterior.q34_pago_matricula_valor')">
+                {{ getError('financiacion_exterior.q34_pago_matricula_valor') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 35 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q35_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q35_pago_total_matricula"
+                [placeholder]="'FR010.Q35_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_exterior.q35_pago_total_matricula', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_exterior.q35_pago_total_matricula')">
+                {{ getError('financiacion_exterior.q35_pago_total_matricula') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 36 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q36_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q36_tiquetes"
+                [placeholder]="'FR010.Q36_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_exterior.q36_tiquetes', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_exterior.q36_tiquetes')">
+                {{ getError('financiacion_exterior.q36_tiquetes') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 37 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q37_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q37_seguro_medico"
+                [placeholder]="'FR010.Q37_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_exterior.q37_seguro_medico', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_exterior.q37_seguro_medico')">
+                {{ getError('financiacion_exterior.q37_seguro_medico') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 38 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q38_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q38_gastos_instalacion"
+                [placeholder]="'FR010.Q38_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_exterior.q38_gastos_instalacion', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_exterior.q38_gastos_instalacion')">
+                {{ getError('financiacion_exterior.q38_gastos_instalacion') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 39 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q39_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q39_costo_reemplazo_docente"
+                [placeholder]="'FR010.Q39_PH' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onlyDigits($event, 'financiacion_exterior.q39_costo_reemplazo_docente', 12)" />
+              <mat-error *ngIf="isInvalid('financiacion_exterior.q39_costo_reemplazo_docente')">
+                {{ getError('financiacion_exterior.q39_costo_reemplazo_docente') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </mat-card>
+
+  <!-- ===== BECA ===== -->
+  <mat-card class="bg-white border border-black/10 rounded-xl p-3">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+      <header
+        class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold text-sm">{{ 'FR010.BECA_TITLE' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.BECA_NOTA' | translate }}</div>
+      </header>
+
+      <div class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="beca">
+
+          <!-- 40 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q40_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q40_cubrimiento_beca"
+                [placeholder]="'FR010.Q40_PH' | translate"
+                maxlength="150"
+                (blur)="normalizeText('beca.q40_cubrimiento_beca')" />
+              <mat-error *ngIf="isInvalid('beca.q40_cubrimiento_beca')">
+                {{ getError('beca.q40_cubrimiento_beca') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 41 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q41_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q41_institucion_otorga"
+                [placeholder]="'FR010.Q41_PH' | translate"
+                maxlength="120"
+                (blur)="normalizeText('beca.q41_institucion_otorga')" />
+              <mat-error *ngIf="isInvalid('beca.q41_institucion_otorga')">
+                {{ getError('beca.q41_institucion_otorga') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 42 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q42_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q42_tipo_financiacion_monto"
+                [placeholder]="'FR010.Q42_PH' | translate"
+                maxlength="150"
+                (blur)="normalizeText('beca.q42_tipo_financiacion_monto')" />
+              <mat-error *ngIf="isInvalid('beca.q42_tipo_financiacion_monto')">
+                {{ getError('beca.q42_tipo_financiacion_monto') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- 43 -->
+          <div class="md:col-span-2">
+            <div class="text-xs text-black/60 mb-1">{{ 'FR010.Q43_LABEL' | translate }}</div>
+            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
+              <input
+                matInput
+                formControlName="q43_duracion_beca"
+                [placeholder]="'FR010.Q43_PH' | translate"
+                maxlength="20"
+                (blur)="normalizeText('beca.q43_duracion_beca')" />
+              <mat-error *ngIf="isInvalid('beca.q43_duracion_beca')">
+                {{ getError('beca.q43_duracion_beca') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </mat-card>
+
+  <!-- ===== OBSERVACIONES ===== -->
+  <mat-card class="bg-white border border-black/10 rounded-xl p-3">
+    <section class="border border-black/10 rounded-xl overflow-hidden bg-white bg-gradient-to-b from-sga/5 to-white">
+      <header
+        class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+        <div class="font-semibold text-sm">{{ 'FR010.OBSERVACIONES' | translate }}</div>
+        <div class="text-xs text-black/60">{{ 'FR010.OBSERVACIONES_NOTA' | translate }}</div>
+      </header>
+
+      <div class="p-3">
+        <div class="text-xs text-black/60 mb-1">{{ 'FR010.OBS_LABEL' | translate }}</div>
+        <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
+          <textarea
+            matInput
+            rows="4"
+            maxlength="500"
+            [placeholder]="'FR010.OBS_PH' | translate"
+            formControlName="observaciones"
+            (blur)="normalizeText('observaciones')"></textarea>
+          <mat-error *ngIf="isInvalid('observaciones')">
+            {{ getError('observaciones') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </section>
+  </mat-card>
+
+</form>

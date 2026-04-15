@@ -1,0 +1,13 @@
+// Widths por columna (keys dinámicas)
+.col-id       { width: 12%; }
+.col-fecha    { width: 14%; }
+.col-docente  { width: 18%; }
+.col-idDocente { width: 12%; }
+.col-estado   { width: 18%; }
+.col-acciones { width: 14%; }
+
+// Paginator dentro del marco SGA
+::ng-deep .mat-mdc-paginator {
+  border-top: 1px solid rgba(3, 103, 143, 0.3);
+  background: transparent;
+}

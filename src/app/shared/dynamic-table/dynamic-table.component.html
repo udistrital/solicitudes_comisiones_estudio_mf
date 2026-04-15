@@ -1,0 +1,136 @@
+<mat-card class="p-3 rounded-xl border border-black/10 bg-white">
+  <!-- Marco SGA -->
+  <div class="rounded-xl border-2 border-sga overflow-hidden bg-white">
+    <!-- Barra superior -->
+    <div class="h-3 bg-gradient-to-r from-sga to-sga/60" aria-hidden="true"></div>
+
+    <table
+      mat-table
+      [dataSource]="dataSource"
+      class="w-full min-w-0 table-fixed border-separate border-spacing-0 bg-white">
+
+      <!-- Columnas dinámicas -->
+      <ng-container *ngFor="let col of columns; trackBy: trackByCol" [matColumnDef]="col.key">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          class="align-top text-center text-sga px-3 pb-4 border-b border-sga/30"
+          [class]="'col-' + col.key">
+
+          <div class="pt-3"></div>
+
+          <div class="flex flex-col items-center gap-4">
+            <div class="w-full text-center leading-snug font-semibold">
+              {{ col.header | translate }}
+            </div>
+
+            <!-- Filtro por columna -->
+            <div *ngIf="enableColumnFilters && isFilterable(col)" class="relative w-full py-1">
+              <input
+                type="text"
+                class="w-full h-10 rounded-md border border-black/30 bg-white px-3 pr-10 text-sm text-black/80
+                       placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-sga/20 focus:border-sga"
+                [placeholder]="(col.filterPlaceholder || 'TABLE.FILTER_PLACEHOLDER') | translate"
+                [(ngModel)]="filters[col.key]"
+                (ngModelChange)="onFilterChange()" />
+
+              <button
+                type="button"
+                [attr.aria-label]="'ACTIONS.CANCELAR' | translate"
+                *ngIf="filters[col.key]"
+                (click)="clearFilter(col.key)"
+                class="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center w-8 h-8 rounded-md
+                       text-black/60 hover:text-black/80 hover:bg-black/5">
+                <mat-icon class="text-[20px]">close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </th>
+
+        <td
+          mat-cell
+          *matCellDef="let row"
+          class="align-middle text-center px-3 py-3 border-b border-r border-sga/30 text-black/75"
+          [class]="'col-' + col.key">
+
+          <ng-container [ngSwitch]="col.renderAs || 'text'">
+            <div *ngSwitchCase="'chip'" class="flex justify-center">
+              <span class="sga-chip" [ngClass]="col.chipClass ? col.chipClass(row) : ''">
+                {{ col.cell(row) | translate }}
+              </span>
+            </div>
+
+            <span *ngSwitchDefault class="block break-words text-center">
+              {{ col.cell(row) }}
+            </span>
+          </ng-container>
+        </td>
+      </ng-container>
+
+      <!-- Columna de acciones -->
+      <ng-container matColumnDef="acciones">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          class="align-top text-center text-sga px-3 pb-4 border-b border-sga/30 col-acciones">
+          <div class="pt-3"></div>
+          <div class="w-full text-center leading-snug font-semibold">{{ 'TABLE.GESTION' | translate }}</div>
+        </th>
+
+        <td
+          mat-cell
+          *matCellDef="let row"
+          class="align-middle text-center px-3 py-3 border-b border-r border-sga/30 col-acciones">
+
+          <div class="flex items-center justify-center gap-1 min-h-[44px]">
+            <ng-container *ngFor="let a of actions; trackBy: trackByAction">
+              <button
+                *ngIf="isVisible(a, row) && a.icon"
+                type="button"
+                class="sga-table-action"
+                [ngClass]="{
+                  'sga-table-action--warn': a.color === 'warn',
+                  'sga-table-action--primary': a.color === 'primary'
+                }"
+                [attr.aria-label]="(a.tooltip || a.label) | translate"
+                [matTooltip]="(a.tooltip || a.label) | translate"
+                (click)="emit(a.key, row)">
+                <mat-icon>{{ a.icon }}</mat-icon>
+              </button>
+
+              <!-- Fallback: botón de texto si no tiene icon -->
+              <button
+                *ngIf="isVisible(a, row) && !a.icon && (a.variant !== 'flat')"
+                mat-stroked-button
+                class="h-9 px-3.5 rounded-lg border-black/20"
+                [matTooltip]="(a.tooltip || '') | translate"
+                (click)="emit(a.key, row)">
+                {{ a.label | translate }}
+              </button>
+
+              <button
+                *ngIf="isVisible(a, row) && !a.icon && (a.variant === 'flat')"
+                mat-flat-button
+                color="primary"
+                class="h-9 px-3.5 rounded-lg"
+                [matTooltip]="(a.tooltip || '') | translate"
+                (click)="emit(a.key, row)">
+                {{ a.label | translate }}
+              </button>
+            </ng-container>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <!-- Paginador -->
+    <mat-paginator
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons>
+    </mat-paginator>
+  </div>
+</mat-card>

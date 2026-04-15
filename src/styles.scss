@@ -1,0 +1,21 @@
+// ============================================================
+// Entrypoint global de estilos
+//
+// NOTA: El tema Material (sga-theme-angular-material.scss) se
+// carga desde angular.json ANTES de este archivo para que las
+// directivas de @tailwind base no sobreescriban el tema.
+// NO importarlo aquí para evitar doble compilación.
+// ============================================================
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Variables CSS compartidas (colores, tokens de estado)
+@import './assets/styles/variables';
+
+// Estilos globales SGA (tablas, form-fields, chips, botones de acción)
+@import './assets/styles/sga-global';
+
+// SweetAlert2 institucional
+@import './assets/styles/sga-sweetalert2/sga-sweetalert2';

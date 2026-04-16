@@ -79,10 +79,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   readonly opcionesPermisos = [
     'crear_solicitud',
-<<<<<<< HEAD
-=======
     'editar_solicitud',
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     'guardar_solicitud',
     'enviar_solicitud_docente',
     'guardar_formulario_fr010',
@@ -167,11 +164,7 @@ export class DetalleSolicitudComponent implements OnInit {
     this.role = resolverRolEfectivo(this.roles) ?? 'DOCENTE';
     this.mode = (this.route.snapshot.queryParamMap.get('mode') as any) || 'GESTIONAR';
 
-<<<<<<< HEAD
-    // Permisos: en paralelo, solo controlan visibilidad de botones de acción
-=======
     // Permisos: en paralelo, controlan visibilidad de secciones y acciones
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     forkJoin(
       this.opcionesPermisos.map(op => this.permisosUtils.tienePermiso(this.roles, op))
     ).subscribe({
@@ -343,15 +336,6 @@ export class DetalleSolicitudComponent implements OnInit {
     return this.permisos['dar_inicio_solicitud'] === true;
   }
 
-<<<<<<< HEAD
-  /** Docente editable: creación o edición (NO_ENV/CORR), validado por crear_solicitud */
-  get isDocenteEditable(): boolean {
-    if (!this.permisosListos) return false;
-    if (!this.isDocente) return false;
-    if (this.permisos['crear_solicitud'] !== true) return false;
-
-    return this.isCreating || this.estadoSolicitud === 'NO_ENV' || this.estadoSolicitud === 'CORR';
-=======
   /** Docente editable: creación (crear_solicitud) o edición NO_ENV/CORR (editar_solicitud) */
   get isDocenteEditable(): boolean {
     if (!this.permisosListos) return false;
@@ -362,7 +346,6 @@ export class DetalleSolicitudComponent implements OnInit {
     }
     return this.permisos['editar_solicitud'] === true
       && (this.estadoSolicitud === 'NO_ENV' || this.estadoSolicitud === 'CORR');
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
   }
 
   /** Docente en modo solo lectura (cualquier estado no editable) */
@@ -427,14 +410,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Acciones docente ==========
   guardarDocente(): void {
-<<<<<<< HEAD
-    if (this.permisosListos && !this.permisos['guardar_solicitud']) {
-      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
-      return;
-    }
-=======
     if (this.permisosListos && !this.permisos['guardar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     if (this.guardando) return;
     
     if (this.isCreating){
@@ -465,14 +441,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   enviarDocente(): void {
-<<<<<<< HEAD
-    if (this.permisosListos && !this.permisos['enviar_solicitud_docente']) {
-      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
-      return;
-    }
-=======
     if (this.permisosListos && !this.permisos['enviar_solicitud_docente']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     this.popup.confirm(
       this.translate.instant('POPUPS.CONFIRMAR_ENVIO'),
       this.translate.instant('ACTIONS.ENVIAR'),
@@ -667,14 +636,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   guardarFR010(): void {
-<<<<<<< HEAD
-    if (this.permisosListos && !this.permisos['guardar_formulario_fr010']) {
-      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
-      return;
-    }
-=======
     if (this.permisosListos && !this.permisos['guardar_formulario_fr010']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     if (!this.fr010Comp) {
       this.popup.error(this.translate.instant('POPUPS.FR010_NO_LISTO'));
       return;
@@ -1193,14 +1155,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Acciones revisor ==========
   adjuntarSoporteRevisor(fileInput: HTMLInputElement): void {
-<<<<<<< HEAD
-    if (this.permisosListos && !this.permisos['adjuntar_soporte_revision']) {
-      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
-      return;
-    }
-=======
     if (this.permisosListos && !this.permisos['adjuntar_soporte_revision']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     fileInput.value = '';
     fileInput.click();
   }
@@ -1266,14 +1221,7 @@ NombreSoporteRevisorValido(doc: DocumentoItem): boolean {
   }
   
   retornarSolicitud() {
-<<<<<<< HEAD
-    if (this.permisosListos && !this.permisos['retornar_solicitud']) {
-      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
-      return;
-    }
-=======
     if (this.permisosListos && !this.permisos['retornar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     this.popup.confirm(
       this.translate.instant('POPUPS.RETORNAR_MSG'),
       this.translate.instant('ACTIONS.RETORNAR'),
@@ -1286,14 +1234,7 @@ NombreSoporteRevisorValido(doc: DocumentoItem): boolean {
   }
 
   rechazarSolicitud() {
-<<<<<<< HEAD
-    if (this.permisosListos && !this.permisos['rechazar_solicitud']) {
-      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
-      return;
-    }
-=======
     if (this.permisosListos && !this.permisos['rechazar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     this.popup.confirm(
       this.translate.instant('POPUPS.RECHAZAR_MSG'),
       this.translate.instant('ACTIONS.RECHAZAR'),
@@ -1306,14 +1247,7 @@ NombreSoporteRevisorValido(doc: DocumentoItem): boolean {
   }
 
   enviarRevisor() {
-<<<<<<< HEAD
-    if (this.permisosListos && !this.permisos['enviar_revision']) {
-      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
-      return;
-    }
-=======
     if (this.permisosListos && !this.permisos['enviar_revision']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     if (!this.allDocsChecked) {
       this.popup.alertError(this.translate.instant('POPUPS.DOCS_NO_VALIDOS'));
       return;
@@ -1332,14 +1266,7 @@ NombreSoporteRevisorValido(doc: DocumentoItem): boolean {
 
   // ========== Acciones Supervisor / Decanatura ==========
   darInicioComision() {
-<<<<<<< HEAD
-    if (this.permisosListos && !this.permisos['dar_inicio_solicitud']) {
-      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
-      return;
-    }
-=======
     if (this.permisosListos && !this.permisos['dar_inicio_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
->>>>>>> 551c87a (fix: editar_solicitud arreglado)
     if (!this.fechaInicioContrato) {
       this.popup.alertError(this.translate.instant('POPUPS.INICIO_FECHA_REQUIRED'));
       return;

@@ -38,6 +38,7 @@ export class BandejaComponent implements OnInit {
     private readonly popup: PopUpManager,
     private readonly translate: TranslateService,
     private readonly solicitudesService: SolicitudesService,
+    private readonly permisosUtils: PermisosUtils,
   ) {}
 
   ngOnInit(): void {

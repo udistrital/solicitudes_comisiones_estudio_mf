@@ -3,9 +3,9 @@ import { RequestManager } from '../managers/request.manager';
 
 @Injectable({ providedIn: 'root' })
 export class DocumentosService {
-  private api: ReturnType<RequestManager['client']>;
+  private readonly api: ReturnType<RequestManager['client']>;
 
-  constructor(private request: RequestManager) {
+  constructor(private readonly request: RequestManager) {
     this.api = this.request.client('DOCUMENTOS_SERVICE');
   }
 

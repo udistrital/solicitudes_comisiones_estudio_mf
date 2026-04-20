@@ -21,7 +21,8 @@ type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
 
 // Códigos de tipo documental — FR010 y SOPORTE_REVISOR son fijos del frontend,
 // el resto viene dinámicamente del CRUD (tipo_documento_solicitud)
-type TipoDocumentalCode = 'FR010' | 'SOPORTE_REVISOR' | string;
+type TipoDocumentalFijo = 'FR010' | 'SOPORTE_REVISOR';
+type TipoDocumentalCode = TipoDocumentalFijo | string;
 
 interface DocumentoItem {
   id: number;
@@ -47,6 +48,24 @@ interface DocumentoItem {
   documentoId?: number;
   pendienteCrear?: boolean;
 }
+
+
+interface CambioEstadoPayload {
+  SolicitudId: number;
+  NuevoEstado: EstadoSolicitud;
+  RolUsuario: string;
+  NumeroIdentificacion: string;
+  Observacion: string;
+  Documentos: {
+    IdTipoDocumento: number | null;
+    TipoDocumento: string;
+    EstadoDocumento: string;
+    Nombre: string;
+    Metadatos: any;
+    File: string | undefined;
+  }[];
+}
+
 
 interface ObservacionItem {
   fecha: string;
@@ -146,13 +165,12 @@ export class DetalleSolicitudComponent implements OnInit {
   private detalleSolicitudActual: any = null;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private dialog: MatDialog,
-    private popup: PopUpManager,
-    private translate: TranslateService,
-    private solicitudesService: SolicitudesService,
-    private permisosUtils: PermisosUtils,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly dialog: MatDialog,
+    private readonly popup: PopUpManager,
+    private readonly translate: TranslateService,
+    private readonly solicitudesService: SolicitudesService,
   ) {}
 
   ngOnInit(): void {
@@ -227,7 +245,7 @@ export class DetalleSolicitudComponent implements OnInit {
           name: d.Nombre,
           kind: 'FILE' as RequiredDocKind,
           idTipoDocumento: d.Id,
-          descripcion: d.Descripcion || d.Nombre,
+          descripcion: d.Descripcion ?? d.Nombre,
         }));
 
         this.requiredDocs = [this.FR010_OPTION, ...docsCrud];
@@ -542,7 +560,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   eliminarDocumento(doc: DocumentoItem): void {
     this.popup.confirm(
-      this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre || doc.fileName || 'documento' }),
+      this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre ?? doc.fileName ?? 'documento' }),
       this.translate.instant('ACTIONS.ELIMINAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
@@ -552,7 +570,7 @@ export class DetalleSolicitudComponent implements OnInit {
         this.documentos = this.documentos.filter((d) => d.id !== doc.id);
         this.popup.success(
           this.translate.instant('POPUPS.DOC_ELIMINADO', {
-            nombre: doc.nombre || doc.fileName || 'documento',
+            nombre: doc.nombre ?? doc.fileName ?? 'documento',
           }),
         );
         return;
@@ -588,7 +606,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
       this.popup.success(
         this.translate.instant('POPUPS.DOC_ELIMINADO', {
-          nombre: doc.nombre || doc.fileName || 'documento',
+          nombre: doc.nombre ?? doc.fileName ?? 'documento',
         }),
       );
     });
@@ -626,8 +644,8 @@ export class DetalleSolicitudComponent implements OnInit {
       width: '900px',
       maxWidth: '95vw',
       data: {
-        nombre: doc.fileName || doc.nombre,
-        mimeType: doc.mimeType || 'application/pdf',
+        nombre: doc.fileName ?? doc.nombre,
+        mimeType: doc.mimeType ?? 'application/pdf',
         base64: doc.base64,
         estado: doc.estado,
         autor: doc.autorSoporte,
@@ -725,7 +743,7 @@ export class DetalleSolicitudComponent implements OnInit {
     }
   }
 
-  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): any | null {
+  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): CambioEstadoPayload | null {
     const documentosRevisor = this.documentos
       .filter((d) => d.esSoporteRevisor && d.base64 && d.pendienteCrear);
 
@@ -739,7 +757,7 @@ export class DetalleSolicitudComponent implements OnInit {
       IdTipoDocumento: this.idTipoDocumentoSoporte,
       TipoDocumento: 'OTRO_SOP',
       EstadoDocumento: 'CARG',
-      Nombre: (d.nombre || '').trim() || d.fileName || 'Soporte sin nombre',
+      Nombre: d.fileName ?? d.nombre,
       Metadatos: {},
       File: d.base64,
     }));
@@ -748,8 +766,8 @@ export class DetalleSolicitudComponent implements OnInit {
       SolicitudId: this.id,
       NuevoEstado: nuevoEstado,
       RolUsuario: this.ROL_USUARIO_MAP[this.role],
-      NumeroIdentificacion: getDocumento() || '',
-      Observacion: observacion?.trim() || '',
+      NumeroIdentificacion: getDocumento() ?? '',
+      Observacion: observacion?.trim() ?? '',
       Documentos: documentosMapeados,
     };
   }
@@ -811,17 +829,17 @@ export class DetalleSolicitudComponent implements OnInit {
 
     const documentoSolicitud = documentosParaCrear.map((d) => ({
       IdTipoDocumento: d.idTipoDocumento,
-      TipoDocumento: String(d.code || ''),
+      TipoDocumento: String(d.code ?? ''),
       EstadoDocumento: 'CARG',
-      Nombre: d.fileName || d.nombre,
-      Descripcion: d.descripcion || d.nombre,
-      Metadatos: d.metadatos || {},
+      Nombre: d.fileName ?? d.nombre,
+      Descripcion: d.descripcion ?? d.nombre,
+      Metadatos: d.metadatos ?? {},
       File: d.base64,
     }));
 
     return {
       identificacion: this.identificacionDocente,
-      tipo_solicitud_id: tipoSolicitudId || 2,
+      tipo_solicitud_id: tipoSolicitudId ?? 2,
       formulario,
       observacion: this.observacionDocente?.trim() || '',
       cod_abreviacion_rol: 'PROFE',
@@ -839,7 +857,9 @@ export class DetalleSolicitudComponent implements OnInit {
         resolve(base64);
       };
 
-      reader.onerror = (error) => reject(error);
+      reader.onerror = () => {
+        reject(reader.error ?? new Error('Error leyendo el archivo'));
+      };
       reader.readAsDataURL(file);
     });
   }
@@ -883,10 +903,10 @@ export class DetalleSolicitudComponent implements OnInit {
 
     const documentosNuevos = documentosParaCrear.map((d) => ({
       IdTipoDocumento: d.idTipoDocumento,
-      TipoDocumento: String(d.code || ''),
+      TipoDocumento: String(d.code ?? ''),
       EstadoDocumento: 'CARG',
-      Nombre: d.fileName || d.nombre,
-      Descripcion: d.descripcion || d.nombre,
+      Nombre: d.fileName ?? d.nombre,
+      Descripcion: d.descripcion ?? d.nombre,
       Metadatos: d.metadatos || {},
       File: d.base64,
     }));
@@ -896,7 +916,7 @@ export class DetalleSolicitudComponent implements OnInit {
     )];
 
     return {
-      tipo_solicitud_id: tipoSolicitudId || 2,
+      tipo_solicitud_id: tipoSolicitudId ?? 2,
       formulario,
       observacion: this.observacionDocente?.trim() || '',
       documentos_nuevos: documentosNuevos,

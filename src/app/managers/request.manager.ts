@@ -9,7 +9,7 @@ type HttpOptions = { headers?: HttpHeaders | Record<string, string> };
 
 @Injectable({ providedIn: 'root' })
 export class RequestManager {
-  constructor(private http: HttpClient, private httpErrors: HttpErrorManager) {}
+  constructor(private readonly http: HttpClient, private readonly httpErrors: HttpErrorManager) {}
 
   /**
    * Crea un cliente “ligero” por servicio (evita estado global mutable).

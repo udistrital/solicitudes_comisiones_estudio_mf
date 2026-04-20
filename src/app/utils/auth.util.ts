@@ -22,7 +22,13 @@ export function getRolesUsuario(): string[] {
       || parsed?.user?.role
       || parsed?.role
       || [];
-    return Array.isArray(roles) ? roles : (typeof roles === 'string' ? [roles] : []);
+    if (Array.isArray(roles)) {
+      return roles;
+    }
+    if (typeof roles === 'string') {
+      return [roles];
+    }
+    return [];
   } catch {
     return [];
   }

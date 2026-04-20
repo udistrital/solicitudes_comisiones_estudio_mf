@@ -11,9 +11,10 @@ import { PopUpManager } from '../../../managers/popup.manager';
 import { SolicitudesService } from '../../../services/solicitudes.service';
 import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
+import { PermisosUtils } from '../../../utils/role-permissions';
 
 /** Roles que ya tienen endpoint de bandeja */
-const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'ADMIN_SGA'];
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'ADMIN_SGA', 'DECANO'];
 
 @Component({
   selector: 'app-bandeja',
@@ -22,10 +23,15 @@ const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', '
 })
 export class BandejaComponent implements OnInit {
   selectedRole: Role | null = null;
+  roles: string[] = [];
   rows: SolicitudRow[] = [];
   cargando = false;
   sinIntegracion = false;
   errorCarga = false;
+
+  readonly opcionesPermisos = ['crear_solicitud', 'ver_filtros_tabla'];
+  permisos: { [key: string]: boolean } = {};
+  permisosListos = false;
 
   constructor(
     private readonly router: Router,
@@ -35,19 +41,32 @@ export class BandejaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const rolesUsuario = getRolesUsuario();
-    this.selectedRole = resolverRolEfectivo(rolesUsuario);
+    this.roles = getRolesUsuario();
+    this.selectedRole = resolverRolEfectivo(this.roles);
 
     if (!this.selectedRole) {
       return;
     }
 
+    // Carga de datos: inmediata, independiente de permisos
     if (!ROLES_CON_ENDPOINT.includes(this.selectedRole)) {
       this.sinIntegracion = true;
-      return;
+    } else {
+      this.cargarSolicitudes();
     }
 
-    this.cargarSolicitudes();
+    // Permisos: en paralelo, solo controlan visibilidad de botones
+    forkJoin(
+      this.opcionesPermisos.map(op => this.permisosUtils.tienePermiso(this.roles, op))
+    ).subscribe({
+      next: (results) => {
+        this.opcionesPermisos.forEach((op, i) => { this.permisos[op] = results[i]; });
+        this.permisosListos = true;
+      },
+      error: () => {
+        this.permisosListos = true;
+      },
+    });
   }
 
   // ========== Getters UI ==========
@@ -159,6 +178,14 @@ export class BandejaComponent implements OnInit {
           error: () => this.onErrorCarga(),
         });
         break;
+
+      case 'DECANO':
+        this.solicitudesService.listarPendientesDecano(cedula).subscribe({
+          next: (resp) => this.procesarRespuestaRevisor(resp),
+          error: () => this.onErrorCarga(),
+        });
+        break;
+
     }
   }
 
@@ -296,6 +323,10 @@ export class BandejaComponent implements OnInit {
   // ========== Acciones ==========
 
   crearSolicitud(): void {
+    if (this.permisosListos && !this.permisos['crear_solicitud']) {
+      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
+      return;
+    }
     this.router.navigate(['/solicitudes', 'nuevo'], {
       queryParams: { mode: 'EDITAR' },
     });

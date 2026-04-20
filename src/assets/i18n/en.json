@@ -1,4 +1,7 @@
 {
+  "GLOBAL": {
+    "acceso_denegado": "Access denied. You do not have permission to perform this action."
+  },
   "BANDEJA": {
     "SUBTITLE": "Study commission requests assigned to your role.",
     "TITLE_DOCENTE": "My requests",

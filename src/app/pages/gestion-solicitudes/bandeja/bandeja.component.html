@@ -22,8 +22,8 @@
             </p>
           </div>
 
-          <!-- Crear solicitud (solo DOCENTE, reemplaza el selector de rol) -->
-          <div *ngIf="isDocente" class="flex items-center justify-end">
+          <!-- Crear solicitud -->
+          <div *ngIf="!permisosListos || permisos['crear_solicitud']" class="flex items-center justify-end">
             <button mat-flat-button color="primary" class="h-9 px-4 rounded-lg inline-flex items-center"
               (click)="crearSolicitud()">
               <mat-icon class="mr-1 text-[18px]">add</mat-icon>

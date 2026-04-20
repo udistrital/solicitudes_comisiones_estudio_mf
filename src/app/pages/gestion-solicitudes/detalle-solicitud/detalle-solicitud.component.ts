@@ -144,6 +144,14 @@ export class DetalleSolicitudComponent implements OnInit {
     code: 'FR010', name: 'FR-010 Formulario de solicitud inicial', kind: 'FORM', idTipoDocumento: 0, descripcion: 'Formulario FR-010'
   };
 
+  private readonly ORDEN_OBS_REVISOR: Record<string, number> = {
+    COORDINADOR: 1,
+    ADMINISTRADOR: 2,
+    ADMIN_SGA: 3,
+    DECANO: 4,
+    DECANATURA: 4,
+  };
+
   // Tipos documentales: FR-010 fijo + los que vengan del CRUD
   requiredDocs: RequiredDocOption[] = [this.FR010_OPTION];
   cargandoTiposDoc = false;
@@ -279,6 +287,7 @@ export class DetalleSolicitudComponent implements OnInit {
         }
         this.detalleSolicitudActual = data;
         this.poblarDesdeDetalle(data);
+        this.observacionesSubsanacion = this.extraerObservacionesDesdeDetalle(data);
         this.cargandoDetalle = false;
       },
       error: () => {
@@ -324,8 +333,32 @@ export class DetalleSolicitudComponent implements OnInit {
       }
     }
 
+    // --- Observaciones ---
+    this.observacionesSubsanacion = this.extraerObservacionesDesdeDetalle(data);
     // --- Documentos ---
     this.poblarDocumentosDesdeDetalle(data);
+  }
+
+  private extraerObservacionesDesdeDetalle(data: any): ObservacionItem[] {
+    const source: any[] = Array.isArray(data?.Observaciones) ? data.Observaciones : [];
+
+    return source
+      .map((item: any, idx: number) => ({
+        rol: String(item?.Rol || item?.rol || '').toUpperCase(),
+        texto: String(item?.Descripcion || item?.descripcion || '').trim(),
+        idx,
+      }))
+      .filter((x) => !!x.texto && this.ORDEN_OBS_REVISOR[x.rol] != null)
+      .sort((a, b) => {
+        const pa = this.ORDEN_OBS_REVISOR[a.rol];
+        const pb = this.ORDEN_OBS_REVISOR[b.rol];
+        return pa - pb || a.idx - b.idx;
+      })
+      .map((x) => ({
+        fecha: '',
+        autor: this.obtenerNombreRol(x.rol),
+        texto: x.texto,
+      }));
   }
 
   private buildDocumentos(docs: RequiredDocOption[]): DocumentoItem[] {
@@ -378,7 +411,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   get observacionesOrdenDesc(): ObservacionItem[] {
-    return [...this.observacionesSubsanacion].reverse();
+    return this.observacionesSubsanacion;
   }
 
   get estadoClass(): string {

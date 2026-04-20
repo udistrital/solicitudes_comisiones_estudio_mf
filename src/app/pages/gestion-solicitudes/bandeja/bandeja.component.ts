@@ -135,14 +135,24 @@ export class BandejaComponent implements OnInit {
   // ========== Carga de datos ==========
 
   private cargarSolicitudes(): void {
-    const cedula = getDocumento();
-    if (!cedula) {
-      this.errorCarga = true;
+    this.cargando = true;
+    this.errorCarga = false;
+
+    // SECRETARIA_GENERAL no requiere cédula (consulta CRUD sin filtro por tercero)
+    if (this.selectedRole === 'SECRETARIA_GENERAL') {
+      this.solicitudesService.listarHistoricoEstadoPorCodigo('REV_SEC_GRAL').subscribe({
+        next: (resp) => this.procesarRespuestaHistorico(resp),
+        error: () => this.onErrorCarga(),
+      });
       return;
     }
 
-    this.cargando = true;
-    this.errorCarga = false;
+    const cedula = getDocumento();
+    if (!cedula) {
+      this.errorCarga = true;
+      this.cargando = false;
+      return;
+    }
 
     switch (this.selectedRole) {
       case 'DOCENTE':
@@ -169,13 +179,6 @@ export class BandejaComponent implements OnInit {
       case 'ADMINISTRADOR':
         this.solicitudesService.listarPendientesSecretaria(cedula).subscribe({
           next: (resp) => this.procesarRespuestaRevisor(resp),
-          error: () => this.onErrorCarga(),
-        });
-        break;
-
-      case 'SECRETARIA_GENERAL':
-        this.solicitudesService.listarHistoricoEstadoPorCodigo('REV_SEC_GRAL').subscribe({
-          next: (resp) => this.procesarRespuestaHistorico(resp),
           error: () => this.onErrorCarga(),
         });
         break;
@@ -228,12 +231,13 @@ export class BandejaComponent implements OnInit {
   }
 
   private procesarRespuestaHistorico(resp: any): void {
-    const data: any[] = resp?.Data || [];
+    const raw = resp?.Data;
+    const data: any[] = Array.isArray(raw) ? raw : [];
 
-    // Deduplicar por SolicitudId.Id: conservar el registro más reciente
+    // Deduplicar por solicitud: conservar el registro más reciente
     const porSolicitud = new Map<number, any>();
     for (const item of data) {
-      const solId = item.SolicitudId?.Id;
+      const solId = this.extraerSolicitudId(item);
       if (!solId) continue;
       const existente = porSolicitud.get(solId);
       if (!existente || (item.FechaCreacion > existente.FechaCreacion)) {
@@ -251,14 +255,14 @@ export class BandejaComponent implements OnInit {
     // Obtener detalle de cada solicitud para resolver nombre y cédula del docente
     const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
     for (const item of items) {
-      const solId = item.SolicitudId.Id;
+      const solId = this.extraerSolicitudId(item)!;
       detalleCalls[String(solId)] = this.solicitudesService.obtenerDetalleSolicitud(solId);
     }
 
     forkJoin(detalleCalls).subscribe({
       next: (detalles) => {
         this.rows = items.map((item) => {
-          const solId = item.SolicitudId.Id;
+          const solId = this.extraerSolicitudId(item)!;
           const detalle = detalles[String(solId)]?.Data;
           const { nombre, documento } = this.extraerDocenteDeDetalle(detalle);
 
@@ -267,25 +271,46 @@ export class BandejaComponent implements OnInit {
             docente: nombre,
             idDocente: documento,
             proyecto: '',
-            estado: item.EstadoSolicitudId?.CodigoAbreviacion || 'NO_ENV',
-            fecha: this.formatFecha(item.SolicitudId?.FechaCreacion),
+            estado: this.extraerEstadoCodigo(item),
+            fecha: this.formatFecha(item.SolicitudId?.FechaCreacion || item.FechaCreacion),
           };
         });
         this.cargando = false;
       },
       error: () => {
         // Si falla la consulta de detalles, mostrar filas sin datos de docente
-        this.rows = items.map((item) => ({
-          id: item.SolicitudId.Id,
-          docente: '',
-          idDocente: item.SolicitudId.TerceroId ? String(item.SolicitudId.TerceroId) : '',
-          proyecto: '',
-          estado: item.EstadoSolicitudId?.CodigoAbreviacion || 'NO_ENV',
-          fecha: this.formatFecha(item.SolicitudId?.FechaCreacion),
-        }));
+        this.rows = items.map((item) => {
+          const solId = this.extraerSolicitudId(item)!;
+          return {
+            id: solId,
+            docente: '',
+            idDocente: item.SolicitudId?.TerceroId ? String(item.SolicitudId.TerceroId) : '',
+            proyecto: '',
+            estado: this.extraerEstadoCodigo(item),
+            fecha: this.formatFecha(item.SolicitudId?.FechaCreacion || item.FechaCreacion),
+          };
+        });
         this.cargando = false;
       },
     });
+  }
+
+  /** Extrae el ID de solicitud sin importar si SolicitudId es un objeto o un entero */
+  private extraerSolicitudId(item: any): number | null {
+    if (!item) return null;
+    const raw = item.SolicitudId;
+    if (typeof raw === 'number') return raw;
+    if (typeof raw === 'object' && raw?.Id) return raw.Id;
+    return null;
+  }
+
+  /** Extrae el código de estado del histórico, manejando objeto o entero */
+  private extraerEstadoCodigo(item: any): string {
+    const estado = item.EstadoSolicitudId;
+    if (typeof estado === 'object' && estado?.CodigoAbreviacion) {
+      return estado.CodigoAbreviacion;
+    }
+    return 'REV_SEC_GRAL';
   }
 
   private extraerDocenteDeDetalle(data: any): { nombre: string; documento: string } {

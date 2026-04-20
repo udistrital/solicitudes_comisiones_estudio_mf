@@ -189,10 +189,9 @@
               <div class="max-h-[200px] overflow-auto pr-1">
                 <div *ngFor="let o of observacionesOrdenDesc" class="mb-2 last:mb-0">
                   <div class="p-2.5 rounded-lg border border-black/10 bg-white border-l-4 border-l-sga">
-                    <div class="text-xs text-black/50 mb-0.5">
-                      {{ o.fecha }} — <b>{{ o.autor }}</b>
+                    <div class="text-xs text-black/75 break-words">
+                      <b>{{ o.autor }}:</b> {{ o.texto }}
                     </div>
-                    <div class="text-sm text-black/75 break-words">{{ o.texto }}</div>
                   </div>
                 </div>
               </div>
@@ -296,10 +295,9 @@
               <div class="max-h-[200px] overflow-auto pr-1">
                 <div *ngFor="let o of observacionesOrdenDesc" class="mb-2 last:mb-0">
                   <div class="p-2.5 rounded-lg border border-black/10 bg-white border-l-4 border-l-sga">
-                    <div class="text-xs text-black/50 mb-0.5">
-                      {{ o.fecha }} — <b>{{ o.autor }}</b>
+                    <div class="text-xs text-black/75 break-words">
+                      <b>{{ o.autor }}:</b> {{ o.texto }}
                     </div>
-                    <div class="text-sm text-black/75 break-words">{{ o.texto }}</div>
                   </div>
                 </div>
               </div>

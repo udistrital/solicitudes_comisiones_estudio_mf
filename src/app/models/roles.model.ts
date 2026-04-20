@@ -2,7 +2,7 @@ export type Role =
   | 'DOCENTE'
   | 'COORDINADOR'
   | 'ADMINISTRADOR'
-  | 'ADMIN_SGA'
+  | 'SECRETARIA_GENERAL'
   | 'DECANO';
 
 /** Roles válidos del sistema de comisiones, en orden de prioridad ascendente */
@@ -10,7 +10,7 @@ export const VALID_ROLES: Role[] = [
   'DOCENTE',
   'COORDINADOR',
   'ADMINISTRADOR',
-  'ADMIN_SGA',
+  'SECRETARIA_GENERAL',
   'DECANO',
 ];
 
@@ -18,7 +18,7 @@ const ROLE_PRIORITY: Record<Role, number> = {
   DOCENTE: 1,
   COORDINADOR: 2,
   ADMINISTRADOR: 3,
-  ADMIN_SGA: 4,
+  SECRETARIA_GENERAL: 4,
   DECANO: 5,
 };
 

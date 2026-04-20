@@ -692,14 +692,14 @@ export class DetalleSolicitudComponent implements OnInit {
     DOCENTE: 'REV_PROY',
     COORDINADOR: 'REV_SEC_ACAD',
     ADMINISTRADOR: 'REV_SEC_GRAL',
-    ADMIN_SGA: 'REV_DEC',
+    SECRETARIA_GENERAL: 'REV_DEC',
     DECANO: 'APROB_EJEC',
   };
 
   private readonly ESTADO_RETORNAR: Partial<Record<Role, EstadoSolicitud>> = {
     COORDINADOR: 'SUBS_PROY',
     ADMINISTRADOR: 'SUBS_SEC_ACAD',
-    ADMIN_SGA: 'SUBS_SEC_GRAL',
+    SECRETARIA_GENERAL: 'SUBS_SEC_GRAL',
     DECANO: 'SUBS_DEC',
   };
 
@@ -707,7 +707,7 @@ export class DetalleSolicitudComponent implements OnInit {
     DOCENTE: 'DOCENTE',
     COORDINADOR: 'COORDINADOR',
     ADMINISTRADOR: 'ADMINISTRADOR',
-    ADMIN_SGA: 'ADMIN_SGA',
+    SECRETARIA_GENERAL: 'SECRETARIA_GENERAL',
     DECANO: 'DECANATURA',
   };
 
@@ -1090,7 +1090,7 @@ export class DetalleSolicitudComponent implements OnInit {
     switch (key) {
       case 'COORDINADOR': return 'Coordinador';
       case 'ADMINISTRADOR': return 'Secretaría Académica';
-      case 'ADMIN_SGA': return 'Secretaría General';
+      case 'SECRETARIA_GENERAL': return 'Secretaría General';
       case 'DECANATURA':
       case 'DECANO': return 'Decanatura';
       case 'DOCENTE': return 'Docente';

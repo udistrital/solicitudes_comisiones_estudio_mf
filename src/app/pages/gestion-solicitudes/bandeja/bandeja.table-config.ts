@@ -43,8 +43,8 @@ export const ROLE_TABLE_CONFIGS: Record<Role, { title: string; columns: ColumnDe
     title: 'BANDEJA.TITLE_ADMINISTRADOR',
     columns: COLUMNS_REVIEWER,
   },
-  ADMIN_SGA: {
-    title: 'BANDEJA.TITLE_ADMIN_SGA',
+  SECRETARIA_GENERAL: {
+    title: 'BANDEJA.TITLE_SECRETARIA_GENERAL',
     columns: COLUMNS_REVIEWER,
   },
   DECANO: {

@@ -7,7 +7,7 @@
     "TITLE_DOCENTE": "My requests",
     "TITLE_COORDINADOR": "Pending requests - Curricular project coordination",
     "TITLE_ADMINISTRADOR": "Pending requests - Academic Secretary",
-    "TITLE_ADMIN_SGA": "Pending requests - General Secretary",
+    "TITLE_SECRETARIA_GENERAL": "Pending requests - General Secretary",
     "TITLE_DECANO": "Pending requests - Dean's Office",
     "TITLE_SIN_ROL": "Request inbox",
     "SIN_ROL_MSG": "No valid role for this module was found in your session. Please verify that your account has an assigned role.",
@@ -21,7 +21,7 @@
     "DOCENTE": "Professor",
     "COORDINADOR": "Curricular project coordination",
     "ADMINISTRADOR": "Academic Secretary",
-    "ADMIN_SGA": "General Secretary",
+    "SECRETARIA_GENERAL": "General Secretary",
     "DECANO": "Dean's Office"
   },
   "TABLE": {

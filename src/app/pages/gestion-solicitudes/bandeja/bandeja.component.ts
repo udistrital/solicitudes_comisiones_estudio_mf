@@ -14,7 +14,7 @@ import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
 import { PermisosUtils } from '../../../utils/role-permissions';
 
 /** Roles que ya tienen endpoint de bandeja */
-const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'ADMIN_SGA', 'DECANO'];
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'SECRETARIA_GENERAL', 'DECANO'];
 
 @Component({
   selector: 'app-bandeja',
@@ -173,7 +173,7 @@ export class BandejaComponent implements OnInit {
         });
         break;
 
-      case 'ADMIN_SGA':
+      case 'SECRETARIA_GENERAL':
         this.solicitudesService.listarHistoricoEstadoPorCodigo('REV_SEC_GRAL').subscribe({
           next: (resp) => this.procesarRespuestaHistorico(resp),
           error: () => this.onErrorCarga(),

@@ -1,4 +1,7 @@
 {
+  "GLOBAL": {
+    "acceso_denegado": "Acceso denegado. No tiene permiso para realizar esta accion."
+  },
   "BANDEJA": {
     "SUBTITLE": "Solicitudes de comision de estudio asignadas a su rol.",
     "TITLE_DOCENTE": "Mis solicitudes",

@@ -28,8 +28,8 @@
       </div>
     </mat-card>
 
-    <!-- Cargando detalle -->
-    <div *ngIf="cargandoDetalle" class="text-center py-8 text-black/60">
+    <!-- Cargando detalle o permisos -->
+    <div *ngIf="cargandoDetalle || !permisosListos" class="text-center py-8 text-black/60">
       <p>{{ 'DETALLE.CARGANDO_DETALLE' | translate }}</p>
     </div>
 
@@ -313,7 +313,7 @@
     <!-- ============================
          VISTA REVISOR (no docente)
     ============================= -->
-    <ng-container *ngIf="!isDocente && !cargandoDetalle">
+    <ng-container *ngIf="permisosListos && permisos['revisar_solicitud'] && !cargandoDetalle">
 
       <input
         #reviewerFileInput
@@ -460,14 +460,17 @@
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
                   (click)="regresar()">{{ 'ACTIONS.REGRESAR' | translate }}</button>
-                <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
+                <button *ngIf="!permisosListos || permisos['rechazar_solicitud']"
+                  mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
                   (click)="rechazarSolicitud()" [disabled]="!puedeContinuarRevisor || cambiandoEstado">
                  {{ 'ACTIONS.RECHAZAR' | translate }}</button>
-                <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
+                <button *ngIf="!permisosListos || permisos['retornar_solicitud']"
+                  mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
                   (click)="retornarSolicitud()" [disabled]="!puedeContinuarRevisor || cambiandoEstado">
                   {{ 'ACTIONS.RETORNAR' | translate }}</button>
                 <!-- Enviar solo para revisores no-supervisor -->
-                <button *ngIf="!isSupervisor" mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
+                <button *ngIf="!isSupervisor && (!permisosListos || permisos['enviar_revision'])"
+                  mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
                   (click)="enviarRevisor()" [disabled]="!allDocsChecked || !puedeContinuarRevisor || cambiandoEstado">
                   {{ 'ACTIONS.ENVIAR' | translate }}</button>
               </div>

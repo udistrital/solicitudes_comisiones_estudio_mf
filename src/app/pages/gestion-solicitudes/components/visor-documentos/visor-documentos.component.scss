@@ -1,2 +1,5 @@
 // Visor-documentos specific styles.
 // Dialog content max-width is handled at the caller via MatDialog config.
+.dialog-actions-center {
+  justify-content: center !important;
+}

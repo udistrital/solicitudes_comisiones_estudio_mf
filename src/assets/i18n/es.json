@@ -1,10 +1,13 @@
 {
+  "GLOBAL": {
+    "acceso_denegado": "Acceso denegado. No tiene permiso para realizar esta accion."
+  },
   "BANDEJA": {
     "SUBTITLE": "Solicitudes de comision de estudio asignadas a su rol.",
     "TITLE_DOCENTE": "Mis solicitudes",
     "TITLE_COORDINADOR": "Solicitudes pendientes - Coordinacion de proyecto curricular",
     "TITLE_ADMINISTRADOR": "Solicitudes pendientes - Secretaria Academica",
-    "TITLE_ADMIN_SGA": "Solicitudes pendientes - Secretaria General",
+    "TITLE_SECRETARIA_GENERAL": "Solicitudes pendientes - Secretaria General",
     "TITLE_DECANO": "Solicitudes pendientes - Decanatura",
     "TITLE_SIN_ROL": "Bandeja de solicitudes",
     "SIN_ROL_MSG": "No se encontro un rol valido para este modulo en su sesion. Verifique que su cuenta tiene un rol asignado.",
@@ -18,7 +21,7 @@
     "DOCENTE": "Docente",
     "COORDINADOR": "Coordinacion de proyecto curricular",
     "ADMINISTRADOR": "Secretaria Academica",
-    "ADMIN_SGA": "Secretaria General",
+    "SECRETARIA_GENERAL": "Secretaria General",
     "DECANO": "Decanatura"
   },
   "TABLE": {

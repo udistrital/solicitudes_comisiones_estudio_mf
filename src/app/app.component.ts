@@ -11,16 +11,16 @@ const COOKIE_KEY = 'lang';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
-  constructor(private translate: TranslateService) {
+  constructor(private readonly translate: TranslateService) {
     this.translate.addLangs(['es', 'en']);
     this.translate.setDefaultLang(DEFAULT_LANG);
   }
 
   ngOnInit(): void {
     // Carga inicial: leer cookie 'lang' que el core persiste
-    const initial = this.getCookie(COOKIE_KEY) || DEFAULT_LANG;
+    const initial = this.getCookie(COOKIE_KEY) ?? DEFAULT_LANG;
     this.translate.use(initial);
 
     // Escuchar el CustomEvent 'lang' que el core dispara en window

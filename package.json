@@ -34,19 +34,40 @@
     "tslib": "^2.3.0",
     "zone.js": "~0.13.0"
   },
+  "overrides": {
+    "vite": ">=6.4.2 <7",
+    "tar": ">=7.5.11",
+    "node-forge": ">=1.4.0",
+    "lodash": ">=4.18.0",
+    "picomatch": ">=4.0.4",
+    "webpack": ">=5.104.1",
+    "webpack-dev-server": "4.15.1",
+    "@tootallnate/once": ">=3.0.1",
+    "ajv": ">=8.18.0",
+    "esbuild": ">=0.25.0",
+    "flatted": ">=3.4.2",
+    "follow-redirects": ">=1.16.0",
+    "tmp": ">=0.2.4",
+    "brace-expansion": ">=2.0.3",
+    "path-to-regexp": "0.1.12",
+    "socket.io-parser": ">=4.2.6"
+  },
   "devDependencies": {
     "@angular-builders/custom-webpack": "16.0.1",
     "@angular-devkit/build-angular": "^16.2.12",
     "@angular/cli": "^16.2.12",
     "@angular/compiler-cli": "^16.2.0",
     "@types/jasmine": "~4.3.0",
+    "autoprefixer": "^10.5.0",
     "jasmine-core": "~4.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "postcss": "^8.5.10",
     "style-loader": "^3.3.1",
+    "tailwindcss": "^3.4.19",
     "typescript": "~5.1.3"
   }
 }

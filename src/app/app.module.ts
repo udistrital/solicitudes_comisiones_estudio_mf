@@ -5,7 +5,7 @@ import localeEs from '@angular/common/locales/es';
 
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 import { EmptyRouteComponent } from './empty-route/empty-route.component';
@@ -29,7 +29,7 @@ import {
   MissingTranslationHandlerParams,
 } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { environment } from '../environments/environment';
+import { environment } from '@env/environment';
 
 // Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -49,13 +49,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatPaginatorModule, MatPaginatorIntl } from '@angular/material/paginator';
 
 /**
- * Usa deployUrl del environment para resolver la ruta absoluta de los JSON.
- * Esto evita que el loader resuelva rutas relativas al pathname del navegador
- * (ej: /solicitud-comision/solicitudes/assets/i18n/en.json → 404).
- * En su lugar resuelve a la raiz del microfrontend:
- *   local  → http://localhost:4224/assets/i18n/
- *   test   → https://pruebas....portaloas.../assets/i18n/
- *   prod   → https://solicitudes....portaloas.../assets/i18n/
+ * Loader i18n con soporte para microfrontend
  */
 export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
   return new TranslateHttpLoader(http, `${environment.deployUrl}assets/i18n/`, '.json');
@@ -70,22 +64,27 @@ export class SgaMissingTranslationHandler implements MissingTranslationHandler {
 
 export function paginatorIntlFactory(translate: TranslateService): MatPaginatorIntl {
   const intl = new MatPaginatorIntl();
+
   const update = () => {
     intl.itemsPerPageLabel = translate.instant('PAGINATOR.ITEMS_PER_PAGE');
     intl.nextPageLabel = translate.instant('PAGINATOR.NEXT_PAGE');
     intl.previousPageLabel = translate.instant('PAGINATOR.PREV_PAGE');
     intl.firstPageLabel = translate.instant('PAGINATOR.FIRST_PAGE');
     intl.lastPageLabel = translate.instant('PAGINATOR.LAST_PAGE');
-    intl.getRangeLabel = (page, pageSize, length) => {
+
+    intl.getRangeLabel = (page: number, pageSize: number, length: number) => {
       if (length === 0 || pageSize === 0) return `0 / ${length}`;
       const start = page * pageSize + 1;
       const end = Math.min(start + pageSize - 1, length);
       return `${start} – ${end} / ${length}`;
     };
+
     intl.changes.next();
   };
-  translate.onLangChange.subscribe(() => update());
+
+  translate.onLangChange.subscribe(update);
   update();
+
   return intl;
 }
 
@@ -95,13 +94,9 @@ registerLocaleData(localeEs);
   declarations: [
     AppComponent,
     EmptyRouteComponent,
-
-    // Pages Fase 1
     BandejaComponent,
     DetalleSolicitudComponent,
     VisorDocumentosComponent,
-
-    // Shared
     DynamicTableComponent,
     Fr010FormComponent,
   ],
@@ -109,7 +104,6 @@ registerLocaleData(localeEs);
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    HttpClientModule,
 
     // Forms
     FormsModule,
@@ -149,7 +143,18 @@ registerLocaleData(localeEs);
   providers: [
     { provide: LOCALE_ID, useValue: 'es-CO' },
     { provide: MAT_DATE_LOCALE, useValue: 'es-CO' },
-    { provide: MatPaginatorIntl, useFactory: paginatorIntlFactory, deps: [TranslateService] },
+
+    {
+      provide: TranslateLoader,
+      useFactory: HttpLoaderFactory,
+      deps: [HttpClient],
+    },
+    {
+      provide: MissingTranslationHandler,
+      useClass: SgaMissingTranslationHandler,
+    },
+
+    provideHttpClient(withInterceptorsFromDi()),
   ],
   bootstrap: [AppComponent],
 })

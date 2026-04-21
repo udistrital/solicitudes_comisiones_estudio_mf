@@ -147,7 +147,9 @@ export class DetalleSolicitudComponent implements OnInit {
   private readonly ORDEN_OBS_REVISOR: Record<string, number> = {
     COORDINADOR: 1,
     ADMINISTRADOR: 2,
+    SECRETARIA_ACADEMICA: 2,
     ADMIN_SGA: 3,
+    SECRETARIA_GENERAL: 3,
     DECANO: 4,
     DECANATURA: 4,
   };
@@ -217,6 +219,7 @@ export class DetalleSolicitudComponent implements OnInit {
       this.observacionDocente = '';
       this.observacionesSubsanacion = [];
     } else {
+      this.isCreating = false;
       this.id = Number(rawId);
       this.cargarDetalleSolicitud(this.id);
     }
@@ -437,7 +440,12 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   get puedeEnviarDocente(): boolean {
-    return !!this.id && !!this.fr010Json && !!this.identificacionDocente && !this.cambiandoEstado;
+    if (!this.id || !this.fr010Json || !this.identificacionDocente || this.cambiandoEstado || this.guardando) {
+      return false;
+    }
+    // Todos los documentos requeridos del docente deben estar cargados (no PENDIENTE)
+    const docsDocente = this.documentos.filter(d => !d.esSoporteRevisor);
+    return docsDocente.length > 0 && docsDocente.every(d => d.estado !== 'PENDIENTE');
   }
 
 
@@ -462,32 +470,12 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Acciones docente ==========
   guardarDocente(): void {
-    if (this.permisosListos && !this.permisos['guardar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
-    if (this.guardando) return;
-    
-    if (this.isCreating){
-      const payload = this.construirPayloadCrearSolicitud();
-      if (!payload) return;
-
-      console.log('[crear_solicitud] identificacionDocente:', this.identificacionDocente);
-      console.log('[crear_solicitud] fr010Json:', this.fr010Json);
-      console.log('[crear_solicitud] documentos:', this.documentos);
-      console.log('[crear_solicitud] Payload enviado:', JSON.stringify(payload, null, 2));
-
-      this.guardando = true;
-      this.solicitudesService.crearSolicitud(payload).subscribe({
-        next: () => {
-          this.guardando = false;
-          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_GUARDADA'));
-          this.router.navigate(['/solicitudes']);
-        },
-        error: () => {
-          this.guardando = false;
-          this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
-        },
-      });
+    if (this.permisosListos && !this.permisos['guardar_solicitud']) {
+      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
       return;
     }
+
+    if (this.guardando) return;
 
     this.persistirEdicionDocente('POPUPS.SOLICITUD_GUARDADA');
   }
@@ -1145,6 +1133,7 @@ export class DetalleSolicitudComponent implements OnInit {
       case 'COORDINADOR': return 'Coordinador';
       case 'ADMINISTRADOR': return 'Secretaría Académica';
       case 'SECRETARIA_GENERAL': return 'Secretaría General';
+      case 'ADMIN_SGA': return 'Secretaría General';
       case 'DECANATURA':
       case 'DECANO': return 'Decanatura';
       case 'DOCENTE': return 'Docente';

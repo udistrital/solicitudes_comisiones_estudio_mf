@@ -5,7 +5,7 @@ import localeEs from '@angular/common/locales/es';
 
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 import { EmptyRouteComponent } from './empty-route/empty-route.component';
@@ -91,66 +91,55 @@ export function paginatorIntlFactory(translate: TranslateService): MatPaginatorI
 
 registerLocaleData(localeEs);
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    EmptyRouteComponent,
-
-    // Pages Fase 1
-    BandejaComponent,
-    DetalleSolicitudComponent,
-    VisorDocumentosComponent,
-
-    // Shared
-    DynamicTableComponent,
-    Fr010FormComponent,
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
-
-    // Forms
-    FormsModule,
-    ReactiveFormsModule,
-
-    // i18n
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: HttpLoaderFactory,
-        deps: [HttpClient],
-      },
-      missingTranslationHandler: {
-        provide: MissingTranslationHandler,
-        useClass: SgaMissingTranslationHandler,
-      },
-      defaultLanguage: 'es',
-    }),
-
-    // Material
-    MatCardModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatSnackBarModule,
-    MatInputModule,
-    MatCheckboxModule,
-    MatDialogModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatTooltipModule,
-    MatPaginatorModule,
-  ],
-  providers: [
-    { provide: LOCALE_ID, useValue: 'es-CO' },
-    { provide: MAT_DATE_LOCALE, useValue: 'es-CO' },
-    { provide: MatPaginatorIntl, useFactory: paginatorIntlFactory, deps: [TranslateService] },
-  ],
-  bootstrap: [AppComponent],
-})
+@NgModule({ declarations: [
+        AppComponent,
+        EmptyRouteComponent,
+        // Pages Fase 1
+        BandejaComponent,
+        DetalleSolicitudComponent,
+        VisorDocumentosComponent,
+        // Shared
+        DynamicTableComponent,
+        Fr010FormComponent,
+    ],
+    bootstrap: [AppComponent], imports: [BrowserModule,
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        // Forms
+        FormsModule,
+        ReactiveFormsModule,
+        // i18n
+        TranslateModule.forRoot({
+            loader: {
+                provide: TranslateLoader,
+                useFactory: HttpLoaderFactory,
+                deps: [HttpClient],
+            },
+            missingTranslationHandler: {
+                provide: MissingTranslationHandler,
+                useClass: SgaMissingTranslationHandler,
+            },
+            defaultLanguage: 'es',
+        }),
+        // Material
+        MatCardModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        MatTableModule,
+        MatButtonModule,
+        MatIconModule,
+        MatChipsModule,
+        MatSnackBarModule,
+        MatInputModule,
+        MatCheckboxModule,
+        MatDialogModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatTooltipModule,
+        MatPaginatorModule], providers: [
+        { provide: LOCALE_ID, useValue: 'es-CO' },
+        { provide: MAT_DATE_LOCALE, useValue: 'es-CO' },
+        { provide: MatPaginatorIntl, useFactory: paginatorIntlFactory, deps: [TranslateService] },
+        provideHttpClient(withInterceptorsFromDi()),
+    ] })
 export class AppModule {}

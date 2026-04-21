@@ -353,8 +353,46 @@ export class BandejaComponent implements OnInit {
       this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
       return;
     }
-    this.router.navigate(['/solicitudes', 'nuevo'], {
-      queryParams: { mode: 'EDITAR' },
+
+    const cedula = getDocumento();
+    if (!cedula) {
+      this.popup.error(this.translate.instant('POPUPS.ERROR_SIN_IDENTIFICACION'));
+      return;
+    }
+
+    this.cargando = true;
+
+    const payload = {
+      identificacion: Number(cedula),
+      tipo_solicitud_id: 2,
+      observacion: '',
+      cod_abreviacion_rol: 'PROFE',
+      documento_solicitud: [],
+    };
+
+    this.solicitudesService.crearSolicitud(payload).subscribe({
+      next: (resp: any) => {
+        this.cargando = false;
+
+        const nuevaId =
+          resp?.Data?.Id ||
+          resp?.Data?.id ||
+          resp?.Data?.Solicitud?.Id ||
+          resp?.Data?.solicitud?.Id;
+
+        if (!nuevaId) {
+          this.popup.error('La solicitud se creó, pero no fue posible obtener el ID.');
+          return;
+        }
+
+        this.router.navigate(['/solicitudes', nuevaId], {
+          queryParams: { mode: 'EDITAR' },
+        });
+      },
+      error: () => {
+        this.cargando = false;
+        this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
+      },
     });
   }
 

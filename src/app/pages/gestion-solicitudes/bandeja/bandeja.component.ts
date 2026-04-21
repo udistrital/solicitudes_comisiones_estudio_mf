@@ -17,9 +17,10 @@ import { PermisosUtils } from '../../../utils/role-permissions';
 const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'SECRETARIA_GENERAL', 'DECANO'];
 
 @Component({
-  selector: 'app-bandeja',
-  templateUrl: './bandeja.component.html',
-  styleUrls: ['./bandeja.component.scss'],
+    selector: 'app-bandeja',
+    templateUrl: './bandeja.component.html',
+    styleUrls: ['./bandeja.component.scss'],
+    standalone: false
 })
 export class BandejaComponent implements OnInit {
   selectedRole: Role | null = null;

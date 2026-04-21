@@ -3,6 +3,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
+    "esModuleInterop": true,
     "outDir": "./dist/out-tsc",
     "paths": {
       "@env/*": ["src/environments/*"],

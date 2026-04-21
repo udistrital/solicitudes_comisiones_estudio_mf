@@ -6,9 +6,10 @@ const DEFAULT_LANG = 'es';
 const COOKIE_KEY = 'lang';
 
 @Component({
-  selector: 'mf1',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+    selector: 'mf1',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    standalone: false
 })
 export class AppComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();

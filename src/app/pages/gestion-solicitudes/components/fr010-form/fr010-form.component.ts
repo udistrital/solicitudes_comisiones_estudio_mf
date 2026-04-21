@@ -14,9 +14,10 @@ import { getDocumento, getCorreoSesion } from 'src/app/utils/auth.util';
 import { PopUpManager } from 'src/app/managers/popup.manager';
 
 @Component({
-  selector: 'app-fr010-form',
-  templateUrl: './fr010-form.component.html',
-  styleUrls: ['./fr010-form.component.scss'],
+    selector: 'app-fr010-form',
+    templateUrl: './fr010-form.component.html',
+    styleUrls: ['./fr010-form.component.scss'],
+    standalone: false
 })
 export class Fr010FormComponent implements OnInit {
   /** Datos existentes del formulario (modo edición). Si se pasa, no consulta el servicio de docente. */

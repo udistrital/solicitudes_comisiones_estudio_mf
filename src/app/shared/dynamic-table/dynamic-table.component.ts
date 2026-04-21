@@ -4,9 +4,10 @@ import { MatTableDataSource } from '@angular/material/table';
 import { ColumnDef, TableAction } from './dynamic-table.types';
 
 @Component({
-  selector: 'app-dynamic-table',
-  templateUrl: './dynamic-table.component.html',
-  styleUrls: ['./dynamic-table.component.scss'],
+    selector: 'app-dynamic-table',
+    templateUrl: './dynamic-table.component.html',
+    styleUrls: ['./dynamic-table.component.scss'],
+    standalone: false
 })
 export class DynamicTableComponent<T extends Record<string, any>> implements OnChanges, AfterViewInit {
   @Input() rows: T[] = [];

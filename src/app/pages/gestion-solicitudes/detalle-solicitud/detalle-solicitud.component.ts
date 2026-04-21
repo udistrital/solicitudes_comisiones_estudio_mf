@@ -83,9 +83,10 @@ interface RequiredDocOption {
 }
 
 @Component({
-  selector: 'app-detalle-solicitud',
-  templateUrl: './detalle-solicitud.component.html',
-  styleUrls: ['./detalle-solicitud.component.scss'],
+    selector: 'app-detalle-solicitud',
+    templateUrl: './detalle-solicitud.component.html',
+    styleUrls: ['./detalle-solicitud.component.scss'],
+    standalone: false
 })
 export class DetalleSolicitudComponent implements OnInit {
   @ViewChild(Fr010FormComponent) fr010Comp?: Fr010FormComponent;

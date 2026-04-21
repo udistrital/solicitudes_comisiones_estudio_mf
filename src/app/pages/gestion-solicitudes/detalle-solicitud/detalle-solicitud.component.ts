@@ -440,7 +440,12 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   get puedeEnviarDocente(): boolean {
-    return !!this.id && !!this.fr010Json && !!this.identificacionDocente && !this.cambiandoEstado && !this.guardando;
+    if (!this.id || !this.fr010Json || !this.identificacionDocente || this.cambiandoEstado || this.guardando) {
+      return false;
+    }
+    // Todos los documentos requeridos del docente deben estar cargados (no PENDIENTE)
+    const docsDocente = this.documentos.filter(d => !d.esSoporteRevisor);
+    return docsDocente.length > 0 && docsDocente.every(d => d.estado !== 'PENDIENTE');
   }
 
 

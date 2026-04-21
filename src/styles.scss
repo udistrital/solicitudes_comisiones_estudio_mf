@@ -7,15 +7,17 @@
 // NO importarlo aquí para evitar doble compilación.
 // ============================================================
 
+@use 'sass:meta';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 // Variables CSS compartidas (colores, tokens de estado)
-@import './assets/styles/variables';
+@include meta.load-css('./assets/styles/variables');
 
 // Estilos globales SGA (tablas, form-fields, chips, botones de acción)
-@import './assets/styles/sga-global';
+@include meta.load-css('./assets/styles/sga-global');
 
 // SweetAlert2 institucional
-@import './assets/styles/sga-sweetalert2/sga-sweetalert2';
+@include meta.load-css('./assets/styles/sga-sweetalert2/sga-sweetalert2');

@@ -94,13 +94,13 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "solicitudes-comisiones-estudio-mf:build:production"
+              "buildTarget": "solicitudes-comisiones-estudio-mf:build:production"
             },
             "development": {
-              "browserTarget": "solicitudes-comisiones-estudio-mf:build:development"
+              "buildTarget": "solicitudes-comisiones-estudio-mf:build:development"
             },
             "local": {
-              "browserTarget": "solicitudes-comisiones-estudio-mf:build:local"
+              "buildTarget": "solicitudes-comisiones-estudio-mf:build:local"
             }
           },
           "defaultConfiguration": "local"

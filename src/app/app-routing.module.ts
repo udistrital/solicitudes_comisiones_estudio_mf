@@ -16,7 +16,7 @@ const routes: Routes = [
 export function appBaseHrefFactory(): string {
   const p = window.location.pathname || '/';
   // cuando corre dentro del root-config
-  if (p.startsWith('/solicitud-comision')) return '/solicitud-comision';
+  if (p.startsWith('/comisiones')) return '/comisiones';
   // cuando corre standalone (ng serve directo al puerto 4224)
   return '/';
 }

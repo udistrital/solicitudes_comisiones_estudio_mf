@@ -111,14 +111,6 @@ export class BandejaComponent implements OnInit {
           color: 'warn',
           visible: (row: SolicitudRow) => row.estado === 'NO_ENV',
         },
-        {
-          key: 'ENVIAR',
-          label: 'ACTIONS.ENVIAR',
-          icon: 'send',
-          tooltip: 'TOOLTIPS.ENVIAR_SOLICITUD',
-          color: 'primary',
-          visible: editable,
-        },
       ];
     }
 
@@ -441,18 +433,5 @@ export class BandejaComponent implements OnInit {
       return;
     }
 
-    if (a === 'ENVIAR') {
-      this.popup.confirm(
-        this.translate.instant('POPUPS.ENVIAR_SOLICITUD_MSG', { id: row.id }),
-        this.translate.instant('ACTIONS.ENVIAR'),
-        this.translate.instant('ACTIONS.CANCELAR'),
-      ).then((result) => {
-        if (result.isConfirmed) {
-          row.estado = 'RAD';
-          this.rows = [...this.rows];
-          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA', { id: row.id }));
-        }
-      });
-    }
   }
 }

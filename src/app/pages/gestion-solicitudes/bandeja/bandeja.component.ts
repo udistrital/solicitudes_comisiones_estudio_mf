@@ -11,43 +11,64 @@ import { PopUpManager } from '../../../managers/popup.manager';
 import { SolicitudesService } from '../../../services/solicitudes.service';
 import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
+import { PermisosUtils } from '../../../utils/role-permissions';
 
 /** Roles que ya tienen endpoint de bandeja */
-const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'ADMIN_SGA', 'DECANO'];
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'SECRETARIA_GENERAL', 'DECANO'];
 
 @Component({
-  selector: 'app-bandeja',
-  templateUrl: './bandeja.component.html',
-  styleUrls: ['./bandeja.component.scss'],
+    selector: 'app-bandeja',
+    templateUrl: './bandeja.component.html',
+    styleUrls: ['./bandeja.component.scss'],
+    standalone: false
 })
 export class BandejaComponent implements OnInit {
   selectedRole: Role | null = null;
+  roles: string[] = [];
   rows: SolicitudRow[] = [];
   cargando = false;
   sinIntegracion = false;
   errorCarga = false;
 
+  readonly opcionesPermisos = ['crear_solicitud', 'ver_filtros_tabla'];
+  permisos: { [key: string]: boolean } = {};
+  permisosListos = false;
+
   constructor(
-    private router: Router,
-    private popup: PopUpManager,
-    private translate: TranslateService,
-    private solicitudesService: SolicitudesService,
+    private readonly router: Router,
+    private readonly popup: PopUpManager,
+    private readonly translate: TranslateService,
+    private readonly solicitudesService: SolicitudesService,
+    private readonly permisosUtils: PermisosUtils,
   ) {}
 
   ngOnInit(): void {
-    const rolesUsuario = getRolesUsuario();
-    this.selectedRole = resolverRolEfectivo(rolesUsuario);
+    this.roles = getRolesUsuario();
+    this.selectedRole = resolverRolEfectivo(this.roles);
 
     if (!this.selectedRole) {
       return;
     }
 
+    // Carga de datos: inmediata, independiente de permisos
     if (!ROLES_CON_ENDPOINT.includes(this.selectedRole)) {
       this.sinIntegracion = true;
-      return;
+    } else {
+      this.cargarSolicitudes();
     }
 
-    this.cargarSolicitudes();
+    // Permisos: en paralelo, solo controlan visibilidad de botones
+    forkJoin(
+      this.opcionesPermisos.map(op => this.permisosUtils.tienePermiso(this.roles, op))
+    ).subscribe({
+      next: (results) => {
+        this.opcionesPermisos.forEach((op, i) => { this.permisos[op] = results[i]; });
+        this.permisosListos = true;
+      },
+      error: () => {
+        this.permisosListos = true;
+      },
+    });
   }
 
   // ========== Getters UI ==========
@@ -115,14 +136,24 @@ export class BandejaComponent implements OnInit {
   // ========== Carga de datos ==========
 
   private cargarSolicitudes(): void {
-    const cedula = getDocumento();
-    if (!cedula) {
-      this.errorCarga = true;
+    this.cargando = true;
+    this.errorCarga = false;
+
+    // SECRETARIA_GENERAL no requiere cédula (consulta CRUD sin filtro por tercero)
+    if (this.selectedRole === 'SECRETARIA_GENERAL') {
+      this.solicitudesService.listarHistoricoEstadoPorCodigo('REV_SEC_GRAL').subscribe({
+        next: (resp) => this.procesarRespuestaHistorico(resp),
+        error: () => this.onErrorCarga(),
+      });
       return;
     }
 
-    this.cargando = true;
-    this.errorCarga = false;
+    const cedula = getDocumento();
+    if (!cedula) {
+      this.errorCarga = true;
+      this.cargando = false;
+      return;
+    }
 
     switch (this.selectedRole) {
       case 'DOCENTE':
@@ -153,20 +184,13 @@ export class BandejaComponent implements OnInit {
         });
         break;
 
-      case 'ADMIN_SGA':
-        this.solicitudesService.listarHistoricoEstadoPorCodigo('REV_SEC_GRAL').subscribe({
-          next: (resp) => this.procesarRespuestaHistorico(resp),
-          error: () => this.onErrorCarga(),
-        });
-        break;
-      
       case 'DECANO':
         this.solicitudesService.listarPendientesDecano(cedula).subscribe({
           next: (resp) => this.procesarRespuestaRevisor(resp),
           error: () => this.onErrorCarga(),
         });
         break;
-      
+
     }
   }
 
@@ -208,12 +232,13 @@ export class BandejaComponent implements OnInit {
   }
 
   private procesarRespuestaHistorico(resp: any): void {
-    const data: any[] = resp?.Data || [];
+    const raw = resp?.Data;
+    const data: any[] = Array.isArray(raw) ? raw : [];
 
-    // Deduplicar por SolicitudId.Id: conservar el registro más reciente
+    // Deduplicar por solicitud: conservar el registro más reciente
     const porSolicitud = new Map<number, any>();
     for (const item of data) {
-      const solId = item.SolicitudId?.Id;
+      const solId = this.extraerSolicitudId(item);
       if (!solId) continue;
       const existente = porSolicitud.get(solId);
       if (!existente || (item.FechaCreacion > existente.FechaCreacion)) {
@@ -231,14 +256,14 @@ export class BandejaComponent implements OnInit {
     // Obtener detalle de cada solicitud para resolver nombre y cédula del docente
     const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
     for (const item of items) {
-      const solId = item.SolicitudId.Id;
+      const solId = this.extraerSolicitudId(item)!;
       detalleCalls[String(solId)] = this.solicitudesService.obtenerDetalleSolicitud(solId);
     }
 
     forkJoin(detalleCalls).subscribe({
       next: (detalles) => {
         this.rows = items.map((item) => {
-          const solId = item.SolicitudId.Id;
+          const solId = this.extraerSolicitudId(item)!;
           const detalle = detalles[String(solId)]?.Data;
           const { nombre, documento } = this.extraerDocenteDeDetalle(detalle);
 
@@ -247,25 +272,46 @@ export class BandejaComponent implements OnInit {
             docente: nombre,
             idDocente: documento,
             proyecto: '',
-            estado: item.EstadoSolicitudId?.CodigoAbreviacion || 'NO_ENV',
-            fecha: this.formatFecha(item.SolicitudId?.FechaCreacion),
+            estado: this.extraerEstadoCodigo(item),
+            fecha: this.formatFecha(item.SolicitudId?.FechaCreacion || item.FechaCreacion),
           };
         });
         this.cargando = false;
       },
       error: () => {
         // Si falla la consulta de detalles, mostrar filas sin datos de docente
-        this.rows = items.map((item) => ({
-          id: item.SolicitudId.Id,
-          docente: '',
-          idDocente: item.SolicitudId.TerceroId ? String(item.SolicitudId.TerceroId) : '',
-          proyecto: '',
-          estado: item.EstadoSolicitudId?.CodigoAbreviacion || 'NO_ENV',
-          fecha: this.formatFecha(item.SolicitudId?.FechaCreacion),
-        }));
+        this.rows = items.map((item) => {
+          const solId = this.extraerSolicitudId(item)!;
+          return {
+            id: solId,
+            docente: '',
+            idDocente: item.SolicitudId?.TerceroId ? String(item.SolicitudId.TerceroId) : '',
+            proyecto: '',
+            estado: this.extraerEstadoCodigo(item),
+            fecha: this.formatFecha(item.SolicitudId?.FechaCreacion || item.FechaCreacion),
+          };
+        });
         this.cargando = false;
       },
     });
+  }
+
+  /** Extrae el ID de solicitud sin importar si SolicitudId es un objeto o un entero */
+  private extraerSolicitudId(item: any): number | null {
+    if (!item) return null;
+    const raw = item.SolicitudId;
+    if (typeof raw === 'number') return raw;
+    if (typeof raw === 'object' && raw?.Id) return raw.Id;
+    return null;
+  }
+
+  /** Extrae el código de estado del histórico, manejando objeto o entero */
+  private extraerEstadoCodigo(item: any): string {
+    const estado = item.EstadoSolicitudId;
+    if (typeof estado === 'object' && estado?.CodigoAbreviacion) {
+      return estado.CodigoAbreviacion;
+    }
+    return 'REV_SEC_GRAL';
   }
 
   private extraerDocenteDeDetalle(data: any): { nombre: string; documento: string } {
@@ -304,8 +350,50 @@ export class BandejaComponent implements OnInit {
   // ========== Acciones ==========
 
   crearSolicitud(): void {
-    this.router.navigate(['/solicitudes', 'nuevo'], {
-      queryParams: { mode: 'EDITAR' },
+    if (this.permisosListos && !this.permisos['crear_solicitud']) {
+      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
+      return;
+    }
+
+    const cedula = getDocumento();
+    if (!cedula) {
+      this.popup.error(this.translate.instant('POPUPS.ERROR_SIN_IDENTIFICACION'));
+      return;
+    }
+
+    this.cargando = true;
+
+    const payload = {
+      identificacion: Number(cedula),
+      tipo_solicitud_id: 2,
+      observacion: '',
+      cod_abreviacion_rol: 'PROFE',
+      documento_solicitud: [],
+    };
+
+    this.solicitudesService.crearSolicitud(payload).subscribe({
+      next: (resp: any) => {
+        this.cargando = false;
+
+        const nuevaId =
+          resp?.Data?.Id ||
+          resp?.Data?.id ||
+          resp?.Data?.Solicitud?.Id ||
+          resp?.Data?.solicitud?.Id;
+
+        if (!nuevaId) {
+          this.popup.error('La solicitud se creó, pero no fue posible obtener el ID.');
+          return;
+        }
+
+        this.router.navigate(['/solicitudes', nuevaId], {
+          queryParams: { mode: 'EDITAR' },
+        });
+      },
+      error: () => {
+        this.cargando = false;
+        this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
+      },
     });
   }
 
@@ -365,7 +453,6 @@ export class BandejaComponent implements OnInit {
           this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA', { id: row.id }));
         }
       });
-      return;
     }
   }
 }

@@ -1,5 +1,7 @@
+@use 'sass:color';
+@use './animations';
+
 @import 'sweetalert2/src/variables';
-@import './animations';
 
 // Colores personalizados basados en tu paleta
 $custom-blue: #145a95;
@@ -9,7 +11,7 @@ $custom-yellow: #d9c53a;
 
 $swal2-dark-theme-black: #f0f4f8;
 $swal2-dark-theme-white: #282828;
-$swal2-outline-color: lighten($swal2-outline-color, 10%);
+$swal2-outline-color: color.adjust($swal2-outline-color, $lightness: 10%);
 
 $swal2-background: $swal2-dark-theme-black;
 
@@ -53,7 +55,7 @@ $swal2-question: $custom-blue;
 
 // FOOTER
 $swal2-footer-border-color: rgba(159, 175, 190, 0.168);
-$swal2-footer-color: lighten($swal2-html-container-color, 40%); // Aclarar el texto del footer
+$swal2-footer-color: color.adjust($swal2-html-container-color, $lightness: 40%); // Aclarar el texto del footer
 $swal2-footer-font-weight: 100; // Hacer el texto del footer más delgado
 
 // INPUT
@@ -66,7 +68,7 @@ $swal2-input-focus-border: 1px solid $custom-blue;
 $swal2-input-focus-outline: 2px solid transparent;
 $swal2-input-focus-box-shadow: 0 0 0 1px $custom-blue;
 $swal2-input-font-size: 14px;
-$swal2-input-background: lighten($swal2-dark-theme-black, 5%);
+$swal2-input-background: color.adjust($swal2-dark-theme-black, $lightness: 5%);
 $swal2-input-color: $swal2-dark-theme-white;
 $swal2-input-transition: none;
 

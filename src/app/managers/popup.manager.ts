@@ -4,7 +4,7 @@ import Swal, { SweetAlertResult } from 'sweetalert2';
 
 @Injectable({ providedIn: 'root' })
 export class PopUpManager {
-  constructor(private snack: MatSnackBar) {}
+  constructor(private readonly snack: MatSnackBar) {}
 
   /** Toast de éxito (snackbar) */
   success(msg: string): void {

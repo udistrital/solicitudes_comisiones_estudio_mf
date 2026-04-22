@@ -3,9 +3,10 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
-  selector: 'app-visor-documentos',
-  templateUrl: './visor-documentos.component.html',
-  styleUrls: ['./visor-documentos.component.scss'],
+    selector: 'app-visor-documentos',
+    templateUrl: './visor-documentos.component.html',
+    styleUrls: ['./visor-documentos.component.scss'],
+    standalone: false
 })
 export class VisorDocumentosComponent implements OnInit, OnDestroy {
   pdfUrl?: SafeResourceUrl;
@@ -18,19 +19,25 @@ export class VisorDocumentosComponent implements OnInit, OnDestroy {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private sanitizer: DomSanitizer,
+    private readonly sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {
-    if (this.isFR010 || !this.data?.base64) {
+    if (this.isFR010 || !this.data?.base64) return;
+
+    const mimeType = this.data?.mimeType;
+
+    if (mimeType !== 'application/pdf') {
       return;
     }
 
-    const mimeType = this.data?.mimeType || 'application/pdf';
     const blob = this.base64ToBlob(this.data.base64, mimeType);
 
     this.objectUrl = URL.createObjectURL(blob);
-    this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl);
+
+    this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      this.objectUrl
+    );
   }
 
   ngOnDestroy(): void {

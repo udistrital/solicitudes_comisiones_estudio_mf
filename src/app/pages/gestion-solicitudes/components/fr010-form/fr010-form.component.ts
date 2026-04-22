@@ -14,9 +14,10 @@ import { getDocumento, getCorreoSesion } from 'src/app/utils/auth.util';
 import { PopUpManager } from 'src/app/managers/popup.manager';
 
 @Component({
-  selector: 'app-fr010-form',
-  templateUrl: './fr010-form.component.html',
-  styleUrls: ['./fr010-form.component.scss'],
+    selector: 'app-fr010-form',
+    templateUrl: './fr010-form.component.html',
+    styleUrls: ['./fr010-form.component.scss'],
+    standalone: false
 })
 export class Fr010FormComponent implements OnInit {
   /** Datos existentes del formulario (modo edición). Si se pasa, no consulta el servicio de docente. */
@@ -55,10 +56,10 @@ export class Fr010FormComponent implements OnInit {
   ];
 
   constructor(
-    private fb: FormBuilder,
-    private translate: TranslateService,
-    private docenteInfoService: DocenteInfoService,
-    private popup: PopUpManager,
+    private readonly fb: FormBuilder,
+    private readonly translate: TranslateService,
+    private readonly docenteInfoService: DocenteInfoService,
+    private readonly popup: PopUpManager,
   ) {}
 
   ngOnInit(): void {
@@ -523,7 +524,8 @@ export class Fr010FormComponent implements OnInit {
 
     const raw = String(value).trim();
 
-    const matchDdMmYyyy = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const regexDate = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const matchDdMmYyyy = regexDate.exec(raw);
     if (matchDdMmYyyy) {
       const day = Number(matchDdMmYyyy[1]);
       const month = Number(matchDdMmYyyy[2]);
@@ -538,7 +540,8 @@ export class Fr010FormComponent implements OnInit {
       return isValid ? date : null;
     }
 
-    const matchIso = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const regexIso = /^(\d{4})-(\d{2})-(\d{2})$/;
+    const matchIso = regexIso.exec(raw);
     if (matchIso) {
       const year = Number(matchIso[1]);
       const month = Number(matchIso[2]);
@@ -707,12 +710,6 @@ export class Fr010FormComponent implements OnInit {
   }
 
   public save(): void {
-    // TODO: reactivar validación para producción
-    // if (this.form.invalid) {
-    //   this.form.markAllAsTouched();
-    //   return;
-    // }
-
     const payload = {
       meta: {
         codigo: 'GD-PR-013-FR-010',

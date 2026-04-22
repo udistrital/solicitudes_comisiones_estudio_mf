@@ -462,6 +462,13 @@ export class DetalleSolicitudComponent implements OnInit {
     return this.selectedRequiredDoc?.code === 'FR010';
   }
 
+  /** El doc seleccionado ya tiene un archivo cargado (debe eliminarse antes de subir otro) */
+  isDocYaCargado(): boolean {
+    if (!this.selectedRequiredDoc || this.selectedRequiredDoc.kind === 'FORM') return false;
+    const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
+    return !!doc && doc.estado !== 'PENDIENTE';
+  }
+
   // ========== Checkbox → estado de documento ==========
   onDocCheckedChange(doc: DocumentoItem): void {
     doc.estado = doc.checked ? 'APROB' : 'PENDIENTE';

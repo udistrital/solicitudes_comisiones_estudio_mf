@@ -72,7 +72,8 @@
     "ENVIAR_SOLICITUD": "Enviar solicitud",
     "GESTIONAR_SOLICITUD": "Gestionar solicitud",
     "VER_DOCUMENTO": "Ver documento",
-    "ELIMINAR_DOCUMENTO": "Eliminar documento"
+    "ELIMINAR_DOCUMENTO": "Eliminar documento",
+    "DOC_YA_CARGADO": "Este documento ya fue cargado. Elimínelo primero para subir otro"
   },
   "DETALLE": {
     "TITLE_EDITABLE": "Detalle solicitud",

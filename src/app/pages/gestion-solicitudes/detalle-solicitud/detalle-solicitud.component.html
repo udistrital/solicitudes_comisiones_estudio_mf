@@ -82,8 +82,7 @@
       </mat-card>
 
       <!-- FR-010 DIGITAL -->
-      <app-fr010-form *ngIf="isFR010Selected()"
-        [datosIniciales]="formularioRecuperado"
+      <app-fr010-form ngIf="isFR010Selected()"
         (saved)="onFr010Saved($event)">
       </app-fr010-form>
 
@@ -335,29 +334,7 @@
                 <div class="text-center text-sga font-semibold">{{ 'TABLE.DOCUMENTO' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-nombre">
-                <ng-container *ngIf="d.esSoporteRevisor && d.pendienteCrear; else nombreNormal">
-                  <div class="flex flex-col gap-1">
-                    <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-                      <input
-                        matInput
-                        [ngModel]="d.nombre"
-                        (ngModelChange)="actualizarNombreSoporteRevisor(d, $event)"
-                        [placeholder]="'DETALLE.NOMBRE_SOPORTE_REVISOR' | translate"
-                        maxlength="120"
-                      />
-                    </mat-form-field>
-
-                    <div class="text-[11px]"
-                      [ngClass]="NombreSoporteRevisorValido(d) ? 'text-green-700' : 'text-red-600'">
-                      <ng-container *ngIf="!NombreSoporteRevisorValido(d)">
-                        {{ 'DETALLE.NOMBRE_MINIMO_SOPORTE' | translate:{ min: MIN_NOMBRE_SOPORTE_REVISOR } }}
-                      </ng-container>
-                      <ng-container *ngIf="NombreSoporteRevisorValido(d)">
-                        {{ 'DETALLE.NOMBRE_VALIDO_SOPORTE' | translate }}
-                      </ng-container>
-                    </div>
-                  </div>
-                </ng-container>
+                <span class="block text-left break-words">{{ d.nombre }}</span>
 
                 <ng-template #nombreNormal>
                   <span class="block text-left break-words">{{ d.nombre }}</span>
@@ -387,6 +364,23 @@
               </td>
             </ng-container>
 
+            <ng-container matColumnDef="adjuntar">
+              <th mat-header-cell *matHeaderCellDef class="doc-th col-icon">
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.ADJUNTAR' | translate }}</div>
+              </th>
+              <td mat-cell *matCellDef="let d" class="doc-td col-icon">
+                <button
+                  *ngIf="d.esDocumentoRolActual"
+                  type="button"
+                  class="sga-table-action"
+                  [attr.aria-label]="'ACTIONS.ADJUNTAR_DOCS' | translate"
+                  [matTooltip]="'ACTIONS.ADJUNTAR_DOCS' | translate"
+                  (click)="adjuntarSoporteRevisor(d, reviewerFileInput)">
+                  <mat-icon>attach_file</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="visualizar">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-icon">
                 <div class="text-center text-sga font-semibold">{{ 'TABLE.VER' | translate }}</div>
@@ -406,8 +400,11 @@
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-check">
                 <div class="flex justify-center">
-                  <mat-checkbox [(ngModel)]="d.checked"
-                    (ngModelChange)="onDocCheckedChange(d)"></mat-checkbox>
+                  <mat-checkbox
+                    [(ngModel)]="d.checked"
+                    [disabled]="d.esDocumentoRolActual"
+                    (ngModelChange)="onDocCheckedChange(d)">
+                  </mat-checkbox>
                 </div>
               </td>
             </ng-container>
@@ -427,8 +424,8 @@
               </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="['nombre','autor','estado','visualizar','check','eliminarRevisor']; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['nombre','autor','estado','visualizar','check','eliminarRevisor'];"></tr>
+            <tr mat-header-row *matHeaderRowDef="['nombre','autor','estado','adjuntar','visualizar','check']; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['nombre','autor','estado','adjuntar','visualizar','check'];"></tr>
           </table>
         </div>
       </mat-card>
@@ -466,12 +463,6 @@
             </div>
 
             <footer class="px-3 pb-3 flex flex-wrap items-center justify-between gap-2">
-              <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20 inline-flex items-center"
-                (click)="adjuntarSoporteRevisor(reviewerFileInput)">
-                <mat-icon class="mr-1 text-[18px]">attach_file</mat-icon>
-                {{ 'ACTIONS.ADJUNTAR_DOCS' | translate }}
-              </button>
-
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
                   (click)="regresar()">{{ 'ACTIONS.REGRESAR' | translate }}</button>
@@ -495,12 +486,6 @@
               {{ 'DETALLE.ENVIAR_HABILITADO_MSG' | translate }}
             </div>
           </section>
-          <div *ngIf="haySoportesRevisorInvalidos" class="px-3 pb-1 text-xs text-red-600">
-            {{ 'DETALLE.BLOQUEO_NOMBRE_SOPORTE' | translate:{ min: MIN_NOMBRE_SOPORTE_REVISOR } }}
-          </div>
-          <div *ngIf="!haySoportesRevisorInvalidos && !isSupervisor" class="px-3 pb-1 text-xs text-black/50">
-            {{ 'DETALLE.ENVIAR_HABILITADO_MSG' | translate }}
-          </div>
         </div>
       </mat-card>
 
@@ -543,13 +528,13 @@
           </div>
 
           <!-- Adjuntar docs -->
-          <div class="mb-[22px]">
+          <!--<div class="mb-[22px]">
             <button mat-stroked-button class="h-10 px-3 rounded-lg border-black/20 inline-flex items-center"
               (click)="adjuntarSoporteRevisor(reviewerFileInput)">
               <mat-icon class="mr-1 text-[18px]">attach_file</mat-icon>
               {{ 'ACTIONS.ADJUNTAR_DOCS' | translate }}
             </button>
-          </div>
+          </div>-->
 
           <!-- Dar inicio -->
           <div class="mb-[22px]">

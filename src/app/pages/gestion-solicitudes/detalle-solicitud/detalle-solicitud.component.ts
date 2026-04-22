@@ -19,9 +19,9 @@ import { catchError, map } from 'rxjs/operators';
 
 type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
 
-// Códigos de tipo documental — FR010 y SOPORTE_REVISOR son fijos del frontend,
+// Códigos de tipo documental — FR010 es fijo del frontend,
 // el resto viene dinámicamente del CRUD (tipo_documento_solicitud)
-type TipoDocumentalFijo = 'FR010' | 'SOPORTE_REVISOR';
+type TipoDocumentalFijo = 'FR010';
 type TipoDocumentalCode = TipoDocumentalFijo | string;
 
 interface DocumentoItem {
@@ -39,14 +39,14 @@ interface DocumentoItem {
   fileName?: string;
   mimeType?: string;
   metadatos?: any;
-  esSoporteRevisor?: boolean;
-  nombreTemporal?: string;
-
+  
   enlace?: string;
   cargandoArchivo?: boolean;
   documentoSolicitudId?: number;
   documentoId?: number;
   pendienteCrear?: boolean;
+  rolUsuario?: string;
+  esDocumentoRolActual?: boolean;
 }
 
 
@@ -80,6 +80,7 @@ interface RequiredDocOption {
   kind: RequiredDocKind;
   idTipoDocumento?: number;
   descripcion?: string;
+  rolUsuario?: string;
 }
 
 @Component({
@@ -134,11 +135,9 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // Para saber qué documento se está cargando
   documentoEnCarga: DocumentoItem | null = null;
+  documentoRolEnCarga: DocumentoItem | null = null;
   reviewerUploadCounter = 1000;
-  MIN_NOMBRE_SOPORTE_REVISOR = 12;
 
-  /** Id del tipo documental DE_SOL_COM resuelto desde documento_crud */
-  private idTipoDocumentoSoporte: number | null = null;
 
   // FR-010 siempre presente como opción fija del frontend
   private readonly FR010_OPTION: RequiredDocOption = {
@@ -228,23 +227,8 @@ export class DetalleSolicitudComponent implements OnInit {
     this.selectedRequiredDoc = this.requiredDocs[0];
 
     this.cargarTiposDocumentoCrud();
-    this.cargarIdTipoDocumentoSoporte();
   }
 
-  private cargarIdTipoDocumentoSoporte(): void {
-    this.solicitudesService.obtenerTipoDocumentoPorCodigo('DE_SOL_COM').subscribe({
-      next: (resp: any) => {
-        const data: any[] = Array.isArray(resp) ? resp : resp?.Data || [];
-        const match = data.find((d: any) => d.CodigoAbreviacion === 'DE_SOL_COM');
-        if (match?.Id != null) {
-          this.idTipoDocumentoSoporte = match.Id;
-        }
-      },
-      error: () => {
-        // Se maneja en ejecutarCambioEstado si hay soportes del revisor
-      },
-    });
-  }
 
   private cargarTiposDocumentoCrud(): void {
     this.cargandoTiposDoc = true;
@@ -259,14 +243,23 @@ export class DetalleSolicitudComponent implements OnInit {
           kind: 'FILE' as RequiredDocKind,
           idTipoDocumento: d.Id,
           descripcion: d.Descripcion ?? d.Nombre,
+          rolUsuario: this.obtenerRolUsuarioDocumento(d),
         }));
 
-        this.requiredDocs = [this.FR010_OPTION, ...docsCrud];
+        const docsDocente = docsCrud.filter((d) => d.rolUsuario === 'DOCENTE');
+        const docsRolActual = docsCrud.filter((d) => d.rolUsuario === this.rolDocumentalActual())
+
+        this.requiredDocs = this.role === 'DOCENTE'
+          ? [this.FR010_OPTION, ...docsDocente]
+          : [...docsDocente, ...docsRolActual];
+        
         this.documentos = this.buildDocumentos(this.requiredDocs);
         this.selectedRequiredDoc = this.requiredDocs[0];
+        
         if (this.detalleSolicitudActual) {
           this.poblarDocumentosDesdeDetalle(this.detalleSolicitudActual);
         }
+        
         this.cargandoTiposDoc = false;
       },
       error: () => {
@@ -369,12 +362,15 @@ export class DetalleSolicitudComponent implements OnInit {
     return docs.map((d, i) => ({
       id: i + 1,
       nombre: d.name,
-      autorSoporte: 'Docente',
+      autorSoporte: d.rolUsuario === 'DOCENTE'? 'Docente': this.obtenerNombreRol(d.rolUsuario),
       estado: 'PENDIENTE' as EstadoDocumento,
       checked: false,
       code: d.code,
       idTipoDocumento: d.idTipoDocumento,
       descripcion: d.descripcion,
+      rolUsuario: d.rolUsuario,
+      esDocumentoRolActual: this.role !== 'DOCENTE' && d.rolUsuario === this.rolDocumentalActual(),
+      pendienteCrear: false,
     }));
   }
 
@@ -411,7 +407,9 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   get allDocsChecked(): boolean {
-    return this.documentos.every((d) => d.checked);
+    return this.documentos
+      .filter((d) => !d.esDocumentoRolActual)
+      .every((d) => d.checked);
   }
 
   get observacionesOrdenDesc(): ObservacionItem[] {
@@ -426,18 +424,16 @@ export class DetalleSolicitudComponent implements OnInit {
     return `ESTADOS.${this.estadoSolicitud}`;
   }
 
-   get soportesRevisor(): DocumentoItem[] {
-    return this.documentos.filter((d) => d.esSoporteRevisor);
+   get documentosRolActual(): DocumentoItem[] {
+    return this.documentos.filter((d) => d.esDocumentoRolActual);
   }
 
-  get haySoportesRevisorInvalidos(): boolean {
-    return this.soportesRevisor.some(
-      (d) => d.pendienteCrear && (!d.nombre || d.nombre.trim().length < this.MIN_NOMBRE_SOPORTE_REVISOR)
-    );
+  get hayDocumentosRolActualPendientes(): boolean {
+    return this.documentosRolActual.some((d) => !d.enlace && !d.base64);
   }
 
   get puedeContinuarRevisor(): boolean {
-    return !this.haySoportesRevisorInvalidos;
+    return !this.hayDocumentosRolActualPendientes;
   }
 
   get puedeEnviarDocente(): boolean {
@@ -445,8 +441,8 @@ export class DetalleSolicitudComponent implements OnInit {
       return false;
     }
     // Todos los documentos requeridos del docente deben estar cargados (no PENDIENTE)
-    const docsDocente = this.documentos.filter(d => !d.esSoporteRevisor);
-    return docsDocente.length > 0 && docsDocente.every(d => d.estado !== 'PENDIENTE');
+    const docsDocente = this.documentos.filter((d) => d.rolUsuario === 'DOCENTE');
+    return docsDocente.length > 0 && docsDocente.every((d) => d.estado !== 'PENDIENTE');
   }
 
 
@@ -595,16 +591,6 @@ export class DetalleSolicitudComponent implements OnInit {
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (!result.isConfirmed) return;
-
-      if (doc.esSoporteRevisor) {
-        this.documentos = this.documentos.filter((d) => d.id !== doc.id);
-        this.popup.success(
-          this.translate.instant('POPUPS.DOC_ELIMINADO', {
-            nombre: doc.nombre ?? doc.fileName ?? 'documento',
-          }),
-        );
-        return;
-      }
 
       const debeDesactivarDocumentoPersistido =
         !this.isCreating
@@ -774,20 +760,18 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): CambioEstadoPayload | null {
-    const documentosRevisor = this.documentos
-      .filter((d) => d.esSoporteRevisor && d.base64 && d.pendienteCrear);
-
-    // Si hay soportes del revisor, el id de tipo documental debe estar resuelto
-    if (documentosRevisor.length > 0 && !this.idTipoDocumentoSoporte) {
-      this.popup.error(this.translate.instant('POPUPS.ERROR_TIPO_DOC_NO_RESUELTO'));
-      return null;
-    }
+    const documentosRevisor = this.documentos.filter((d) => 
+      d.esDocumentoRolActual &&
+      d.base64 &&
+      d.pendienteCrear &&
+      d.code !== 'FR010'
+    );
 
     const documentosMapeados = documentosRevisor.map((d) => ({
-      IdTipoDocumento: this.idTipoDocumentoSoporte,
-      TipoDocumento: 'OTRO_SOP',
+      IdTipoDocumento: d.idTipoDocumento ?? null,
+      TipoDocumento: String(d.code ?? ''),
       EstadoDocumento: 'CARG',
-      Nombre: d.fileName ?? d.nombre,
+      Nombre: d.nombre,
       Metadatos: {},
       File: d.base64,
     }));
@@ -1007,9 +991,6 @@ export class DetalleSolicitudComponent implements OnInit {
       }
 
       const match = docsBackend.find((doc: any) => {
-        if (this.esDocumentoSoporteRevisor(doc)) {
-          return false;
-        }
         const backendTipoId = this.extraerTipoDocumentoId(doc);
         return backendTipoId && backendTipoId === baseDoc.idTipoDocumento;
       });
@@ -1022,7 +1003,8 @@ export class DetalleSolicitudComponent implements OnInit {
         ...baseDoc,
         nombre: baseDoc.nombre,
         estado: this.extraerEstadoDocumento(match),
-        autorSoporte: 'Docente',
+        autorSoporte: baseDoc.rolUsuario === 'DOCENTE'
+          ? 'Docente': this.obtenerNombreRol(baseDoc.rolUsuario),
         enlace: match?.Enlace,
         fileName: match?.Nombre || baseDoc.nombre,
         mimeType: 'application/pdf',
@@ -1033,29 +1015,20 @@ export class DetalleSolicitudComponent implements OnInit {
       };
     });
 
-    const soportesRevisorGuardados: DocumentoItem[] = docsBackend
-    .filter((doc: any) => this.esDocumentoSoporteRevisor(doc))
-    .map((doc: any) => ({
-      id: this.reviewerUploadCounter++,
-      nombre: doc?.Nombre || doc?.nombre || 'Soporte de revisor',
-      autorSoporte: this.extraerAutorSoporte(doc),
-      estado: this.extraerEstadoDocumento(doc),
-      checked: false,
-      code: 'SOPORTE_REVISOR',
-      descripcion: 'Soporte cargado por revisor',
-      esSoporteRevisor: true,
-      enlace: doc?.Enlace,
-      fileName: doc?.Nombre || doc?.nombre,
-      mimeType: 'application/pdf',
-      documentoSolicitudId: this.extraerDocumentoSolicitudId(doc),
-      documentoId: doc?.DocumentoId || doc?.documento_id,
-      cargandoArchivo: false,
-      pendienteCrear: false,
-    }));
-
-    this.documentos = [...documentosBase, ...soportesRevisorGuardados];
-
+    this.documentos = [...documentosBase];
     this.cargarBase64DocumentosGuardados();
+  }
+
+  private rolDocumentalActual(): string {
+    return this.role === 'DECANO' ? 'DECANATURA' : this.role;
+  }
+
+  private normalizarRolUsuario(value: any): string {
+    return String(value ?? 'DOCENTE').trim().toUpperCase();
+  }
+
+  private obtenerRolUsuarioDocumento(d: any): string {
+    return this.normalizarRolUsuario(d.RolUsuario ?? d.rol_usuario ?? 'DOCENTE');
   }
 
   private agregarDocumentoAEliminar(id: number | undefined): void {
@@ -1101,16 +1074,6 @@ export class DetalleSolicitudComponent implements OnInit {
       || doc?.tipo_documento;
   }
 
-  private esDocumentoSoporteRevisor(doc: any): boolean {
-    const tipoCodigo = this.extraerTipoDocumentoCodigo(doc);
-    const tipoId = this.extraerTipoDocumentoId(doc);
-
-    if (tipoCodigo === 'OTRO_SOP' || tipoCodigo === 'DE_SOL_COM') {
-      return true;
-    }
-
-    return !!this.idTipoDocumentoSoporte && tipoId === this.idTipoDocumentoSoporte;
-  }
 
   private extraerAutorSoporte(doc: any): string {
     const metadatosRaw = doc?.Metadatos || doc?.metadatos;
@@ -1205,8 +1168,10 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   // ========== Acciones revisor ==========
-  adjuntarSoporteRevisor(fileInput: HTMLInputElement): void {
+  adjuntarSoporteRevisor(doc: DocumentoItem, fileInput: HTMLInputElement): void {
     if (this.permisosListos && !this.permisos['adjuntar_soporte_revision']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
+    
+    this.documentoRolEnCarga = doc;
     fileInput.value = '';
     fileInput.click();
   }
@@ -1219,6 +1184,12 @@ export class DetalleSolicitudComponent implements OnInit {
       return;
     }
 
+    if (!this.documentoRolEnCarga) {
+      this.popup.error(this.translate.instant('POPUPS.DOC_NO_ENCONTRADO'));
+      input.value = '';
+      return;
+    }
+
     if (file.type !== 'application/pdf') {
       this.popup.error(this.translate.instant('POPUPS.SOLO_PDF'));
       input.value = '';
@@ -1226,49 +1197,39 @@ export class DetalleSolicitudComponent implements OnInit {
     }
 
     try {
+      const docActual = this.documentoRolEnCarga;
+
+      const debeDesactivarDocumentoActual =
+        !this.isCreating &&
+        !!this.id &&
+        !docActual.pendienteCrear &&
+        !!docActual.documentoSolicitudId;
+
+      if (debeDesactivarDocumentoActual) {
+        this.agregarDocumentoAEliminar(docActual.documentoSolicitudId);
+      }
+      
       const base64 = await this.fileToBase64(file);
 
-      const nuevoDoc: DocumentoItem = {
-        id: this.reviewerUploadCounter++,
-        nombre: '',
-        nombreTemporal: file.name.replace(/\.pdf$/i, ''),
-        autorSoporte: this.obtenerNombreRol(this.role),
-        estado: 'CARG',
-        checked: false,
-        code: 'SOPORTE_REVISOR',
-        descripcion: 'Soporte cargado por revisor',
-        base64,
-        fileName: file.name,
-        mimeType: file.type,
-        esSoporteRevisor: true,
-        pendienteCrear: true,
-        metadatos: {
-          cargadoPor: this.role,
-          cargadoPorLabel: this.obtenerNombreRol(this.role),
-          fechaCarga: new Date().toISOString(),
-          origen: 'REVISOR',
-        },
-      };
+      docActual.base64 = base64;
+      docActual.fileName = file.name;
+      docActual.mimeType = file.type;
+      docActual.estado = 'CARG';
+      docActual.pendienteCrear = true;
+      docActual.enlace = undefined;
+      docActual.documentoSolicitudId = undefined;
+      docActual.documentoId = undefined;
+      docActual.metadatos = {};
 
-      this.documentos = [...this.documentos, nuevoDoc];
+      this.documentos = [...this.documentos];
 
-      this.popup.success(this.translate.instant('POPUPS.SOPORTE_REVISOR_AGREGADO'));
+      this.popup.success(this.translate.instant('POPUPS.DOC_ADJUNTADO', {nombre: docActual.nombre,}),);
     } catch (error) {
       this.popup.error(this.translate.instant('POPUPS.ERROR_PROCESAR_ARCHIVO'));
     } finally {
+      this.documentoRolEnCarga = null;
       input.value = '';
     }
-  }
-
-NombreSoporteRevisorValido(doc: DocumentoItem): boolean {
-  if (!doc.esSoporteRevisor || !doc.pendienteCrear) return true;
-
-  return !!doc.nombre && doc.nombre.trim().length >= this.MIN_NOMBRE_SOPORTE_REVISOR;
-}
-
-  actualizarNombreSoporteRevisor(doc: DocumentoItem, value: string): void {
-    doc.nombre = value;
-    this.documentos = [...this.documentos];
   }
   
   retornarSolicitud() {

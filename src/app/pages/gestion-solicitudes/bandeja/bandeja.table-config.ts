@@ -3,7 +3,7 @@ import { SolicitudRow } from '../../../models/solicitud.model';
 import { ColumnDef } from '../../../shared/dynamic-table/dynamic-table.types';
 import { estadoSolicitudClass } from '../../../utils/estado-solicitud.util';
 
-export type BandejaActionKey = 'EDITAR' | 'ELIMINAR' | 'ENVIAR' | 'VER' | 'GESTIONAR';
+export type BandejaActionKey = 'EDITAR' | 'ELIMINAR' | 'VER' | 'GESTIONAR';
 
 // Columnas comunes reutilizables
 const COL_ID: ColumnDef<SolicitudRow> = {

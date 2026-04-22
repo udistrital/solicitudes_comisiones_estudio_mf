@@ -17,9 +17,10 @@ import { PermisosUtils } from '../../../utils/role-permissions';
 const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'SECRETARIA_GENERAL', 'DECANO'];
 
 @Component({
-  selector: 'app-bandeja',
-  templateUrl: './bandeja.component.html',
-  styleUrls: ['./bandeja.component.scss'],
+    selector: 'app-bandeja',
+    templateUrl: './bandeja.component.html',
+    styleUrls: ['./bandeja.component.scss'],
+    standalone: false
 })
 export class BandejaComponent implements OnInit {
   selectedRole: Role | null = null;
@@ -109,14 +110,6 @@ export class BandejaComponent implements OnInit {
           tooltip: 'TOOLTIPS.ELIMINAR_SOLICITUD',
           color: 'warn',
           visible: (row: SolicitudRow) => row.estado === 'NO_ENV',
-        },
-        {
-          key: 'ENVIAR',
-          label: 'ACTIONS.ENVIAR',
-          icon: 'send',
-          tooltip: 'TOOLTIPS.ENVIAR_SOLICITUD',
-          color: 'primary',
-          visible: editable,
         },
       ];
     }
@@ -440,18 +433,5 @@ export class BandejaComponent implements OnInit {
       return;
     }
 
-    if (a === 'ENVIAR') {
-      this.popup.confirm(
-        this.translate.instant('POPUPS.ENVIAR_SOLICITUD_MSG', { id: row.id }),
-        this.translate.instant('ACTIONS.ENVIAR'),
-        this.translate.instant('ACTIONS.CANCELAR'),
-      ).then((result) => {
-        if (result.isConfirmed) {
-          row.estado = 'RAD';
-          this.rows = [...this.rows];
-          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA', { id: row.id }));
-        }
-      });
-    }
   }
 }

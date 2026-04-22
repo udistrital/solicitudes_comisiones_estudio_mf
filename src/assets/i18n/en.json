@@ -72,7 +72,8 @@
     "ENVIAR_SOLICITUD": "Submit request",
     "GESTIONAR_SOLICITUD": "Manage request",
     "VER_DOCUMENTO": "View document",
-    "ELIMINAR_DOCUMENTO": "Delete document"
+    "ELIMINAR_DOCUMENTO": "Delete document",
+    "DOC_YA_CARGADO": "This document is already uploaded. Delete it first to upload another"
   },
   "DETALLE": {
     "TITLE_EDITABLE": "Request detail",

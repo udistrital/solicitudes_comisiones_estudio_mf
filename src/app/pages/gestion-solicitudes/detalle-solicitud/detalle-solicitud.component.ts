@@ -84,9 +84,10 @@ interface RequiredDocOption {
 }
 
 @Component({
-  selector: 'app-detalle-solicitud',
-  templateUrl: './detalle-solicitud.component.html',
-  styleUrls: ['./detalle-solicitud.component.scss'],
+    selector: 'app-detalle-solicitud',
+    templateUrl: './detalle-solicitud.component.html',
+    styleUrls: ['./detalle-solicitud.component.scss'],
+    standalone: false
 })
 export class DetalleSolicitudComponent implements OnInit {
   @ViewChild(Fr010FormComponent) fr010Comp?: Fr010FormComponent;
@@ -455,6 +456,13 @@ export class DetalleSolicitudComponent implements OnInit {
 
   isFR010Selected(): boolean {
     return this.selectedRequiredDoc?.code === 'FR010';
+  }
+
+  /** El doc seleccionado ya tiene un archivo cargado (debe eliminarse antes de subir otro) */
+  isDocYaCargado(): boolean {
+    if (!this.selectedRequiredDoc || this.selectedRequiredDoc.kind === 'FORM') return false;
+    const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
+    return !!doc && doc.estado !== 'PENDIENTE';
   }
 
   // ========== Checkbox → estado de documento ==========

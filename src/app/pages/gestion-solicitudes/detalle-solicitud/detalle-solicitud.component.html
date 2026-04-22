@@ -72,6 +72,8 @@
             </button>
 
             <button *ngIf="!isFR010Selected()" mat-stroked-button class="h-10 px-3.5 rounded-lg border-black/20"
+              [disabled]="isDocYaCargado()"
+              [matTooltip]="isDocYaCargado() ? ('TOOLTIPS.DOC_YA_CARGADO' | translate) : ''"
               (click)="adjuntarDocumento(docFileInput)">
               {{ 'ACTIONS.ADJUNTAR_DOC' | translate }}
             </button>
@@ -404,6 +406,21 @@
                     (ngModelChange)="onDocCheckedChange(d)">
                   </mat-checkbox>
                 </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="eliminarRevisor">
+              <th mat-header-cell *matHeaderCellDef class="doc-th col-icon">
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.ELIMINAR' | translate }}</div>
+              </th>
+              <td mat-cell *matCellDef="let d" class="doc-td col-icon">
+                <button *ngIf="d.esSoporteRevisor && d.pendienteCrear" type="button"
+                  class="sga-table-action sga-table-action--warn"
+                  [attr.aria-label]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
+                  [matTooltip]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
+                  (click)="eliminarDocumento(d)">
+                  <mat-icon>delete</mat-icon>
+                </button>
               </td>
             </ng-container>
 

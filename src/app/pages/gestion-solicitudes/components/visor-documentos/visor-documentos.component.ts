@@ -3,9 +3,10 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
-  selector: 'app-visor-documentos',
-  templateUrl: './visor-documentos.component.html',
-  styleUrls: ['./visor-documentos.component.scss'],
+    selector: 'app-visor-documentos',
+    templateUrl: './visor-documentos.component.html',
+    styleUrls: ['./visor-documentos.component.scss'],
+    standalone: false
 })
 export class VisorDocumentosComponent implements OnInit, OnDestroy {
   pdfUrl?: SafeResourceUrl;

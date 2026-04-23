@@ -645,14 +645,35 @@ export class DetalleSolicitudComponent implements OnInit {
     });
   }
 
+  private abrirDialogoDocumento(doc: DocumentoItem): void {
+  this.dialog.open(VisorDocumentosComponent, {
+    width: '900px',
+    maxWidth: '95vw',
+    data: {
+      nombre: doc.fileName ?? doc.nombre,
+      mimeType: doc.mimeType ?? 'application/pdf',
+      base64: doc.base64,
+      estado: doc.estado,
+      autor: doc.autorSoporte,
+    },
+  });
+}
+
   verDocumento(doc: DocumentoItem): void {
-    // FR-010: abrir formulario en modo solo lectura (no es PDF)
+
+    if (doc.cargandoArchivo) {
+      return;
+    }
+
+    // ===== FR-010 =====
     if (doc.code === 'FR010') {
       const formData = this.formularioRecuperado || this.fr010Json?.fr010;
+
       if (!formData) {
         this.popup.error(this.translate.instant('POPUPS.DOC_NO_DISPONIBLE'));
         return;
       }
+
       this.dialog.open(VisorDocumentosComponent, {
         width: '1100px',
         maxWidth: '95vw',
@@ -665,25 +686,44 @@ export class DetalleSolicitudComponent implements OnInit {
           formData,
         },
       });
+
       return;
     }
 
-    if (!doc.base64) {
-      this.popup.error(this.translate.instant('POPUPS.DOC_NO_DISPONIBLE'));
+    if (doc.base64) {
+      this.abrirDialogoDocumento(doc);
       return;
     }
 
-    this.dialog.open(VisorDocumentosComponent, {
-      width: '900px',
-      maxWidth: '95vw',
-      data: {
-        nombre: doc.fileName ?? doc.nombre,
-        mimeType: doc.mimeType ?? 'application/pdf',
-        base64: doc.base64,
-        estado: doc.estado,
-        autor: doc.autorSoporte,
-      },
-    });
+    if (doc.enlace) {
+      doc.cargandoArchivo = true;
+
+      this.solicitudesService.obtenerDocumentoPorEnlace(doc.enlace).subscribe({
+        next: (resp: any) => {
+          const base64 = this.extraerBase64Gestor(resp);
+
+          doc.cargandoArchivo = false;
+
+          if (!base64) {
+            this.popup.error(this.translate.instant('POPUPS.DOC_NO_DISPONIBLE'));
+            return;
+          }
+
+          doc.base64 = base64;
+          doc.mimeType = doc.mimeType || 'application/pdf';
+
+          this.abrirDialogoDocumento(doc);
+        },
+        error: () => {
+          doc.cargandoArchivo = false;
+          this.popup.error(this.translate.instant('POPUPS.ERROR_CARGAR_DOCUMENTO'));
+        },
+      });
+
+      return;
+    }
+
+    this.popup.error(this.translate.instant('POPUPS.DOC_NO_DISPONIBLE'));
   }
 
   guardarFR010(): void {
@@ -1187,42 +1227,6 @@ export class DetalleSolicitudComponent implements OnInit {
     return resp?.Data?.file
       || resp?.file
       || null;
-  }
-
-  private cargarBase64DocumentosGuardados(): void {
-    const documentosConEnlace = this.documentos.filter(
-      (d) => d.code !== 'FR010' && d.enlace && !d.base64
-    );
-
-    if (!documentosConEnlace.length) {
-      return;
-    }
-
-    const peticiones = documentosConEnlace.map((doc) => {
-      doc.cargandoArchivo = true;
-
-      return this.solicitudesService.obtenerDocumentoPorEnlace(doc.enlace!).pipe(
-        map((resp: any) => {
-          const base64 = this.extraerBase64Gestor(resp);
-          return { doc, base64 };
-        }),
-        catchError(() => of({ doc, base64: null }))
-      );
-    });
-
-    forkJoin(peticiones).subscribe((resultados) => {
-      resultados.forEach(({ doc, base64 }) => {
-        doc.cargandoArchivo = false;
-
-        if (base64) {
-          doc.base64 = base64;
-          doc.mimeType = doc.mimeType || 'application/pdf';
-          doc.estado = doc.estado || 'CARG';
-        }
-      });
-
-      this.documentos = [...this.documentos];
-    });
   }
 
   // ========== Acciones revisor ==========

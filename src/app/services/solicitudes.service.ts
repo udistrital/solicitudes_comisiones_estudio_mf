@@ -27,7 +27,7 @@ export class SolicitudesService {
   }
 
   listarTiposDocumentoSolicitud() {
-    return this.apiCrud.get<any>('v1/tipo_documento_solicitud');
+    return this.apiCrud.get<any>('v1/tipo_documento_solicitud?limit=-1');
   }
 
   eliminarSolicitudDocente(id: number){

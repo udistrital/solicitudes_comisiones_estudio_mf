@@ -38,7 +38,8 @@
     "VER": "View",
     "ELIMINAR": "Delete",
     "OK": "OK",
-    "FILTER_PLACEHOLDER": "Search..."
+    "FILTER_PLACEHOLDER": "Search...",
+    "ADJUNTAR": "Upload"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "Rows per page:",

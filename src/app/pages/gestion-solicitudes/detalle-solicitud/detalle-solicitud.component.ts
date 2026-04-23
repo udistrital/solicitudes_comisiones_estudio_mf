@@ -1102,9 +1102,6 @@ export class DetalleSolicitudComponent implements OnInit {
         rolUsuario: this.obtenerRolUsuarioDocumento(doc),
         esDocumentoRolActual: this.obtenerRolUsuarioDocumento(doc) === this.rolDocumentalActual(),
       }));
-
-    this.documentos = [...documentosBase, ...documentosAdicionales];
-    this.cargarBase64DocumentosGuardados();
   }
 
   private rolDocumentalActual(): string {

@@ -144,6 +144,7 @@ export class DetalleSolicitudComponent implements OnInit {
     code: 'FR010', name: 'FR-010 Formulario de solicitud inicial', kind: 'FORM', idTipoDocumento: 0, descripcion: 'Formulario FR-010'
   };
 
+  // Orden de las observaciones
   private readonly ORDEN_OBS_REVISOR: Record<string, number> = {
     COORDINADOR: 1,
     ADMINISTRADOR: 2,
@@ -151,6 +152,15 @@ export class DetalleSolicitudComponent implements OnInit {
     ADMIN_SGA: 3,
     SECRETARIA_GENERAL: 3,
     DECANO: 4,
+    DECANATURA: 4,
+  };
+
+  // Orden subida documentos
+  private readonly ORDEN_ROL_DOCUMENTAL: Record<string, number> = {
+    DOCENTE: 0,
+    COORDINADOR: 1,
+    ADMINISTRADOR: 2,
+    SECRETARIA_GENERAL: 3,
     DECANATURA: 4,
   };
 
@@ -246,20 +256,27 @@ export class DetalleSolicitudComponent implements OnInit {
           rolUsuario: this.obtenerRolUsuarioDocumento(d),
         }));
 
-        const docsDocente = docsCrud.filter((d) => d.rolUsuario === 'DOCENTE');
-        const docsRolActual = docsCrud.filter((d) => d.rolUsuario === this.rolDocumentalActual())
+        const rolesVisibles = this.obtenerRolesDocumentalesVisibles();
+
+        const docsVisibles = docsCrud
+          .filter((d) => rolesVisibles.includes(d.rolUsuario ?? 'DOCENTE'))
+          .sort((a, b) => {
+            const ordenA = this.ORDEN_ROL_DOCUMENTAL[a.rolUsuario ?? 'DOCENTE'];
+            const ordenB = this.ORDEN_ROL_DOCUMENTAL[b.rolUsuario ?? 'DOCENTE'];
+            return ordenA - ordenB;
+          });
 
         this.requiredDocs = this.role === 'DOCENTE'
-          ? [this.FR010_OPTION, ...docsDocente]
-          : [...docsDocente, ...docsRolActual];
-        
+          ? [this.FR010_OPTION, ...docsCrud.filter((d) => d.rolUsuario === 'DOCENTE')]
+          : [this.FR010_OPTION, ...docsVisibles];
+
         this.documentos = this.buildDocumentos(this.requiredDocs);
         this.selectedRequiredDoc = this.requiredDocs[0];
-        
+
         if (this.detalleSolicitudActual) {
           this.poblarDocumentosDesdeDetalle(this.detalleSolicitudActual);
         }
-        
+
         this.cargandoTiposDoc = false;
       },
       error: () => {
@@ -1015,12 +1032,53 @@ export class DetalleSolicitudComponent implements OnInit {
       };
     });
 
-    this.documentos = [...documentosBase];
+    const idsBase = new Set(
+      documentosBase
+        .map((d) => d.idTipoDocumento)
+        .filter((id): id is number => !!id)
+    );
+
+    const documentosAdicionales = docsBackend
+      .filter((doc: any) => {
+        const tipoId = this.extraerTipoDocumentoId(doc);
+        return !!tipoId && !idsBase.has(tipoId);
+      })
+      .map((doc: any, index: number) => ({
+        id: 10000 + index,
+        nombre: doc?.Nombre || 'Documento',
+        autorSoporte: this.extraerAutorSoporte(doc),
+        estado: this.extraerEstadoDocumento(doc),
+        checked: false,
+        code: this.extraerTipoDocumentoCodigo(doc),
+        idTipoDocumento: this.extraerTipoDocumentoId(doc),
+        descripcion: doc?.Descripcion || doc?.Nombre || 'Documento',
+        enlace: doc?.Enlace,
+        fileName: doc?.Nombre || 'Documento',
+        mimeType: 'application/pdf',
+        documentoSolicitudId: this.extraerDocumentoSolicitudId(doc),
+        documentoId: this.extraerDocumentoId(doc),
+        cargandoArchivo: false,
+        pendienteCrear: false,
+        rolUsuario: this.obtenerRolUsuarioDocumento(doc),
+        esDocumentoRolActual: this.obtenerRolUsuarioDocumento(doc) === this.rolDocumentalActual(),
+      }));
+
+    this.documentos = [...documentosBase, ...documentosAdicionales];
     this.cargarBase64DocumentosGuardados();
   }
 
   private rolDocumentalActual(): string {
     return this.role === 'DECANO' ? 'DECANATURA' : this.role;
+  }
+
+  private obtenerRolesDocumentalesVisibles(): string[] {
+    const rolActual = this.rolDocumentalActual();
+    const ordenActual = this.ORDEN_ROL_DOCUMENTAL[rolActual] ?? 0;
+
+    return Object.entries(this.ORDEN_ROL_DOCUMENTAL)
+      .filter(([, orden]) => orden <= ordenActual)
+      .sort((a, b) => a[1] - b[1])
+      .map(([rol]) => rol);
   }
 
   private normalizarRolUsuario(value: any): string {

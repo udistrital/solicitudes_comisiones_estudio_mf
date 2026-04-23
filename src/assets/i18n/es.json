@@ -38,7 +38,8 @@
     "VER": "Ver",
     "ELIMINAR": "Eliminar",
     "OK": "OK",
-    "FILTER_PLACEHOLDER": "Buscar..."
+    "FILTER_PLACEHOLDER": "Buscar...",
+    "ADJUNTAR": "Adjuntar"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "Filas por pagina:",

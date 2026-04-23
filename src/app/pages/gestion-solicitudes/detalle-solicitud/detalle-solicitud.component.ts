@@ -646,18 +646,18 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private abrirDialogoDocumento(doc: DocumentoItem): void {
-  this.dialog.open(VisorDocumentosComponent, {
-    width: '900px',
-    maxWidth: '95vw',
-    data: {
-      nombre: doc.fileName ?? doc.nombre,
-      mimeType: doc.mimeType ?? 'application/pdf',
-      base64: doc.base64,
-      estado: doc.estado,
-      autor: doc.autorSoporte,
-    },
-  });
-}
+    this.dialog.open(VisorDocumentosComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      data: {
+        nombre: doc.fileName ?? doc.nombre,
+        mimeType: doc.mimeType ?? 'application/pdf',
+        base64: doc.base64,
+        estado: doc.estado,
+        autor: doc.autorSoporte,
+      },
+    });
+  }
 
   verDocumento(doc: DocumentoItem): void {
 
@@ -1085,13 +1085,13 @@ export class DetalleSolicitudComponent implements OnInit {
       })
       .map((doc: any, index: number) => ({
         id: 10000 + index,
-        nombre: doc?.Nombre || 'Documento',
+        nombre: doc?.Tipo?.Nombre || doc?.Nombre || 'Documento',
         autorSoporte: this.extraerAutorSoporte(doc),
         estado: this.extraerEstadoDocumento(doc),
         checked: false,
         code: this.extraerTipoDocumentoCodigo(doc),
         idTipoDocumento: this.extraerTipoDocumentoId(doc),
-        descripcion: doc?.Descripcion || doc?.Nombre || 'Documento',
+        descripcion: doc?.Tipo?.Descripcion || doc?.Descripcion || doc?.Nombre || 'Documento',
         enlace: doc?.Enlace,
         fileName: doc?.Nombre || 'Documento',
         mimeType: 'application/pdf',
@@ -1102,6 +1102,11 @@ export class DetalleSolicitudComponent implements OnInit {
         rolUsuario: this.obtenerRolUsuarioDocumento(doc),
         esDocumentoRolActual: this.obtenerRolUsuarioDocumento(doc) === this.rolDocumentalActual(),
       }));
+    
+    this.documentos = [
+      ...documentosBase,
+      ...documentosAdicionales,
+    ];
   }
 
   private rolDocumentalActual(): string {

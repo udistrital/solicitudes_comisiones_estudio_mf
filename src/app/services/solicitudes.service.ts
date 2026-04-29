@@ -64,6 +64,10 @@ export class SolicitudesService {
     return this.apiMid.post<any>('v1/solicitud/estados', payload);
   }
 
+  actualizarEstadoDocumento(payload: { DocumentoSolicitudId: number; EstadoDocumentoCodigo: string;}) {
+    return this.apiMid.put<any>('v1/solicitud/documento_solicitud/estado', payload)
+  }
+
   listarHistoricoEstadoPorCodigo(codigoEstado: string) {
     return this.apiCrud.get<any>(
       `v1/historico_estado_solicitud?query=Activo:true,EstadoSolicitudId__CodigoAbreviacion:${codigoEstado}&limit=-1`

@@ -6,7 +6,7 @@
     "SUBTITLE": "Solicitudes de comision de estudio asignadas a su rol.",
     "TITLE_DOCENTE": "Mis solicitudes",
     "TITLE_COORDINADOR": "Solicitudes pendientes - Coordinacion de proyecto curricular",
-    "TITLE_ADMINISTRADOR": "Solicitudes pendientes - Secretaria Academica",
+    "TITLE_SECRETARIA_ACADEMICA": "Solicitudes pendientes - Secretaria Academica",
     "TITLE_SECRETARIA_GENERAL": "Solicitudes pendientes - Secretaria General",
     "TITLE_DECANO": "Solicitudes pendientes - Decanatura",
     "TITLE_SIN_ROL": "Bandeja de solicitudes",
@@ -20,7 +20,7 @@
   "ROLES": {
     "DOCENTE": "Docente",
     "COORDINADOR": "Coordinacion de proyecto curricular",
-    "ADMINISTRADOR": "Secretaria Academica",
+    "SECRETARIA_ACADEMICA": "Secretaria Academica",
     "SECRETARIA_GENERAL": "Secretaria General",
     "DECANO": "Decanatura"
   },
@@ -144,7 +144,11 @@
     "APROB_PROY": "Aprobado por proyecto curricular",
     "APROB_SEC_ACAD": "Aprobado por secretaria academica",
     "APROB_SEC_GRAL": "Aprobado por secretaria general",
-    "APROB_DEC": "Aprobado por decanatura"
+    "APROB_DEC": "Aprobado por decanatura",
+    "SUBS_PROY": "Subsanacion por proyecto curricular",
+    "SUBS_SEC_ACAD": "Subsanacion por secretaria academica",
+    "SUBS_SEC_GRAL": "Subsanacion por secretaria general",
+    "SUBS_DEC": "Subsanacion por decanatura"
   },
   "VISOR": {
     "TITLE": "Visualizar documento",

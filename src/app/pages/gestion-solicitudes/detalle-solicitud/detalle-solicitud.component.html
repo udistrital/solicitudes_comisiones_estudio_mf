@@ -49,7 +49,7 @@
             <div class="text-xs text-black/60 mb-1">{{ 'DETALLE.DOC_REQUERIDO' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
               <mat-select [(value)]="selectedRequiredDoc">
-                <mat-option *ngFor="let d of requiredDocs" [value]="d">
+                <mat-option *ngFor="let d of requiredDocsDocenteDisponibles" [value]="d">
                   {{ d.name }}
                 </mat-option>
               </mat-select>
@@ -133,7 +133,10 @@
                 <div class="text-center text-sga font-semibold">{{ 'TABLE.ELIMINAR' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
-                <button type="button" class="sga-table-action sga-table-action--warn"
+                <button 
+                  *ngIf="puedeEliminarDocumentoDocente(d)"
+                  type="button" 
+                  class="sga-table-action sga-table-action--warn"
                   [attr.aria-label]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
                   [matTooltip]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
                   (click)="eliminarDocumento(d)">
@@ -414,7 +417,7 @@
                 <div class="flex justify-center">
                   <mat-checkbox
                     [(ngModel)]="d.checked"
-                    [disabled]="d.esDocumentoRolActual"
+                    [disabled]="d.esDocumentoRolActual || d.actualizandoEstado"
                     (ngModelChange)="onDocCheckedChange(d)">
                   </mat-checkbox>
                 </div>
@@ -465,11 +468,11 @@
                   (click)="regresar()">{{ 'ACTIONS.REGRESAR' | translate }}</button>
                 <button *ngIf="!permisosListos || permisos['rechazar_solicitud']"
                   mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="rechazarSolicitud()" [disabled]="!puedeContinuarRevisor || cambiandoEstado">
+                  (click)="rechazarSolicitud()" [disabled]="cambiandoEstado">
                  {{ 'ACTIONS.RECHAZAR' | translate }}</button>
                 <button *ngIf="!permisosListos || permisos['retornar_solicitud']"
                   mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="retornarSolicitud()" [disabled]="!puedeContinuarRevisor || cambiandoEstado">
+                  (click)="retornarSolicitud()" [disabled]="cambiandoEstado">
                   {{ 'ACTIONS.RETORNAR' | translate }}</button>
                 <!-- Enviar solo para revisores no-supervisor -->
                 <button *ngIf="!isSupervisor && (!permisosListos || permisos['enviar_revision'])"

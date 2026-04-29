@@ -27,6 +27,10 @@ export type EstadoDocumento =
   | 'NO_APROB'           // No aprobado
   | 'CORR'               // Por corregir
   | 'SUBS'               // Subsanado
+  | 'SUBS_PROY'          // Solicitud de subsanacion por parte de Proyecto Curricular
+  | 'SUBS_SEC_ACAD'      // Solicitud de subsanacion por parte de Secretaria Academica
+  | 'SUBS_SEC_GRAL'      // Solicitud de subsanacion por parte de Secretaria General
+  | 'SUBS_DEC'           // Solicitud de subsanacion por parte de Decanatura
   | 'ANUL'               // Anulado
   | 'ENV_REV_PROY'       // Enviado para Revisión por Proyecto Curricular
   | 'ENV_REV_SEC_ACAD'   // Enviado para Revisión por Secretaria Académica

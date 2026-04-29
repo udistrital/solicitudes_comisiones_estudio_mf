@@ -40,7 +40,11 @@ export function estadoDocumentoClass(estado: EstadoDocumento): string {
     case 'APROB_SEC_GRAL':
     case 'APROB_DEC':       return 'doc-chip--aprob';
     case 'CORR':
-    case 'SUBS':            return 'doc-chip--corr';
+    case 'SUBS':
+    case 'SUBS_PROY':
+    case 'SUBS_SEC_ACAD':
+    case 'SUBS_SEC_GRAL':
+    case 'SUBS_DEC':        return 'doc-chip--corr';
     case 'NO_APROB':
     case 'ANUL':            return 'doc-chip--no-aprob';
     default:                return '';
@@ -52,33 +56,33 @@ export function estadoDocumentoClass(estado: EstadoDocumento): string {
  * Usa lowercase para comparación tolerante a tildes/capitalización.
  */
 const ESTADO_NOMBRE_TO_CODE: Record<string, string> = {
-  'no enviada':                                'NO_ENV',
-  'radicada':                                  'RAD',
-  'en gestion de proyecto curricular':         'REV_PROY',
-  'en gestión de proyecto curricular':         'REV_PROY',
-  'en gestion de secretaria academica':        'REV_SEC_ACAD',
-  'en gestión de secretaria academica':        'REV_SEC_ACAD',
-  'en gestión de secretaría académica':        'REV_SEC_ACAD',
-  'en gestion de secretaria general':          'REV_SEC_GRAL',
-  'en gestión de secretaria general':          'REV_SEC_GRAL',
-  'en gestión de secretaría general':          'REV_SEC_GRAL',
-  'en revision por decanatura':                'REV_DEC',
-  'en revisión por decanatura':                'REV_DEC',
-  'en gestion de decanatura':                  'REV_DEC',
-  'en gestión de decanatura':                  'REV_DEC',
-  'por corregir':                              'CORR',
-  'no aprobada':                               'NO_APROB',
-  'aprobada':                                  'APROB_EJEC',
-  'aprobada en ejecucion':                     'APROB_EJEC',
-  'aprobada en ejecución':                     'APROB_EJEC',
-  'subsanacion por proyecto curricular':       'SUBS_PROY',
-  'subsanación por proyecto curricular':       'SUBS_PROY',
-  'subsanacion por secretaria academica':      'SUBS_SEC_ACAD',
-  'subsanación por secretaria academica':      'SUBS_SEC_ACAD',
-  'subsanacion por secretaria general':        'SUBS_SEC_GRAL',
-  'subsanación por secretaria general':        'SUBS_SEC_GRAL',
-  'subsanacion por decanatura':                'SUBS_DEC',
-  'subsanación por decanatura':                'SUBS_DEC',
+  'no enviada':                                          'NO_ENV',
+  'radicada':                                            'RAD',
+  'en gestion de proyecto curricular':                   'REV_PROY',
+  'en gestión de proyecto curricular':                   'REV_PROY',
+  'en gestion de secretaria academica':                  'REV_SEC_ACAD',
+  'en gestión de secretaria academica':                  'REV_SEC_ACAD',
+  'en gestión de secretaría académica':                  'REV_SEC_ACAD',
+  'en gestion de secretaria general':                    'REV_SEC_GRAL',
+  'en gestión de secretaria general':                    'REV_SEC_GRAL',
+  'en gestión de secretaría general':                    'REV_SEC_GRAL',
+  'en revision por decanatura':                          'REV_DEC',
+  'en revisión por decanatura':                          'REV_DEC',
+  'en gestion de decanatura':                            'REV_DEC',
+  'en gestión de decanatura':                            'REV_DEC',
+  'por corregir':                                        'CORR',
+  'no aprobada':                                         'NO_APROB',
+  'aprobada':                                            'APROB_EJEC',
+  'aprobada en ejecucion':                               'APROB_EJEC',
+  'aprobada en ejecución':                               'APROB_EJEC',
+  'solicitud subsanacion por proyecto curricular':       'SUBS_PROY',
+  'solicitud subsanación por proyecto curricular':       'SUBS_PROY',
+  'solicitud subsanacion por secretaria academica':      'SUBS_SEC_ACAD',
+  'solicitud subsanación por secretaria academica':      'SUBS_SEC_ACAD',
+  'solicitud subsanacion por secretaria general':        'SUBS_SEC_GRAL',
+  'solicitud subsanación por secretaria general':        'SUBS_SEC_GRAL',
+  'solicitud subsanacion por decanatura':                'SUBS_DEC',
+  'solicitud subsanación por decanatura':                'SUBS_DEC',
 };
 
 /**

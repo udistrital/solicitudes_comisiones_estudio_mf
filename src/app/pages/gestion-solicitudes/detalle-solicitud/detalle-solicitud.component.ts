@@ -6,7 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Role, resolverRolEfectivo } from '../../../models/roles.model';
 import { EstadoSolicitud, EstadoDocumento } from '../../../models/estados.model';
 import { PopUpManager } from '../../../managers/popup.manager';
-import { estadoSolicitudClass, estadoDocumentoClass } from '../../../utils/estado-solicitud.util';
+import { estadoSolicitudClass, estadoDocumentoClass, mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
 
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
 import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
@@ -47,6 +47,8 @@ interface DocumentoItem {
   pendienteCrear?: boolean;
   rolUsuario?: string;
   esDocumentoRolActual?: boolean;
+  estadoAnteriorCheck?: EstadoDocumento;
+  actualizandoEstado?: boolean;
 }
 
 
@@ -147,7 +149,6 @@ export class DetalleSolicitudComponent implements OnInit {
   // Orden de las observaciones
   private readonly ORDEN_OBS_REVISOR: Record<string, number> = {
     COORDINADOR: 1,
-    ADMINISTRADOR: 2,
     SECRETARIA_ACADEMICA: 2,
     ADMIN_SGA: 3,
     SECRETARIA_GENERAL: 3,
@@ -159,7 +160,7 @@ export class DetalleSolicitudComponent implements OnInit {
   private readonly ORDEN_ROL_DOCUMENTAL: Record<string, number> = {
     DOCENTE: 0,
     COORDINADOR: 1,
-    ADMINISTRADOR: 2,
+    SECRETARIA_ACADEMICA: 2,
     SECRETARIA_GENERAL: 3,
     DECANATURA: 4,
   };
@@ -183,6 +184,68 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private documentosDesactivarIds: number[] = [];
   private detalleSolicitudActual: any = null;
+
+  private readonly ESTADOS_SOLICITUD_SUBSANACION: EstadoSolicitud[] = [
+    'SUBS_PROY',
+    'SUBS_SEC_ACAD',
+    'SUBS_SEC_GRAL',
+    'SUBS_DEC',
+  ];
+
+  private readonly ESTADOS_DOCUMENTO_APROBADOS: EstadoDocumento[] = [
+    'APROB',
+    'APROB_PROY',
+    'APROB_SEC_ACAD',
+    'APROB_SEC_GRAL',
+    'APROB_DEC',
+  ];
+
+  private readonly ESTADOS_DOCUMENTO_SUBSANACION: EstadoDocumento[] = [
+    'SUBS',
+    'SUBS_PROY',
+    'SUBS_SEC_ACAD',
+    'SUBS_SEC_GRAL',
+    'SUBS_DEC',
+  ];
+
+  private readonly ESTADO_DOCUMENTO_APROBADO_POR_ROL: Record<Role, EstadoDocumento> = {
+    DOCENTE: 'APROB',
+    COORDINADOR: 'APROB_PROY',
+    SECRETARIA_ACADEMICA: 'APROB_SEC_ACAD',
+    SECRETARIA_GENERAL: 'APROB_SEC_GRAL',
+    DECANO: 'APROB_DEC',
+  };
+
+  private readonly ESTADO_DOCUMENTO_SIGUIENTE_POR_ROL: Partial<Record<Role, EstadoDocumento>> = {
+    COORDINADOR: 'ENV_REV_SEC_ACAD',
+    SECRETARIA_ACADEMICA: 'ENV_REV_SEC_GRAL',
+    SECRETARIA_GENERAL: 'ENV_REV_DEC',
+    DECANO: 'APROB',
+  };
+
+  private readonly ESTADO_DOCUMENTO_SUBSANACION_POR_ROL: Partial<Record<Role, EstadoDocumento>> = {
+    COORDINADOR: 'SUBS_PROY',
+    SECRETARIA_ACADEMICA: 'SUBS_SEC_ACAD',
+    SECRETARIA_GENERAL: 'SUBS_SEC_GRAL',
+    DECANO: 'SUBS_DEC',
+  };
+
+  private readonly ESTADO_DOCUMENTO_PREVIO_APROBACION: Partial<Record<EstadoDocumento, EstadoDocumento>> = {
+    APROB_PROY: 'ENV_REV_PROY',
+    APROB_SEC_ACAD: 'ENV_REV_SEC_ACAD',
+    APROB_SEC_GRAL: 'ENV_REV_SEC_GRAL',
+    APROB_DEC: 'ENV_REV_DEC',
+    APROB: 'ENV_REV_DEC',
+  };
+
+  private readonly DESTINO_DOCENTE_POR_ESTADO: Record<string, { solicitud: EstadoSolicitud; documento: EstadoDocumento }> = {
+    NO_ENV: { solicitud: 'REV_PROY', documento: 'ENV_REV_PROY' },
+    CORR: { solicitud: 'REV_PROY', documento: 'ENV_REV_PROY' },
+    SUBS_PROY: { solicitud: 'REV_PROY', documento: 'ENV_REV_PROY' },
+    SUBS_SEC_ACAD: { solicitud: 'REV_SEC_ACAD', documento: 'ENV_REV_SEC_ACAD' },
+    SUBS_SEC_GRAL: { solicitud: 'REV_SEC_GRAL', documento: 'ENV_REV_SEC_GRAL' },
+    SUBS_DEC: { solicitud: 'REV_DEC', documento: 'ENV_REV_DEC' },
+  };
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -324,9 +387,26 @@ export class DetalleSolicitudComponent implements OnInit {
     }
 
     // --- Estado ---
-    const estado = data.EstadoSolicitud || {};
-    if (estado.CodigoAbreviacion) {
-      this.estadoSolicitud = estado.CodigoAbreviacion as EstadoSolicitud;
+    const estado =
+      data?.EstadoSolicitud
+      || data?.estado_solicitud
+      || data?.Solicitud?.EstadoSolicitudId
+      || null;
+
+    const codigoEstado =
+      estado?.CodigoAbreviacion
+      || estado?.codigo_abreviacion
+      || null;
+
+    const nombreEstado =
+      estado?.Nombre
+      || estado?.nombre
+      || null;
+
+    if (codigoEstado) {
+      this.estadoSolicitud = codigoEstado as EstadoSolicitud;
+    } else if (nombreEstado) {
+      this.estadoSolicitud = mapEstadoNombreACodigo(nombreEstado) as EstadoSolicitud;
     }
 
     // --- Formulario (viene como string JSON) ---
@@ -413,8 +493,13 @@ export class DetalleSolicitudComponent implements OnInit {
     if (this.isCreating) {
       return this.permisos['crear_solicitud'] === true;
     }
+
     return this.permisos['editar_solicitud'] === true
-      && (this.estadoSolicitud === 'NO_ENV' || this.estadoSolicitud === 'CORR');
+      && (
+        this.estadoSolicitud === 'NO_ENV'
+        || this.estadoSolicitud === 'CORR'
+        || this.esSolicitudEnSubsanacion()
+      );
   }
 
   /** Docente en modo solo lectura (cualquier estado no editable) */
@@ -426,7 +511,12 @@ export class DetalleSolicitudComponent implements OnInit {
   get allDocsChecked(): boolean {
     return this.documentos
       .filter((d) => !d.esDocumentoRolActual)
-      .every((d) => d.checked);
+      .every((d) => {
+        if (d.code === 'FR010') {
+          return d.checked === true;
+        }
+        return d.checked
+      });
   }
 
   get observacionesOrdenDesc(): ObservacionItem[] {
@@ -459,9 +549,103 @@ export class DetalleSolicitudComponent implements OnInit {
     }
     // Todos los documentos requeridos del docente deben estar cargados (no PENDIENTE)
     const docsDocente = this.documentos.filter((d) => d.rolUsuario === 'DOCENTE');
-    return docsDocente.length > 0 && docsDocente.every((d) => d.estado !== 'PENDIENTE');
+    return docsDocente.length > 0 && docsDocente.every((d) => this.documentoListoParaEnvioDocente(d));
   }
 
+  get requiredDocsDocenteDisponibles(): RequiredDocOption[] {
+    if (!this.isDocente || !this.esSolicitudEnSubsanacion()) {
+      return this.requiredDocs;
+    }
+
+    return this.requiredDocs.filter((doc) => {
+      if (doc.code === 'FR010') return true;
+      const actual = this.documentos.find((item) => item.code === doc.code);
+      return actual ? this.puedeEditarDocumentoDocente(actual) : true;
+    });
+  }
+
+  puedeEliminarDocumentoDocente(doc: DocumentoItem): boolean {
+    return doc.code !== 'FR010' && this.puedeEditarDocumentoDocente(doc);
+  }
+
+  private esSolicitudEnSubsanacion(): boolean {
+    return this.ESTADOS_SOLICITUD_SUBSANACION.includes(this.estadoSolicitud);
+  }
+
+  private obtenerEstadoDocumentoSubsanacionActual(): EstadoDocumento | null {
+    switch (this.estadoSolicitud) {
+      case 'SUBS_PROY': return 'SUBS_PROY';
+      case 'SUBS_SEC_ACAD': return 'SUBS_SEC_ACAD';
+      case 'SUBS_SEC_GRAL': return 'SUBS_SEC_GRAL';
+      case 'SUBS_DEC': return 'SUBS_DEC';
+      default: return null;
+    }
+  }
+
+  private obtenerDestinoEnvioDocente(): { solicitud: EstadoSolicitud; documento: EstadoDocumento } {
+    return this.DESTINO_DOCENTE_POR_ESTADO[this.estadoSolicitud] ?? {
+      solicitud: 'REV_PROY',
+      documento: 'ENV_REV_PROY',
+    };
+  }
+
+  private esDocumentoAprobado(doc: DocumentoItem): boolean {
+    return this.ESTADOS_DOCUMENTO_APROBADOS.includes(doc.estado);
+  }
+
+  private esDocumentoEnSubsanacion(doc: DocumentoItem): boolean {
+    return this.ESTADOS_DOCUMENTO_SUBSANACION.includes(doc.estado);
+  }
+
+  private puedeEditarDocumentoDocente(doc: DocumentoItem): boolean {
+    if (doc.code === 'FR010') return true;
+    if (doc.rolUsuario !== 'DOCENTE') return false;
+    if (!this.esSolicitudEnSubsanacion()) return true;
+    return !this.esDocumentoAprobado(doc);
+  }
+
+  private documentoListoParaEnvioDocente(doc: DocumentoItem): boolean {
+    if (!this.puedeEditarDocumentoDocente(doc)) return true;
+    return doc.estado !== 'PENDIENTE' && !this.esDocumentoEnSubsanacion(doc);
+  }
+
+  private resolverEstadoDocumentoAlEliminar(doc: DocumentoItem): EstadoDocumento {
+    if (this.isDocente && this.esSolicitudEnSubsanacion() && doc.rolUsuario === 'DOCENTE' && doc.code !== 'FR010') {
+      return this.obtenerEstadoDocumentoSubsanacionActual() ?? 'PENDIENTE';
+    }
+    return 'PENDIENTE';
+  }
+
+  private obtenerEstadoAprobacionRolActual(): EstadoDocumento {
+    return this.ESTADO_DOCUMENTO_APROBADO_POR_ROL[this.role];
+  }
+
+  private resolverEstadoPrevioDocumento(doc: DocumentoItem): EstadoDocumento {
+    const estadoActual = doc.estado;
+
+    const candidatos: EstadoDocumento[] = [
+      doc.estadoAnteriorCheck,
+      this.ESTADO_DOCUMENTO_PREVIO_APROBACION[estadoActual],
+      this.obtenerEstadoEnvioSegunDocumento(doc),
+      'CARG',
+    ].filter((estado): estado is EstadoDocumento => !!estado);
+
+    const estadoPrevio = candidatos.find((estado) => estado !== estadoActual);
+
+    return estadoPrevio ?? 'CARG';
+  }
+
+  private debeIniciarChequeado(estado: EstadoDocumento): boolean {
+    return estado === this.obtenerEstadoAprobacionRolActual();
+  }
+
+  private construirEstadoRevision(estado: EstadoDocumento): Pick<DocumentoItem, 'checked' | 'estadoAnteriorCheck'> {
+    const checked = this.debeIniciarChequeado(estado);
+    return {
+      checked,
+      estadoAnteriorCheck: checked ? this.ESTADO_DOCUMENTO_PREVIO_APROBACION[estado] : undefined,
+    };
+  }
 
   documentoChipClass(d: DocumentoItem): string {
     return estadoDocumentoClass(d.estado);
@@ -484,11 +668,77 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Checkbox → estado de documento ==========
   onDocCheckedChange(doc: DocumentoItem): void {
-    doc.estado = doc.checked ? 'APROB' : 'PENDIENTE';
-    // Refresh dataSource reference for mat-table
+    if (doc.esDocumentoRolActual) {
+      return;
+    }
+
+    if (doc.code === 'FR010') {
+      const checked = doc.checked;
+      const estadoAnterior = doc.estado;
+
+      if (checked) {
+        doc.estadoAnteriorCheck = estadoAnterior;
+        doc.estado = this.obtenerEstadoAprobacionRolActual();
+      } else {
+        doc.estado = this.resolverEstadoPrevioDocumento(doc);
+        doc.estadoAnteriorCheck = undefined;
+      }
+
+      this.documentos = [...this.documentos];
+      return;
+    }
+
+    if (!doc.documentoSolicitudId) {
+      doc.checked = false;
+      this.documentos = [...this.documentos];
+      this.popup.error(this.translate.instant('POPUPS.DOC_NO_ENCONTRADO'));
+      return;
+    }
+
+    const checked = doc.checked;
+    const estadoAnterior = doc.estado;
+    const estadoDestino = checked
+      ? this.obtenerEstadoAprobacionRolActual()
+      : this.resolverEstadoPrevioDocumento(doc);
+
+    if (checked) {
+      doc.estadoAnteriorCheck = estadoAnterior;
+    }
+
+    doc.actualizandoEstado = true;
+    doc.estado = estadoDestino;
     this.documentos = [...this.documentos];
+
+    this.solicitudesService.actualizarEstadoDocumento({
+      DocumentoSolicitudId: doc.documentoSolicitudId,
+      EstadoDocumentoCodigo: estadoDestino,
+    }).subscribe({
+      next: () => {
+        doc.actualizandoEstado = false;
+        if (!checked) {
+          doc.estadoAnteriorCheck = undefined;
+        }
+        this.documentos = [...this.documentos];
+      },
+      error: () => {
+        doc.actualizandoEstado = false;
+        doc.checked = !checked;
+        doc.estado = estadoAnterior;
+        this.documentos = [...this.documentos];
+        this.popup.error(this.translate.instant('POPUPS.ERROR_CAMBIAR_ESTADO'));
+      },
+    });
   }
 
+  private obtenerEstadoEnvioSegunDocumento(doc: DocumentoItem): EstadoDocumento {
+    if (doc.estado === 'APROB_PROY') return 'ENV_REV_PROY';
+    if (doc.estado === 'APROB_SEC_ACAD') return 'ENV_REV_SEC_ACAD';
+    if (doc.estado === 'APROB_SEC_GRAL') return 'ENV_REV_SEC_GRAL';
+    if (doc.estado === 'APROB_DEC') return 'ENV_REV_DEC';
+    if (doc.estado === 'APROB') return 'ENV_REV_DEC';
+    return 'CARG';
+  }
+  
   // ========== Acciones docente ==========
   guardarDocente(): void {
     if (this.permisosListos && !this.permisos['guardar_solicitud']) {
@@ -524,6 +774,11 @@ export class DetalleSolicitudComponent implements OnInit {
 
     const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
     if (!doc) return;
+
+    if (!this.puedeEditarDocumentoDocente(doc)) {
+      this.popup.alertError('Este documento ya fue aprobado por el revisor y no debe modificarse durante la subsanación.');
+      return;
+    }
 
     this.documentoEnCarga = doc;
     fileInput.value = '';
@@ -602,6 +857,12 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   eliminarDocumento(doc: DocumentoItem): void {
+
+    if (this.isDocente && !this.puedeEliminarDocumentoDocente(doc)) {
+      this.popup.alertError('Este documento ya fue aprobado por el revisor y no debe modificarse durante la subsanación.');
+      return;
+    }
+
     this.popup.confirm(
       this.translate.instant('POPUPS.ELIMINAR_DOC_MSG', { nombre: doc.nombre ?? doc.fileName ?? 'documento' }),
       this.translate.instant('ACTIONS.ELIMINAR'),
@@ -619,7 +880,8 @@ export class DetalleSolicitudComponent implements OnInit {
         this.agregarDocumentoAEliminar(doc.documentoSolicitudId);
       }
 
-      doc.estado = 'PENDIENTE';
+      doc.estado = this.resolverEstadoDocumentoAlEliminar(doc);
+      doc.estadoAnteriorCheck = undefined;
       doc.checked = false;
       doc.base64 = undefined;
       doc.fileName = undefined;
@@ -742,14 +1004,14 @@ export class DetalleSolicitudComponent implements OnInit {
   private readonly ESTADO_ENVIAR: Record<Role, EstadoSolicitud> = {
     DOCENTE: 'REV_PROY',
     COORDINADOR: 'REV_SEC_ACAD',
-    ADMINISTRADOR: 'REV_SEC_GRAL',
+    SECRETARIA_ACADEMICA: 'REV_SEC_GRAL',
     SECRETARIA_GENERAL: 'REV_DEC',
     DECANO: 'APROB_EJEC',
   };
 
   private readonly ESTADO_RETORNAR: Partial<Record<Role, EstadoSolicitud>> = {
     COORDINADOR: 'SUBS_PROY',
-    ADMINISTRADOR: 'SUBS_SEC_ACAD',
+    SECRETARIA_ACADEMICA: 'SUBS_SEC_ACAD',
     SECRETARIA_GENERAL: 'SUBS_SEC_GRAL',
     DECANO: 'SUBS_DEC',
   };
@@ -757,7 +1019,7 @@ export class DetalleSolicitudComponent implements OnInit {
   private readonly ROL_USUARIO_MAP: Record<Role, string> = {
     DOCENTE: 'DOCENTE',
     COORDINADOR: 'COORDINADOR',
-    ADMINISTRADOR: 'ADMINISTRADOR',
+    SECRETARIA_ACADEMICA: 'SECRETARIA_ACADEMICA',
     SECRETARIA_GENERAL: 'SECRETARIA_GENERAL',
     DECANO: 'DECANATURA',
   };
@@ -765,6 +1027,10 @@ export class DetalleSolicitudComponent implements OnInit {
   private resolverNuevoEstado(accion: AccionEstado): EstadoSolicitud | null {
     switch (accion) {
       case 'ENVIAR':
+        if (this.role === 'DOCENTE') {
+          return this.obtenerDestinoEnvioDocente().solicitud;
+        }
+        return this.ESTADO_ENVIAR[this.role];
       case 'DAR_INICIO':
         return this.ESTADO_ENVIAR[this.role];
       case 'RETORNAR':
@@ -774,6 +1040,58 @@ export class DetalleSolicitudComponent implements OnInit {
       default:
         return null;
     }
+  }
+
+  private construirActualizacionesDocumentoPorAccion(accion: AccionEstado): Array<{ doc: DocumentoItem; estado: EstadoDocumento }> {
+    switch (accion) {
+      case 'ENVIAR':
+        return this.isDocente
+          ? this.construirActualizacionesEnvioDocente()
+          : this.construirActualizacionesEnvioRevisor();
+      case 'RETORNAR':
+        return this.construirActualizacionesRetornoRevisor();
+      case 'DAR_INICIO':
+        return this.construirActualizacionesAprobacionFinal();
+      default:
+        return [];
+    }
+  }
+
+  private construirActualizacionesEnvioDocente(): Array<{ doc: DocumentoItem; estado: EstadoDocumento }> {
+    const destino = this.obtenerDestinoEnvioDocente().documento;
+
+    return this.documentos
+      .filter((d) =>
+        d.code !== 'FR010'
+        && d.rolUsuario === 'DOCENTE'
+        && !!d.documentoSolicitudId
+        && this.puedeEditarDocumentoDocente(d)
+      )
+      .map((doc) => ({ doc, estado: destino }));
+  }
+
+  private construirActualizacionesEnvioRevisor(): Array<{ doc: DocumentoItem; estado: EstadoDocumento }> {
+    const destino = this.ESTADO_DOCUMENTO_SIGUIENTE_POR_ROL[this.role];
+    if (!destino) return [];
+
+    return this.documentos
+      .filter((d) => !d.esDocumentoRolActual && d.checked && !!d.documentoSolicitudId)
+      .map((doc) => ({ doc, estado: destino }));
+  }
+
+  private construirActualizacionesRetornoRevisor(): Array<{ doc: DocumentoItem; estado: EstadoDocumento }> {
+    const destino = this.ESTADO_DOCUMENTO_SUBSANACION_POR_ROL[this.role];
+    if (!destino) return [];
+
+    return this.documentos
+      .filter((d) => !d.esDocumentoRolActual && !d.checked && !!d.documentoSolicitudId)
+      .map((doc) => ({ doc, estado: destino }));
+  }
+
+  private construirActualizacionesAprobacionFinal(): Array<{ doc: DocumentoItem; estado: EstadoDocumento }> {
+    return this.documentos
+      .filter((d) => !d.esDocumentoRolActual && d.checked && !!d.documentoSolicitudId)
+      .map((doc) => ({ doc, estado: 'APROB' }));
   }
 
   private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): CambioEstadoPayload | null {
@@ -810,15 +1128,42 @@ export class DetalleSolicitudComponent implements OnInit {
     const payload = this.construirPayloadCambioEstado(nuevoEstado, observacion);
     if (!payload) return;
 
+    const actualizacionesDocumento = this.construirActualizacionesDocumentoPorAccion(accion);
+
+    const ejecutarCambioSolicitud = () => {
+      this.solicitudesService.cambiarEstadoSolicitud(payload).subscribe({
+        next: () => {
+          this.cambiandoEstado = false;
+          this.popup.alertSuccess(this.translate.instant(mensajeExito));
+          this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+        },
+        error: () => {
+          this.cambiandoEstado = false;
+          this.cargarDetalleSolicitud(this.id);
+          this.popup.error(this.translate.instant('POPUPS.ERROR_CAMBIAR_ESTADO'));
+        },
+      });
+    };
+
     this.cambiandoEstado = true;
-    this.solicitudesService.cambiarEstadoSolicitud(payload).subscribe({
-      next: () => {
-        this.cambiandoEstado = false;
-        this.popup.alertSuccess(this.translate.instant(mensajeExito));
-        this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
-      },
+
+    if (!actualizacionesDocumento.length) {
+      ejecutarCambioSolicitud();
+      return;
+    }
+
+    forkJoin(
+      actualizacionesDocumento.map(({ doc, estado }) =>
+        this.solicitudesService.actualizarEstadoDocumento({
+          DocumentoSolicitudId: doc.documentoSolicitudId!,
+          EstadoDocumentoCodigo: estado,
+        })
+      )
+    ).subscribe({
+      next: () => ejecutarCambioSolicitud(),
       error: () => {
         this.cambiandoEstado = false;
+        this.cargarDetalleSolicitud(this.id);
         this.popup.error(this.translate.instant('POPUPS.ERROR_CAMBIAR_ESTADO'));
       },
     });
@@ -1000,6 +1345,8 @@ export class DetalleSolicitudComponent implements OnInit {
           return {
             ...baseDoc,
             estado: 'CARG',
+            checked: false,
+            estadoAnteriorCheck: undefined,
             autorSoporte: 'Docente',
           };
         }
@@ -1016,10 +1363,15 @@ export class DetalleSolicitudComponent implements OnInit {
         return baseDoc;
       }
 
+      const estado = this.extraerEstadoDocumento(match);
+      const estadoRevision = this.construirEstadoRevision(estado);
+
       return {
         ...baseDoc,
         nombre: baseDoc.nombre,
-        estado: this.extraerEstadoDocumento(match),
+        estado,
+        checked: estadoRevision.checked,
+        estadoAnteriorCheck: estadoRevision.estadoAnteriorCheck,
         autorSoporte: baseDoc.rolUsuario === 'DOCENTE'
           ? 'Docente': this.obtenerNombreRol(baseDoc.rolUsuario),
         enlace: match?.Enlace,
@@ -1043,25 +1395,32 @@ export class DetalleSolicitudComponent implements OnInit {
         const tipoId = this.extraerTipoDocumentoId(doc);
         return !!tipoId && !idsBase.has(tipoId);
       })
-      .map((doc: any, index: number) => ({
-        id: 10000 + index,
-        nombre: doc?.Nombre || 'Documento',
-        autorSoporte: this.extraerAutorSoporte(doc),
-        estado: this.extraerEstadoDocumento(doc),
-        checked: false,
-        code: this.extraerTipoDocumentoCodigo(doc),
-        idTipoDocumento: this.extraerTipoDocumentoId(doc),
-        descripcion: doc?.Descripcion || doc?.Nombre || 'Documento',
-        enlace: doc?.Enlace,
-        fileName: doc?.Nombre || 'Documento',
-        mimeType: 'application/pdf',
-        documentoSolicitudId: this.extraerDocumentoSolicitudId(doc),
-        documentoId: this.extraerDocumentoId(doc),
-        cargandoArchivo: false,
-        pendienteCrear: false,
-        rolUsuario: this.obtenerRolUsuarioDocumento(doc),
-        esDocumentoRolActual: this.obtenerRolUsuarioDocumento(doc) === this.rolDocumentalActual(),
-      }));
+      .map((doc: any, index: number) => {
+        const estado = this.extraerEstadoDocumento(doc);
+        const estadoRevision = this.construirEstadoRevision(estado);
+        const rolUsuario = this.obtenerRolUsuarioDocumento(doc);
+
+        return {
+          id: 10000 + index,
+          nombre: doc?.Nombre || 'Documento',
+          autorSoporte: this.extraerAutorSoporte(doc),
+          estado,
+          checked: estadoRevision.checked,
+          estadoAnteriorCheck: estadoRevision.estadoAnteriorCheck,
+          code: this.extraerTipoDocumentoCodigo(doc),
+          idTipoDocumento: this.extraerTipoDocumentoId(doc),
+          descripcion: doc?.Descripcion || doc?.Nombre || 'Documento',
+          enlace: doc?.Enlace,
+          fileName: doc?.Nombre || 'Documento',
+          mimeType: 'application/pdf',
+          documentoSolicitudId: this.extraerDocumentoSolicitudId(doc),
+          documentoId: this.extraerDocumentoId(doc),
+          cargandoArchivo: false,
+          pendienteCrear: false,
+          rolUsuario,
+          esDocumentoRolActual: rolUsuario === this.rolDocumentalActual(),
+        }
+      });
 
     this.documentos = [...documentosBase, ...documentosAdicionales];
     this.cargarBase64DocumentosGuardados();
@@ -1160,7 +1519,8 @@ export class DetalleSolicitudComponent implements OnInit {
     const key = String(rol || '').toUpperCase();
     switch (key) {
       case 'COORDINADOR': return 'Coordinador';
-      case 'ADMINISTRADOR': return 'Secretaría Académica';
+      case 'SECRETARIA_ACADEMICA': return 'Secretaría Académica';
+      case 'SECRETARIA_ACADEMICA': return 'Secretaría Académica';
       case 'SECRETARIA_GENERAL': return 'Secretaría General';
       case 'ADMIN_SGA': return 'Secretaría General';
       case 'DECANATURA':
@@ -1172,15 +1532,37 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private extraerEstadoDocumento(doc: any): EstadoDocumento {
-    const codigo = doc?.Estado?.CodigoAbreviacion
+    const codigoRaw = String(
+      doc?.Estado?.CodigoAbreviacion
       || doc?.EstadoDocumentoId?.CodigoAbreviacion
-      || doc?.estado;
+      || doc?.estado
+      || ''
+    ).trim().toUpperCase();
 
-    if (codigo === 'APROB' || codigo === 'RECH' || codigo === 'PENDIENTE') {
-      return codigo as EstadoDocumento;
-    }
+    const normalizados: Record<string, EstadoDocumento> = {
+      PENDIENTE: 'PENDIENTE',
+      CARG: 'CARG',
+      APROB: 'APROB',
+      NO_APROB: 'NO_APROB',
+      RECH: 'NO_APROB',
+      CORR: 'CORR',
+      SUBS: 'SUBS',
+      SUBS_PROY: 'SUBS_PROY',
+      SUBS_SEC_ACAD: 'SUBS_SEC_ACAD',
+      SUBS_SEC_GRAL: 'SUBS_SEC_GRAL',
+      SUBS_DEC: 'SUBS_DEC',
+      ANUL: 'ANUL',
+      ENV_REV_PROY: 'ENV_REV_PROY',
+      ENV_REV_SEC_ACAD: 'ENV_REV_SEC_ACAD',
+      ENV_REV_SEC_GRAL: 'ENV_REV_SEC_GRAL',
+      ENV_REV_DEC: 'ENV_REV_DEC',
+      APROB_PROY: 'APROB_PROY',
+      APROB_SEC_ACAD: 'APROB_SEC_ACAD',
+      APROB_SEC_GRAL: 'APROB_SEC_GRAL',
+      APROB_DEC: 'APROB_DEC',
+    };
 
-    return 'CARG';
+    return normalizados[codigoRaw] ?? 'CARG';
   }
 
   private extraerBase64Gestor(resp: any): string | null {

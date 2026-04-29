@@ -6,7 +6,7 @@
     "SUBTITLE": "Study commission requests assigned to your role.",
     "TITLE_DOCENTE": "My requests",
     "TITLE_COORDINADOR": "Pending requests - Curricular project coordination",
-    "TITLE_ADMINISTRADOR": "Pending requests - Academic Secretary",
+    "TITLE_SECRETARIA_ACADEMICA": "Pending requests - Academic Secretary",
     "TITLE_SECRETARIA_GENERAL": "Pending requests - General Secretary",
     "TITLE_DECANO": "Pending requests - Dean's Office",
     "TITLE_SIN_ROL": "Request inbox",
@@ -20,7 +20,7 @@
   "ROLES": {
     "DOCENTE": "Professor",
     "COORDINADOR": "Curricular project coordination",
-    "ADMINISTRADOR": "Academic Secretary",
+    "SECRETARIA_ACADEMICA": "Academic Secretary",
     "SECRETARIA_GENERAL": "General Secretary",
     "DECANO": "Dean's Office"
   },
@@ -145,7 +145,11 @@
     "APROB_PROY": "Approved by curricular project",
     "APROB_SEC_ACAD": "Approved by academic secretary",
     "APROB_SEC_GRAL": "Approved by general secretary",
-    "APROB_DEC": "Approved by dean"
+    "APROB_DEC": "Approved by dean",
+    "SUBS_PROY": "Correction requested by curricular project",
+    "SUBS_SEC_ACAD": "Correction requested by academic secretary",
+    "SUBS_SEC_GRAL": "Correction requested by general secretary",
+    "SUBS_DEC": "Correction requested by dean"
   },
   "VISOR": {
     "TITLE": "View document",

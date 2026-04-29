@@ -1,7 +1,7 @@
 export type Role =
   | 'DOCENTE'
   | 'COORDINADOR'
-  | 'ADMINISTRADOR'
+  | 'SECRETARIA_ACADEMICA'
   | 'SECRETARIA_GENERAL'
   | 'DECANO';
 
@@ -9,7 +9,7 @@ export type Role =
 export const VALID_ROLES: Role[] = [
   'DOCENTE',
   'COORDINADOR',
-  'ADMINISTRADOR',
+  'SECRETARIA_ACADEMICA',
   'SECRETARIA_GENERAL',
   'DECANO',
 ];
@@ -17,7 +17,7 @@ export const VALID_ROLES: Role[] = [
 const ROLE_PRIORITY: Record<Role, number> = {
   DOCENTE: 1,
   COORDINADOR: 2,
-  ADMINISTRADOR: 3,
+  SECRETARIA_ACADEMICA: 3,
   SECRETARIA_GENERAL: 4,
   DECANO: 5,
 };

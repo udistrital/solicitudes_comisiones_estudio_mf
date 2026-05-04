@@ -187,22 +187,36 @@ export class BandejaComponent implements OnInit {
   }
 
   private procesarRespuestaDocente(resp: any, idsActivos: Set<number>): void {
-    const data: any[] = (resp?.Data || []).filter((item: any) => idsActivos.has(item.id));
-    this.rows = data.map((item) => {
-      // esado_solicitud (typo del backend) puede ser objeto o null
+    const data: any[] = (resp?.Data || []).filter((item: any) => {
+      const solicitudId = this.extraerSolicitudIdDocente(item);
+      const comisionId = this.extraerComisionIdDocente(item);
+
+      return (solicitudId !== null && idsActivos.has(solicitudId)) || comisionId !== null;
+    });
+
+    this.rows = data.reduce((acc: SolicitudRow[], item: any) => {
+      const solicitudId = this.extraerSolicitudIdDocente(item);
+      if (solicitudId === null) {
+        return acc;
+      }
+
       const estadoObj = item.esado_solicitud || item.estado_solicitud || null;
       const estadoNombre = estadoObj?.Nombre || null;
       const estadoCodigo = mapEstadoNombreACodigo(estadoNombre);
 
-      return {
-        id: item.id,
-        docente: item.nombre || '',
+      acc.push({
+        id: solicitudId,
+        comisionId: this.extraerComisionIdDocente(item),
+        docente: item.nombre || item.nombre_docente || '',
         idDocente: '',
-        proyecto: item.programa || '',
+        proyecto: item.programa || item.proyecto || '',
         estado: estadoCodigo,
         fecha: this.formatFecha(item.fecha_creacion),
-      };
-    });
+      });
+
+      return acc;
+    }, []);
+
     this.cargando = false;
   }
 
@@ -304,6 +318,50 @@ export class BandejaComponent implements OnInit {
       return estado.CodigoAbreviacion;
     }
     return 'REV_SEC_GRAL';
+  }
+
+  private extraerSolicitudIdDocente(item: any): number | null {
+    if (!item) return null;
+
+    const candidatos = [
+      item.solicitud_id,
+      item.solicitudId,
+      item.id_solicitud,
+      item.SolicitudId?.Id,
+      item.SolicitudId?.id,
+      item.solicitud?.Id,
+      item.solicitud?.id,
+      item.id,
+    ];
+
+    for (const candidato of candidatos) {
+      if (typeof candidato === 'number' && Number.isFinite(candidato)) {
+        return candidato;
+      }
+    }
+
+    return null;
+  }
+
+  private extraerComisionIdDocente(item: any): number | null {
+    if (!item) return null;
+
+    const candidatos = [
+      item.comision_id,
+      item.comisionId,
+      item.ComisionId?.Id,
+      item.ComisionId?.id,
+      item.comision?.Id,
+      item.comision?.id,
+    ];
+
+    for (const candidato of candidatos) {
+      if (typeof candidato === 'number' && Number.isFinite(candidato)) {
+        return candidato;
+      }
+    }
+
+    return null;
   }
 
   private extraerDocenteDeDetalle(data: any): { nombre: string; documento: string } {

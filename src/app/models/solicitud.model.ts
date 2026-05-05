@@ -1,5 +1,6 @@
 export interface SolicitudRow {
   id: number;
+  comisionId?: number | null;
   docente: string;
   idDocente: string;
   proyecto: string;

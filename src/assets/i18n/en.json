@@ -103,7 +103,10 @@
     "NOMBRE_MINIMO_SOPORTE": "Name must have at least 12 characters.",
     "NOMBRE_VALIDO_SOPORTE": "Valid name.",
     "BLOQUEO_NOMBRE_SOPORTE": "Each reviewer support must have a descriptive name of at least 12 characters.",
-    "CARGANDO_DETALLE": "Loading request details..."
+    "CARGANDO_DETALLE": "Loading request details...",
+    "ADJUNTANDO_DOC": "Uploading...",
+    "GUARDANDO_DOC_MSG": "Uploading and saving document {{nombre}}. Please wait.",
+    "DOC_YA_CARGADO_MSG": "A document of this type is already attached."
   },
   "SUPERVISOR": {
     "TITLE": "Commission execution start",
@@ -308,13 +311,12 @@
     "GUARDADO": "Saved (demo)",
     "FR010_NO_LISTO": "The FR-010 form is not ready to be saved",
     "FR010_GUARDADO": "FR-010 saved (demo)",
-    "DOC_ADJUNTADO": "Document attached: {{nombre}} (demo)",
-    "DOC_ELIMINADO": "Document deleted: {{nombre}} (demo)",
+    "DOC_ADJUNTADO": "Document attached",
+    "DOC_ELIMINADO": "Document deleted",
     "ELIMINAR_DOC_MSG": "Do you want to delete document <b>{{nombre}}</b>?",
     "FR010_USE_GUARDAR": "For FR-010 use \"Save form\". (demo)",
     "ADJUNTAR_DOCS": "Attach documents (demo)",
     "CONFIRMAR_ENVIO": "You confirm that you want to submit the request. Once submitted, you cannot edit it.",
-    "SOLICITUD_ENVIADA_OK": "Request submitted (demo)",
     "RETORNAR_MSG": "You confirm that you want to return the request for correction.",
     "SOLICITUD_RETORNADA": "Request returned for correction (demo)",
     "RECHAZAR_MSG": "You confirm that you want to <b>not approve</b> this request. This action cannot be undone.",
@@ -333,6 +335,7 @@
     "DOC_NO_ENCONTRADO": "Selected document not found.",
     "SOLICITUD_GUARDADA": "Request saved successfully.",
     "ERROR_GUARDAR": "Could not save the request. Please try again.",
+    "ERROR_ELIMINAR": "Could not delete the request. Please try again.",
     "ERROR_ENVIAR": "Could not submit the request. Please try again.",
     "ERROR_CARGAR_TIPOS_DOC": "Could not load document types. Only the FR-010 form will be available.",
     "ERROR_CARGAR_DETALLE": "Could not load request details.",
@@ -344,7 +347,8 @@
     "SOLICITUD_RETORNADA_OK": "Request returned for correction successfully.",
     "SOLICITUD_RECHAZADA_OK": "Request rejected successfully.",
     "SOLICITUD_AVALADA_OK": "Request approved and submitted successfully.",
-    "INICIO_REGISTRADO_OK": "Commission start registered successfully."
+    "INICIO_REGISTRADO_OK": "Commission start registered successfully.",
+    "DOC_YA_CARGADO": "A document is already attached for {{nombre}}. Remove it first if you want to replace it."
   },
   "LANG": {
     "ES": "Espaniol",

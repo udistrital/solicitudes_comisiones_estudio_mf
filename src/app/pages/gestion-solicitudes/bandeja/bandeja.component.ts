@@ -485,6 +485,10 @@ export class BandejaComponent implements OnInit {
               this.cargando = false;
               this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ELIMINADA', { id: row.id }));
             },
+            error: () => {
+              this.cargando = false;
+              this.popup.error(this.translate.instant('POPUPS.ERROR_ELIMINAR'));
+            },
           });
         }
       });

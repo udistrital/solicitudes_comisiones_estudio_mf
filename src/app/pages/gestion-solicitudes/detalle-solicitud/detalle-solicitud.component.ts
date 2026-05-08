@@ -141,7 +141,8 @@ export class DetalleSolicitudComponent implements OnInit {
   documentoEnCarga: DocumentoItem | null = null;
   documentoRolEnCarga: DocumentoItem | null = null;
   reviewerUploadCounter = 1000;
-
+  subiendoDocumentoDocente = false;
+  documentoDocenteEnProceso = '';
 
   // FR-010 siempre presente como opción fija del frontend
   private readonly FR010_OPTION: RequiredDocOption = {
@@ -537,6 +538,18 @@ export class DetalleSolicitudComponent implements OnInit {
     return this.documentos.filter((d) => d.esDocumentoRolActual);
   }
 
+  get hayDocumentosRolActualAdjuntos(): boolean {
+    return this.documentosRolActual.some((d) =>
+      (!!d.base64 || !!d.enlace || !!d.fileName || !!d.documentoSolicitudId) && d.estado !== 'PENDIENTE'
+    );
+  }
+
+  get puedeRetornarRevisor(): boolean {
+    return !this.cambiandoEstado
+      && !this.hayDocumentosRolActualAdjuntos
+      && !this.allDocsChecked;
+  }
+
   get hayDocumentosRolActualPendientes(): boolean {
     return this.documentosRolActual.some((d) => !d.enlace && !d.base64);
   }
@@ -663,9 +676,33 @@ export class DetalleSolicitudComponent implements OnInit {
 
   /** El doc seleccionado ya tiene un archivo cargado (debe eliminarse antes de subir otro) */
   isDocYaCargado(): boolean {
-    if (!this.selectedRequiredDoc || this.selectedRequiredDoc.kind === 'FORM') return false;
+    if (!this.selectedRequiredDoc || this.selectedRequiredDoc.kind === 'FORM') {
+      return false;
+    }
+
     const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
-    return !!doc && doc.estado !== 'PENDIENTE';
+    return !!doc && (!!doc.base64 || !!doc.enlace || !!doc.fileName) && doc.estado !== 'PENDIENTE';
+  }
+
+  get puedeAdjuntarDocumentoSeleccionado(): boolean {
+    if (!this.selectedRequiredDoc || this.selectedRequiredDoc.kind === 'FORM') {
+      return false;
+    }
+
+    const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
+    if (!doc) {
+      return false;
+    }
+
+    if (this.subiendoDocumentoDocente || this.guardando || this.cambiandoEstado) {
+      return false;
+    }
+
+    if (!this.puedeEditarDocumentoDocente(doc)) {
+      return false;
+    }
+
+    return !this.isDocYaCargado();
   }
 
   // ========== Checkbox → estado de documento ==========
@@ -741,28 +778,85 @@ export class DetalleSolicitudComponent implements OnInit {
     return 'CARG';
   }
   
+  onRequiredDocChange(doc: RequiredDocOption): void {
+    if (this.selectedRequiredDoc?.code === 'FR010' && doc?.code !== 'FR010') {
+      this.sincronizarBorradorFr010();
+    }
+
+    this.selectedRequiredDoc = doc;
+  }
+
+  private sincronizarBorradorFr010(): void {
+    if (!this.fr010Comp) {
+      return;
+    }
+
+    const payload = {
+      meta: {
+        codigo: 'GD-PR-013-FR-010',
+        version: '02',
+      },
+      fr010: this.fr010Comp.getFormData(),
+    };
+
+    this.fr010Json = payload;
+    this.formularioRecuperado = payload.fr010;
+
+    const fr = this.documentos.find((d) => d.code === 'FR010');
+    if (fr) {
+      fr.estado = 'CARG';
+      fr.autorSoporte = 'Docente';
+      fr.metadatos = {
+        documento_requerido: fr.nombre,
+        codigo: fr.code,
+        cargadoPor: 'DOCENTE',
+        fechaCarga: new Date().toISOString(),
+        origen: 'FORMULARIO_DIGITAL',
+      };
+    }
+
+    this.documentos = [...this.documentos];
+  }
+  
   // ========== Acciones docente ==========
-  guardarDocente(): void {
+  guardarSolicitudDocente(): void {
     if (this.permisosListos && !this.permisos['guardar_solicitud']) {
       this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
       return;
     }
 
-    if (this.guardando) return;
+    if (this.guardando || this.cambiandoEstado) {
+      return;
+    }
 
+    this.sincronizarBorradorFr010();
     this.persistirEdicionDocente('POPUPS.SOLICITUD_GUARDADA');
   }
 
   enviarDocente(): void {
-    if (this.permisosListos && !this.permisos['enviar_solicitud_docente']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
+    if (this.permisosListos && !this.permisos['enviar_solicitud_docente']) {
+      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
+      return;
+    }
+
     this.popup.confirm(
       this.translate.instant('POPUPS.CONFIRMAR_ENVIO'),
       this.translate.instant('ACTIONS.ENVIAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
-      if (result.isConfirmed) {
-        this.ejecutarCambioEstado('ENVIAR', this.observacionDocente, 'POPUPS.SOLICITUD_ENVIADA_OK');
+      if (!result.isConfirmed) {
+        return;
       }
+
+      this.sincronizarBorradorFr010();
+
+      this.persistirEdicionDocente('', {
+        mostrarPopup: false,
+        recargarDetalle: false,
+        onSuccess: () => {
+          this.ejecutarCambioEstado('ENVIAR', this.observacionDocente, 'POPUPS.SOLICITUD_ENVIADA_OK');
+        },
+      });
     });
   }
 
@@ -777,6 +871,13 @@ export class DetalleSolicitudComponent implements OnInit {
     const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
     if (!doc) return;
 
+    if (this.isDocYaCargado()) {
+      this.popup.error(
+        this.translate.instant('POPUPS.DOC_YA_CARGADO', { nombre: doc.nombre }),
+      );
+      return;
+    }
+    
     if (!this.puedeEditarDocumentoDocente(doc)) {
       this.popup.alertError('Este documento ya fue aprobado por el revisor y no debe modificarse durante la subsanación.');
       return;
@@ -806,6 +907,9 @@ export class DetalleSolicitudComponent implements OnInit {
       input.value = '';
       return;
     }
+
+    this.subiendoDocumentoDocente = true;
+    this.documentoDocenteEnProceso = file.name;
 
     try {
       const docActual = this.documentoEnCarga;
@@ -840,17 +944,27 @@ export class DetalleSolicitudComponent implements OnInit {
 
       this.documentos = [...this.documentos];
 
-      if (!this.isCreating && this.id){
-        this.persistirEdicionDocente('POPUPS.DOC_ADJUNTADO')
+      if (!this.isCreating && this.id) {
+        this.persistirEdicionDocente('POPUPS.DOC_ADJUNTADO', {
+          onFinally: () => {
+            this.subiendoDocumentoDocente = false;
+            this.documentoDocenteEnProceso = '';
+          },
+        });
         return;
       }
 
-      this.popup.success(
+      this.subiendoDocumentoDocente = false;
+      this.documentoDocenteEnProceso = '';
+
+      this.popup.alertSuccess(
         this.translate.instant('POPUPS.DOC_ADJUNTADO', {
-          nombre: this.documentoEnCarga.nombre,
+          nombre: docActual.nombre,
         }),
       );
     } catch (error) {
+      this.subiendoDocumentoDocente = false;
+      this.documentoDocenteEnProceso = '';
       this.popup.error(this.translate.instant('POPUPS.ERROR_PROCESAR_ARCHIVO'));
     } finally {
       this.documentoEnCarga = null;
@@ -901,7 +1015,7 @@ export class DetalleSolicitudComponent implements OnInit {
         return;
       }
 
-      this.popup.success(
+      this.popup.alertSuccess(
         this.translate.instant('POPUPS.DOC_ELIMINADO', {
           nombre: doc.nombre ?? doc.fileName ?? 'documento',
         }),
@@ -914,10 +1028,10 @@ export class DetalleSolicitudComponent implements OnInit {
       width: '900px',
       maxWidth: '95vw',
       data: {
-        nombre: doc.fileName ?? doc.nombre,
+        nombre: doc.nombre,
         mimeType: doc.mimeType ?? 'application/pdf',
         base64: doc.base64,
-        estado: doc.estado,
+        estado: this.translate.instant(this.documentoChip(doc)),
         autor: doc.autorSoporte,
       },
     });
@@ -944,7 +1058,7 @@ export class DetalleSolicitudComponent implements OnInit {
         maxHeight: '90vh',
         data: {
           nombre: doc.nombre,
-          estado: doc.estado,
+          estado: this.translate.instant(this.documentoChip(doc)),
           autor: doc.autorSoporte,
           isFR010: true,
           formData,
@@ -1026,19 +1140,6 @@ export class DetalleSolicitudComponent implements OnInit {
     }
     
     this.popup.success('POPUPS.FR010_GUARDADO');
-  }
-
-  // ========== Mapeo q13 → tipo_solicitud_id ==========
-  private readonly TIPO_ESTUDIO_MAP: Record<string, number> = {
-    DOCTORADO: 2,
-    MAESTRIA: 3,
-    POSTDOCTORADO: 4,
-  };
-
-  private resolverTipoSolicitudId(): number | null {
-    const q13 = this.fr010Json?.fr010?.solicitud?.q13_tipo_estudio;
-    if (!q13 || !this.TIPO_ESTUDIO_MAP[q13]) return null;
-    return this.TIPO_ESTUDIO_MAP[q13];
   }
 
   // ========== Cambio de estado — mapeos y payload ==========
@@ -1244,9 +1345,6 @@ export class DetalleSolicitudComponent implements OnInit {
       return null;
     }
 
-    // Obtener tipo_solicitud_id desde q13
-    const tipoSolicitudId = this.resolverTipoSolicitudId();
-
     // Construir formulario desde FR-010 si existe
     const fr010Data = this.fr010Json?.fr010 || {};
     const formulario: any = {
@@ -1282,7 +1380,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
     return {
       identificacion: this.identificacionDocente,
-      tipo_solicitud_id: tipoSolicitudId ?? 2,
+      tipo_solicitud_id: 1,
       formulario,
       observacion: this.observacionDocente?.trim() || '',
       cod_abreviacion_rol: 'PROFE',
@@ -1312,8 +1410,6 @@ export class DetalleSolicitudComponent implements OnInit {
       this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
       return null;
     }
-
-    const tipoSolicitudId = this.resolverTipoSolicitudId();
 
     const fr010Data = this.fr010Json?.fr010 || this.formularioRecuperado || {};
     const formulario: any = {
@@ -1359,7 +1455,7 @@ export class DetalleSolicitudComponent implements OnInit {
     )];
 
     return {
-      tipo_solicitud_id: tipoSolicitudId ?? 2,
+      tipo_solicitud_id: 1,
       formulario,
       observacion: this.observacionDocente?.trim() || '',
       documentos_nuevos: documentosNuevos,
@@ -1367,32 +1463,62 @@ export class DetalleSolicitudComponent implements OnInit {
     };
   }
 
-  private persistirEdicionDocente(mensajeExito: string, redirigir = false): void {
+  private persistirEdicionDocente(mensajeExito: string, opciones?: { redirigir?: boolean; mostrarPopup?: boolean; recargarDetalle?: boolean; onSuccess?: () => void; onError?: () => void; onFinally?: () => void },): void {
     const payload = this.construirPayloadEditarSolicitud();
-    if (!payload) return;
+    if (!payload) {
+      return;
+    }
+
+    const redirigir = opciones?.redirigir ?? false;
+    const mostrarPopup = opciones?.mostrarPopup ?? true;
+    const recargarDetalle = opciones?.recargarDetalle ?? true;
+    const onSuccess = opciones?.onSuccess;
+    const onError = opciones?.onError;
+    const onFinally = opciones?.onFinally;
 
     this.guardando = true;
+
     this.solicitudesService.editarSolicitud(this.id, payload).subscribe({
       next: () => {
         this.guardando = false;
         this.documentosDesactivarIds = [];
+
         this.documentos
           .filter((d) => d.pendienteCrear)
           .forEach((d) => {
             d.pendienteCrear = false;
           });
-        if (!this.isCreating && this.id) {
+
+        if (recargarDetalle && !this.isCreating && this.id) {
           this.cargarDetalleSolicitud(this.id);
         }
 
-        this.popup.success(this.translate.instant(mensajeExito));
+        if (mostrarPopup && mensajeExito) {
+          this.popup.alertSuccess(this.translate.instant(mensajeExito));
+        }
 
+        if (onSuccess) {
+          onSuccess();
+        }
+
+        if (onFinally){
+          onFinally();
+        }
         if (redirigir) {
           this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
         }
       },
       error: () => {
         this.guardando = false;
+
+        if (onError) {
+          onError();
+        }
+
+        if (onFinally) {
+          onFinally();
+        }
+
         this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
       },
     });
@@ -1704,6 +1830,8 @@ export class DetalleSolicitudComponent implements OnInit {
   
   retornarSolicitud() {
     if (this.permisosListos && !this.permisos['retornar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
+    if (!this.puedeRetornarRevisor) { return; }
+    
     this.popup.confirm(
       this.translate.instant('POPUPS.RETORNAR_MSG'),
       this.translate.instant('ACTIONS.RETORNAR'),

@@ -66,6 +66,8 @@ interface CambioEstadoPayload {
     Metadatos: any;
     File: string | undefined;
   }[];
+  FechaInicio?: string;
+  FechaFinal?: string;
 }
 
 
@@ -133,7 +135,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // Supervisor: fecha inicio contrato
   fechaInicioContrato: Date | null = null;
-  tipoFechaSupervisor: 'INICIO' | 'PRORROGA' = 'INICIO';
+  fechaFinalContrato: Date | null = null;
 
   // Para saber qué documento se está cargando
   documentoEnCarga: DocumentoItem | null = null;
@@ -1134,7 +1136,7 @@ export class DetalleSolicitudComponent implements OnInit {
       .map((doc) => ({ doc, estado: 'APROB' }));
   }
 
-  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string): CambioEstadoPayload | null {
+  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string,fechaInicio: string = '',fechaFinal: string = ''): CambioEstadoPayload | null {
     const documentosRevisor = this.documentos.filter((d) => 
       d.esDocumentoRolActual &&
       d.base64 &&
@@ -1151,7 +1153,7 @@ export class DetalleSolicitudComponent implements OnInit {
       File: d.base64,
     }));
 
-    return {
+    const payload: CambioEstadoPayload = {
       SolicitudId: this.id,
       NuevoEstado: nuevoEstado,
       RolUsuario: this.ROL_USUARIO_MAP[this.role],
@@ -1159,13 +1161,38 @@ export class DetalleSolicitudComponent implements OnInit {
       Observacion: observacion?.trim() ?? '',
       Documentos: documentosMapeados,
     };
+
+    // Agregar solo si tienen valor
+    if (fechaInicio !== '') {
+      payload.FechaInicio = fechaInicio;
+    }
+
+    if (fechaFinal !== '') {
+      payload.FechaFinal = fechaFinal;
+    }
+
+    return payload;
   }
 
-  private ejecutarCambioEstado(accion: AccionEstado, observacion: string, mensajeExito: string): void {
+  private ejecutarCambioEstado(accion: AccionEstado, observacion: string, mensajeExito: string,fechaInicio:string = '', fechaFinal:string=''): void {
     const nuevoEstado = this.resolverNuevoEstado(accion);
     if (!nuevoEstado) return;
 
-    const payload = this.construirPayloadCambioEstado(nuevoEstado, observacion);
+    let payload: CambioEstadoPayload | null;
+    if (fechaInicio !== '' && fechaFinal !== '') {
+      payload = this.construirPayloadCambioEstado(
+        nuevoEstado,
+        observacion,
+        fechaInicio,
+        fechaFinal
+      );
+    } else {
+      payload = this.construirPayloadCambioEstado(
+        nuevoEstado,
+        observacion
+      );
+    }
+
     if (!payload) return;
 
     const actualizacionesDocumento = this.construirActualizacionesDocumentoPorAccion(accion);
@@ -1726,6 +1753,10 @@ export class DetalleSolicitudComponent implements OnInit {
       this.popup.alertError(this.translate.instant('POPUPS.INICIO_FECHA_REQUIRED'));
       return;
     }
+    if (!this.fechaFinalContrato) {
+      this.popup.alertError(this.translate.instant('POPUPS.FINAL_FECHA_REQUIRED'));
+      return;
+    }
 
     this.popup.confirm(
       this.translate.instant('POPUPS.INICIO_MSG'),
@@ -1733,13 +1764,21 @@ export class DetalleSolicitudComponent implements OnInit {
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
-        const fechaStr = this.fechaInicioContrato!.toISOString().slice(0, 10);
-        const tipoLabel = this.tipoFechaSupervisor === 'INICIO' ? 'Fecha inicio contrato' : 'Fecha fin prórroga';
-        const obs = this.observacionRevision?.trim()
-          ? `${this.observacionRevision.trim()} | ${tipoLabel}: ${fechaStr}`
-          : `${tipoLabel}: ${fechaStr}`;
+        const fechaInicioStr = this.fechaInicioContrato!.toISOString().slice(0, 10);
+        const fechaFinalStr = this.fechaFinalContrato!.toISOString().slice(0, 10);
+        const obsBase = this.observacionRevision?.trim();
+        const obs = obsBase
 
-        this.ejecutarCambioEstado('DAR_INICIO', obs, 'POPUPS.INICIO_REGISTRADO_OK');
+        console.log("OBJETO QUE SE ENVIA");
+        console.log(obs);
+
+        this.ejecutarCambioEstado(
+          'DAR_INICIO',
+          obs,
+          'POPUPS.INICIO_REGISTRADO_OK',
+          fechaInicioStr,
+          fechaFinalStr
+        );
       }
     });
   }

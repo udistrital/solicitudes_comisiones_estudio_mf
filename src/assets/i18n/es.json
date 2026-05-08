@@ -102,7 +102,11 @@
     "NOMBRE_MINIMO_SOPORTE": "El nombre debe tener al menos 12 caracteres.",
     "NOMBRE_VALIDO_SOPORTE": "Nombre válido.",
     "BLOQUEO_NOMBRE_SOPORTE": "Debe asignar a cada soporte del revisor un nombre descriptivo de mínimo 12 caracteres.",
-    "CARGANDO_DETALLE": "Cargando detalle de la solicitud..."
+    "CARGANDO_DETALLE": "Cargando detalle de la solicitud...",
+    "ADJUNTANDO_DOC": "Adjuntando...",
+    "GUARDANDO_DOC_MSG": "Cargando y guardando el documento {{nombre}}. Por favor espere.",
+    "DOC_YA_CARGADO_MSG": "Ya existe un documento adjunto para este tipo."
+
   },
   "SUPERVISOR": {
     "TITLE": "Inicio de ejecucion de la comision",
@@ -305,13 +309,12 @@
     "GUARDADO": "Guardado (demo)",
     "FR010_NO_LISTO": "El formulario FR-010 no esta listo para guardarse",
     "FR010_GUARDADO": "FR-010 guardado (demo)",
-    "DOC_ADJUNTADO": "Documento adjuntado: {{nombre}} (demo)",
-    "DOC_ELIMINADO": "Documento eliminado: {{nombre}} (demo)",
+    "DOC_ADJUNTADO": "Documento adjuntado",
+    "DOC_ELIMINADO": "Documento eliminado",
     "ELIMINAR_DOC_MSG": "Desea eliminar el documento <b>{{nombre}}</b>?",
     "FR010_USE_GUARDAR": "Para FR-010 usa \"Guardar formulario\". (demo)",
     "ADJUNTAR_DOCS": "Adjuntar documentos (demo)",
     "CONFIRMAR_ENVIO": "Usted confirma que desea enviar la solicitud. Una vez enviada, no podra editarla.",
-    "SOLICITUD_ENVIADA_OK": "Solicitud enviada (demo)",
     "RETORNAR_MSG": "Usted confirma que desea retornar la solicitud para correccion.",
     "SOLICITUD_RETORNADA": "Solicitud retornada para correccion (demo)",
     "RECHAZAR_MSG": "Usted confirma que desea <b>no aprobar</b> esta solicitud. Esta accion no se puede deshacer.",
@@ -329,6 +332,7 @@
     "DOC_NO_ENCONTRADO": "No se encontro el documento seleccionado.",
     "SOLICITUD_GUARDADA": "Solicitud guardada exitosamente.",
     "ERROR_GUARDAR": "No fue posible guardar la solicitud. Intente de nuevo.",
+    "ERROR_ELIMINAR": "No fue posible eliminar la solicitud. Intente de nuevo.",
     "ERROR_ENVIAR": "No fue posible enviar la solicitud. Intente de nuevo.",
     "ERROR_CARGAR_TIPOS_DOC": "No fue posible cargar los tipos de documento. Solo el formulario FR-010 estara disponible.",
     "ERROR_CARGAR_DETALLE": "No fue posible cargar el detalle de la solicitud.",
@@ -340,7 +344,8 @@
     "SOLICITUD_RETORNADA_OK": "Solicitud retornada para correccion exitosamente.",
     "SOLICITUD_RECHAZADA_OK": "Solicitud rechazada exitosamente.",
     "SOLICITUD_AVALADA_OK": "Solicitud avalada y enviada exitosamente.",
-    "INICIO_REGISTRADO_OK": "Inicio de comision registrado exitosamente."
+    "INICIO_REGISTRADO_OK": "Inicio de comision registrado exitosamente.",
+    "DOC_YA_CARGADO": "Ya existe un documento adjunto para {{nombre}}. Si desea reemplazarlo, primero eliminelo."
   },
   "LANG": {
     "ES": "Espaniol",

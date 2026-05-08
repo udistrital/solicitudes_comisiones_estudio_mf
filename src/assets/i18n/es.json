@@ -111,8 +111,10 @@
     "FECHA_INICIO": "Fecha de inicio",
     "FECHA_PRORROGA": "Fecha de prorroga",
     "FECHA_INICIO_CONTRATO": "Fecha inicio contrato",
+    "FECHA_FINAL_CONTRATO": "Fecha final contrato",
     "FECHA_FIN_PRORROGA": "Fecha fin prorroga",
-    "SELECCIONA_FECHA": "Selecciona fecha"
+    "SELECCIONA_FECHA_INICIO": "Fecha inicio",
+    "SELECCIONA_FECHA_FINAL": "Fecha final"
   },
   "ESTADOS": {
     "NO_ENV": "No enviada",
@@ -320,6 +322,7 @@
     "AVALAR_MSG": "Usted confirma que desea aprobar todos los documentos y enviar la solicitud.",
     "DOCS_AVALADOS": "Todos los documentos estan aprobados (demo).",
     "INICIO_FECHA_REQUIRED": "Debe ingresar la fecha de inicio del contrato.",
+    "FINAL_FECHA_REQUIRED": "Debe ingresar la fecha final del contrato.",
     "INICIO_MSG": "Usted confirma que desea dar inicio a la ejecucion de la comision.",
     "INICIO_REGISTRADO": "Inicio de comision registrado (demo).",
     "SOLO_PDF": "Solo se permiten archivos PDF.",

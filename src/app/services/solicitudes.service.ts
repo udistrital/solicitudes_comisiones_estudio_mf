@@ -61,6 +61,7 @@ export class SolicitudesService {
   }
 
   cambiarEstadoSolicitud(payload: any) {
+    console.log(payload)
     return this.apiMid.post<any>('v1/solicitud/estados', payload);
   }
 

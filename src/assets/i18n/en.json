@@ -112,8 +112,10 @@
     "FECHA_INICIO": "Start date",
     "FECHA_PRORROGA": "Extension date",
     "FECHA_INICIO_CONTRATO": "Contract start date",
+    "FECHA_FINAL_CONTRATO": "Contract finish date",
     "FECHA_FIN_PRORROGA": "Extension end date",
-    "SELECCIONA_FECHA": "Select date"
+    "SELECCIONA_FECHA_INICIO": "Start date",
+    "SELECCIONA_FECHA_FINAL": "Finish date"
   },
   "ESTADOS": {
     "NO_ENV": "Not submitted",
@@ -321,6 +323,7 @@
     "AVALAR_MSG": "You confirm that you want to approve all documents and submit the request.",
     "DOCS_AVALADOS": "All documents are approved (demo).",
     "INICIO_FECHA_REQUIRED": "You must enter the contract start date.",
+    "FINAL_FECHA_REQUIRED": "You must enter the contract finish date.",
     "INICIO_MSG": "You confirm that you want to start the commission execution.",
     "INICIO_REGISTRADO": "Commission start registered (demo).",
     "SOLO_PDF": "Only PDF files are allowed.",

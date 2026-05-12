@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
@@ -187,6 +187,9 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private documentosDesactivarIds: number[] = [];
   private detalleSolicitudActual: any = null;
+
+  private ultimoFormularioGuardado = '';
+
 
   private readonly ESTADOS_SOLICITUD_SUBSANACION: EstadoSolicitud[] = [
     'SUBS_PROY',
@@ -418,16 +421,20 @@ export class DetalleSolicitudComponent implements OnInit {
         const parsed = JSON.parse(data.Formulario);
         this.formularioRecuperado = parsed;
 
-        // Guardar como fr010Json para que construirPayloadCrearSolicitud() lo use
         this.fr010Json = {
           meta: { codigo: 'GD-PR-013-FR-010', version: '02' },
           fr010: parsed,
         };
 
+        this.ultimoFormularioGuardado = this.serializarFormularioComparable(parsed);
+
         console.log('[detalle] Formulario parseado:', parsed);
       } catch (e) {
         console.error('[detalle] Error parseando Formulario:', e);
+        this.ultimoFormularioGuardado = '';
       }
+    } else {
+      this.ultimoFormularioGuardado = '';
     }
 
     // --- Observaciones ---
@@ -818,6 +825,49 @@ export class DetalleSolicitudComponent implements OnInit {
     this.documentos = [...this.documentos];
   }
   
+  private obtenerFormularioActualComparable(): any | null {
+    if (this.fr010Comp) {
+      return this.fr010Comp.getFormData();
+    }
+
+    return this.fr010Json?.fr010 || this.formularioRecuperado || null;
+  }
+
+  private serializarFormularioComparable(data: any): string {
+    return JSON.stringify(data || null);
+  }
+
+  private tieneCambiosSinGuardarFormulario(): boolean {
+    if (!this.isDocenteEditable) {
+      return false;
+    }
+
+    const actual = this.obtenerFormularioActualComparable();
+    const actualSerializado = this.serializarFormularioComparable(actual);
+
+    return actualSerializado !== this.ultimoFormularioGuardado;
+  }
+
+  private marcarFormularioComoGuardado(): void {
+    const actual = this.obtenerFormularioActualComparable();
+    this.ultimoFormularioGuardado = this.serializarFormularioComparable(actual);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.tieneCambiosSinGuardarFormulario()) {
+      return;
+    }
+
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
+  private navegarABandeja(): void {
+    this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+  }
+
+
   // ========== Acciones docente ==========
   guardarSolicitudDocente(): void {
     if (this.permisosListos && !this.permisos['guardar_solicitud']) {
@@ -1488,6 +1538,8 @@ export class DetalleSolicitudComponent implements OnInit {
           .forEach((d) => {
             d.pendienteCrear = false;
           });
+      
+        this.marcarFormularioComoGuardado();
 
         if (recargarDetalle && !this.isCreating && this.id) {
           this.cargarDetalleSolicitud(this.id);
@@ -1819,7 +1871,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
       this.documentos = [...this.documentos];
 
-      this.popup.success(this.translate.instant('POPUPS.DOC_ADJUNTADO', {nombre: docActual.nombre,}),);
+      this.popup.alertSuccess(this.translate.instant('POPUPS.DOC_ADJUNTADO', {nombre: docActual.nombre,}),);
     } catch (error) {
       this.popup.error(this.translate.instant('POPUPS.ERROR_PROCESAR_ARCHIVO'));
     } finally {
@@ -1912,6 +1964,19 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   regresar() {
-    this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+    if (!this.tieneCambiosSinGuardarFormulario()) {
+      this.navegarABandeja();
+      return;
+    }
+
+    this.popup.confirm(
+      this.translate.instant('POPUPS.CAMBIOS_SIN_GUARDAR_MSG'),
+      this.translate.instant('ACTIONS.SALIR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.navegarABandeja();
+      }
+    });
   }
 }

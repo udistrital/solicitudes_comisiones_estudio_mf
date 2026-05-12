@@ -107,7 +107,11 @@
     "CARGANDO_DETALLE": "Loading request details...",
     "ADJUNTANDO_DOC": "Uploading...",
     "GUARDANDO_DOC_MSG": "Uploading and saving document {{nombre}}. Please wait.",
-    "DOC_YA_CARGADO_MSG": "A document of this type is already attached."
+    "DOC_YA_CARGADO_MSG": "A document of this type is already attached.",
+    "ENVIANDO": "Sending...",
+    "RETORNANDO": "Returning...",
+    "RECHAZANDO": "Rejecting...",
+    "PROCESANDO_INICIO": "Processing..."
   },
   "SUPERVISOR": {
     "TITLE": "Commission execution start",

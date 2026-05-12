@@ -106,7 +106,11 @@
     "CARGANDO_DETALLE": "Cargando detalle de la solicitud...",
     "ADJUNTANDO_DOC": "Adjuntando...",
     "GUARDANDO_DOC_MSG": "Cargando y guardando el documento {{nombre}}. Por favor espere.",
-    "DOC_YA_CARGADO_MSG": "Ya existe un documento adjunto para este tipo."
+    "DOC_YA_CARGADO_MSG": "Ya existe un documento adjunto para este tipo.",
+    "ENVIANDO": "Enviando...",
+    "RETORNANDO": "Retornando...",
+    "RECHAZANDO": "Rechazando...",
+    "PROCESANDO_INICIO": "Procesando..."
 
   },
   "SUPERVISOR": {

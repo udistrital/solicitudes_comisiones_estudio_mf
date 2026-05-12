@@ -64,7 +64,8 @@
     "ADJUNTAR_DOC": "Attach document",
     "ADJUNTAR_DOCS": "Attach documents",
     "GUARDAR_FORM": "Save form",
-    "CREAR_SOLICITUD": "Create request"
+    "CREAR_SOLICITUD": "Create request",
+    "SALIR": "Exit"
   },
   "TOOLTIPS": {
     "VER_SOLICITUD": "View request",
@@ -348,7 +349,9 @@
     "SOLICITUD_RECHAZADA_OK": "Request rejected successfully.",
     "SOLICITUD_AVALADA_OK": "Request approved and submitted successfully.",
     "INICIO_REGISTRADO_OK": "Commission start registered successfully.",
-    "DOC_YA_CARGADO": "A document is already attached for {{nombre}}. Remove it first if you want to replace it."
+    "DOC_YA_CARGADO": "A document is already attached for {{nombre}}. Remove it first if you want to replace it.",
+    "CAMBIOS_SIN_GUARDAR_MSG": "ou have unsaved changes in form FR-010. If you continue, you will lose the unsaved information."
+
   },
   "LANG": {
     "ES": "Espaniol",

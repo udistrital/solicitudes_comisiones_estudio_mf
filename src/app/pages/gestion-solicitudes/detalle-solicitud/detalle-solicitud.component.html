@@ -11,6 +11,9 @@
           <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-black/70">
             <span>{{ 'DETALLE.RADICADO' | translate }}: <b>{{ radicado }}</b></span>
             <span>{{ 'DETALLE.ROL' | translate }}: <b>{{ role }}</b></span>
+            <span *ngIf="!isDocente && docenteNombre">
+              {{ 'TABLE.NOMBRE_DOCENTE' | translate }}: <b>{{ docenteNombre }}</b>
+            </span>
             <span class="inline-flex items-center gap-1.5">
               {{ 'DETALLE.ESTADO' | translate }}:
               <span class="sga-chip" [ngClass]="estadoClass">
@@ -127,9 +130,12 @@
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
                 <button type="button" class="sga-table-action"
+                  [disabled]="d.cargandoArchivo"
                   [attr.aria-label]="'TOOLTIPS.VER_DOCUMENTO' | translate"
                   [matTooltip]="'TOOLTIPS.VER_DOCUMENTO' | translate" (click)="verDocumento(d)">
-                  <mat-icon>visibility</mat-icon>
+                  <mat-icon [class.animate-spin]="d.cargandoArchivo">
+                    {{ d.cargandoArchivo ? 'autorenew' : 'visibility' }}
+                  </mat-icon>
                 </button>
               </td>
             </ng-container>
@@ -269,9 +275,12 @@
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
                 <button type="button" class="sga-table-action"
+                  [disabled]="d.cargandoArchivo"
                   [attr.aria-label]="'TOOLTIPS.VER_DOCUMENTO' | translate"
                   [matTooltip]="'TOOLTIPS.VER_DOCUMENTO' | translate" (click)="verDocumento(d)">
-                  <mat-icon>visibility</mat-icon>
+                  <mat-icon [class.animate-spin]="d.cargandoArchivo">
+                    {{ d.cargandoArchivo ? 'autorenew' : 'visibility' }}
+                  </mat-icon>
                 </button>
               </td>
             </ng-container>
@@ -388,12 +397,14 @@
                   *ngIf="d.esDocumentoRolActual"
                   type="button"
                   class="sga-table-action"
-                  [disabled]="!!d.base64 || !!d.enlace || !!d.fileName"
-                  [ngClass]="(d.base64 || d.enlace || d.fileName) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'"
+                  [disabled]="!!d.base64 || !!d.enlace || !!d.fileName || d.subiendoArchivo"
+                  [ngClass]="(d.base64 || d.enlace || d.fileName || d.subiendoArchivo) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'"
                   [attr.aria-label]="'ACTIONS.ADJUNTAR_DOCS' | translate"
                   [matTooltip]="'ACTIONS.ADJUNTAR_DOCS' | translate"
                   (click)="adjuntarSoporteRevisor(d, reviewerFileInput)">
-                  <mat-icon>attach_file</mat-icon>
+                  <mat-icon [class.animate-spin]="d.subiendoArchivo">
+                    {{ d.subiendoArchivo ? 'autorenew' : 'attach_file' }}
+                  </mat-icon>
                 </button>
               </td>
             </ng-container>
@@ -404,9 +415,12 @@
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
                 <button type="button" class="sga-table-action"
+                  [disabled]="d.cargandoArchivo"
                   [attr.aria-label]="'TOOLTIPS.VER_DOCUMENTO' | translate"
                   [matTooltip]="'TOOLTIPS.VER_DOCUMENTO' | translate" (click)="verDocumento(d)">
-                  <mat-icon>visibility</mat-icon>
+                  <mat-icon [class.animate-spin]="d.cargandoArchivo">
+                    {{ d.cargandoArchivo ? 'autorenew' : 'visibility' }}
+                  </mat-icon>
                 </button>
 
                 <button
@@ -422,7 +436,7 @@
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="check">
+            <ng-container *ngIf="mostrarChecksRevision" matColumnDef="check">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-check">
                 <div class="text-center text-sga font-semibold">{{ 'TABLE.OK' | translate }}</div>
               </th>
@@ -437,8 +451,8 @@
               </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="['nombre','autor','estado','adjuntar','visualizar','check']; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['nombre','autor','estado','adjuntar','visualizar','check'];"></tr>
+            <tr mat-header-row *matHeaderRowDef="columnasDocumentosRevision; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: columnasDocumentosRevision;"></tr>
           </table>
         </div>
       </mat-card>
@@ -605,36 +619,16 @@
                 class="h-10 px-8 rounded-lg text-sm"
                 (click)="darInicioComision()"
                 [disabled]="
-                  !allDocsChecked ||
                   !fechaInicioContrato ||
                   !fechaFinalContrato ||
                   !puedeContinuarRevisor ||
                   cambiandoEstado
                 "
               >
-                {{ 'ACTIONS.DAR_INICIO' | translate }}
+                <mat-icon *ngIf="accionRevisionEnProceso === 'DAR_INICIO'" class="animate-spin">autorenew</mat-icon>
+                {{ (accionRevisionEnProceso === 'DAR_INICIO' ? 'DETALLE.PROCESANDO_INICIO' : 'ACTIONS.DAR_INICIO') | translate }}
               </button>
             </div>
-
-            <!-- Mensaje -->
-            <div
-              *ngIf="!allDocsChecked"
-              class="mt-3 flex justify-center"
-            >
-              <div
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg
-                      border border-amber-200 bg-amber-50
-                      border-l-[5px] border-l-amber-500
-                      text-sm text-amber-700 font-medium"
-              >
-                <mat-icon class="text-[18px] w-[18px] h-[18px]">
-                  info
-                </mat-icon>
-
-                {{ 'DETALLE.VALIDAR_DOCS_MSG' | translate }}
-              </div>
-            </div>
-
           </div>
 
         </section>
@@ -651,19 +645,22 @@
           <button *ngIf="!permisosListos || permisos['rechazar_solicitud']"
             mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
             (click)="rechazarSolicitud()" [disabled]="cambiandoEstado">
-            {{ 'ACTIONS.RECHAZAR' | translate }}
+            <mat-icon *ngIf="accionRevisionEnProceso === 'RECHAZAR'" class="animate-spin">autorenew</mat-icon>
+            {{ (accionRevisionEnProceso === 'RECHAZAR' ? 'DETALLE.RECHAZANDO' : 'ACTIONS.RECHAZAR') | translate }}
           </button>
 
           <button *ngIf="!permisosListos || permisos['retornar_solicitud']"
             mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-            (click)="retornarSolicitud()" [disabled]="!puedeRetornarRevisor">
-            {{ 'ACTIONS.RETORNAR' | translate }}
+            (click)="retornarSolicitud()" [disabled]="!puedeRetornarRevisor || cambiandoEstado">
+            <mat-icon *ngIf="accionRevisionEnProceso === 'RETORNAR'" class="animate-spin">autorenew</mat-icon>
+            {{ (accionRevisionEnProceso === 'RETORNAR' ? 'DETALLE.RETORNANDO' : 'ACTIONS.RETORNAR') | translate }}
           </button>
 
           <button *ngIf="!permisosListos || permisos['enviar_revision']"
             mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
             (click)="enviarRevisor()" [disabled]="!allDocsChecked || !puedeContinuarRevisor || cambiandoEstado">
-            {{ 'ACTIONS.ENVIAR' | translate }}
+            <mat-icon *ngIf="accionRevisionEnProceso === 'ENVIAR'" class="animate-spin">autorenew</mat-icon>
+            {{ (accionRevisionEnProceso === 'ENVIAR' ? 'DETALLE.ENVIANDO' : 'ACTIONS.ENVIAR') | translate }}
           </button>
         </div>
       </mat-card>

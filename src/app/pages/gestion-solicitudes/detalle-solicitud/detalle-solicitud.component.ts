@@ -1430,10 +1430,10 @@ export class DetalleSolicitudComponent implements OnInit {
 
     return {
       identificacion: this.identificacionDocente,
-      tipo_solicitud_id: 2,
+      cod_abreviacion_tipo_solicitud: 'SOL_INI',
       formulario,
       observacion: this.observacionDocente?.trim() || '',
-      cod_abreviacion_rol: 'PROFE',
+      cod_abreviacion_rol: 'DOCENTE',
       documento_solicitud: documentoSolicitud,
     };
   }
@@ -1505,7 +1505,7 @@ export class DetalleSolicitudComponent implements OnInit {
     )];
 
     return {
-      tipo_solicitud_id: 2,
+      cod_abreviacion_tipo_solicitud: 'SOL_INI',
       formulario,
       observacion: this.observacionDocente?.trim() || '',
       documentos_nuevos: documentosNuevos,

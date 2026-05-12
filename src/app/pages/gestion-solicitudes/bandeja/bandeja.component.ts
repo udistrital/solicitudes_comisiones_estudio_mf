@@ -415,9 +415,9 @@ export class BandejaComponent implements OnInit {
 
     const payload = {
       identificacion: Number(cedula),
-      tipo_solicitud_id: 2,
+      cod_abreviacion_tipo_solicitud: 'SOL_INI',
       observacion: '',
-      cod_abreviacion_rol: 'PROFE',
+      cod_abreviacion_rol: 'DOCENTE',
       documento_solicitud: [],
     };
 

@@ -323,6 +323,7 @@
     "ADJUNTAR_DOCS": "Attach documents (demo)",
     "CONFIRMAR_ENVIO": "You confirm that you want to submit the request. Once submitted, you cannot edit it.",
     "RETORNAR_MSG": "You confirm that you want to return the request for correction.",
+    "RETORNO_REQUIERE_APROBACION_DOCS_REVISION": "You must first approve the documents uploaded by previous reviewers before returning the request.",
     "SOLICITUD_RETORNADA": "Request returned for correction (demo)",
     "RECHAZAR_MSG": "You confirm that you want to <b>not approve</b> this request. This action cannot be undone.",
     "SOLICITUD_NO_APROBADA": "Request not approved (demo)",

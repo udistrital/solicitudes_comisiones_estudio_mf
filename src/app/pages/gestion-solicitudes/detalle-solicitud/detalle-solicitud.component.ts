@@ -197,7 +197,6 @@ export class DetalleSolicitudComponent implements OnInit {
     'SUBS_PROY',
     'SUBS_SEC_ACAD',
     'SUBS_SEC_GRAL',
-    'SUBS_DEC',
   ];
 
   private readonly ESTADOS_DOCUMENTO_APROBADOS: EstadoDocumento[] = [
@@ -520,7 +519,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   /** Docente editable: creación (crear_solicitud) o edición NO_ENV/CORR (editar_solicitud) */
-  get isDocenteEditable(): boolean {
+  get isFormularioDocenteEditable(): boolean {
     if (!this.permisosListos) return false;
     if (!this.isDocente) return false;
 
@@ -532,14 +531,33 @@ export class DetalleSolicitudComponent implements OnInit {
       && (
         this.estadoSolicitud === 'NO_ENV'
         || this.estadoSolicitud === 'CORR'
-        || this.esSolicitudEnSubsanacion()
+        || this.estadoSolicitud === 'SUBS_PROY'
+        || this.estadoSolicitud === 'SUBS_SEC_ACAD'
+        || this.estadoSolicitud === 'SUBS_SEC_GRAL'
+      );
+  }
+
+  get puedeEditarDocumentosDocente(): boolean {
+    if (!this.permisosListos) return false;
+    if (!this.isDocente) return false;
+    if (this.isCreating) return true;
+
+    return this.permisos['editar_solicitud'] === true
+      && (
+        this.estadoSolicitud === 'NO_ENV'
+        || this.estadoSolicitud === 'CORR'
+        || this.estadoSolicitud === 'SUBS_PROY'
+        || this.estadoSolicitud === 'SUBS_SEC_ACAD'
+        || this.estadoSolicitud === 'SUBS_SEC_GRAL'
+        || this.estadoSolicitud === 'REV_PROY'
+        || this.estadoSolicitud === 'REV_SEC_ACAD'
       );
   }
 
   /** Docente en modo solo lectura (cualquier estado no editable) */
   get isDocenteReadOnly(): boolean {
     if (!this.permisosListos) return false;
-    return this.isDocente && !this.isDocenteEditable;
+    return this.isDocente && !this.isFormularioDocenteEditable && !this.puedeEditarDocumentosDocente;
   }
 
   get allDocsChecked(): boolean {
@@ -579,6 +597,15 @@ export class DetalleSolicitudComponent implements OnInit {
     return !this.cambiandoEstado
       && !this.hayDocumentosRolActualAdjuntos
       && !this.allDocsChecked;
+  }
+
+  get hayDocumentosDeRevisoresSinAprobarParaRetorno(): boolean {
+    return this.documentos.some((d) =>
+      !d.esDocumentoRolActual &&
+      d.rolUsuario !== 'DOCENTE' &&
+      !!d.documentoSolicitudId &&
+      !d.checked
+    );
   }
 
   get hayDocumentosRolActualPendientes(): boolean {
@@ -643,15 +670,58 @@ export class DetalleSolicitudComponent implements OnInit {
     return this.ESTADOS_DOCUMENTO_SUBSANACION.includes(doc.estado);
   }
 
+  private obtenerEstadosDocumentoBloqueadosParaDocente(): EstadoDocumento[] {
+    switch (this.estadoSolicitud) {
+      case 'REV_PROY':
+      case 'SUBS_PROY':
+        return ['APROB_PROY', 'APROB_SEC_ACAD', 'APROB_SEC_GRAL', 'APROB_DEC'];
+
+      case 'REV_SEC_ACAD':
+      case 'SUBS_SEC_ACAD':
+        return ['APROB_SEC_ACAD', 'APROB_SEC_GRAL', 'APROB_DEC'];
+
+      case 'REV_SEC_GRAL':
+      case 'SUBS_SEC_GRAL':
+        return ['APROB_SEC_GRAL', 'APROB_DEC'];
+
+      default:
+        return [];
+    }
+  }
+
+  private esDocumentoBloqueadoParaEdicionDocente(doc: DocumentoItem): boolean {
+    return this.obtenerEstadosDocumentoBloqueadosParaDocente().includes(doc.estado);
+  }
+
   private puedeEditarDocumentoDocente(doc: DocumentoItem): boolean {
-    if (doc.code === 'FR010') return true;
-    if (doc.rolUsuario !== 'DOCENTE') return false;
-    if (!this.esSolicitudEnSubsanacion()) return true;
-    return !this.esDocumentoAprobado(doc);
+    if (doc.code === 'FR010') {
+      return this.isFormularioDocenteEditable;
+    }
+
+    if (doc.rolUsuario !== 'DOCENTE') {
+      return false;
+    }
+
+    if (!this.puedeEditarDocumentosDocente) {
+      return false;
+    }
+
+    if (!this.esSolicitudEnSubsanacion()) {
+      return !this.esDocumentoBloqueadoParaEdicionDocente(doc);
+    }
+
+    return !this.esDocumentoBloqueadoParaEdicionDocente(doc);
   }
 
   private documentoListoParaEnvioDocente(doc: DocumentoItem): boolean {
-    if (!this.puedeEditarDocumentoDocente(doc)) return true;
+    if (doc.code === 'FR010') {
+      return doc.estado !== 'PENDIENTE';
+    }
+
+    if (!this.puedeEditarDocumentoDocente(doc)) {
+      return true;
+    }
+
     return doc.estado !== 'PENDIENTE' && !this.esDocumentoEnSubsanacion(doc);
   }
 
@@ -866,7 +936,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private tieneCambiosSinGuardarFormulario(): boolean {
-    if (!this.isDocenteEditable) {
+    if (!this.isFormularioDocenteEditable) {
       return false;
     }
 
@@ -903,6 +973,11 @@ export class DetalleSolicitudComponent implements OnInit {
       return;
     }
 
+    if (!this.isFormularioDocenteEditable) {
+      this.popup.error('El formulario no puede modificarse en el estado actual.');
+      return;
+    }
+
     if (this.guardando || this.cambiandoEstado) {
       return;
     }
@@ -914,6 +989,11 @@ export class DetalleSolicitudComponent implements OnInit {
   enviarDocente(): void {
     if (this.permisosListos && !this.permisos['enviar_solicitud_docente']) {
       this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
+      return;
+    }
+    
+    if (!this.isFormularioDocenteEditable) {
+      this.popup.error('La solicitud no puede enviarse nuevamente desde el estado actual.');
       return;
     }
 
@@ -1936,6 +2016,11 @@ export class DetalleSolicitudComponent implements OnInit {
   retornarSolicitud() {
     if (this.permisosListos && !this.permisos['retornar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     if (!this.puedeRetornarRevisor) { return; }
+
+    if (this.hayDocumentosDeRevisoresSinAprobarParaRetorno) {
+      this.popup.alertError(this.translate.instant('POPUPS.RETORNO_REQUIERE_APROBACION_DOCS_REVISION'));
+      return;
+    }
     
     this.popup.confirm(
       this.translate.instant('POPUPS.RETORNAR_MSG'),

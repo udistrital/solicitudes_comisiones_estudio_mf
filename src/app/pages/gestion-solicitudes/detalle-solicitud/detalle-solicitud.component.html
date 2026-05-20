@@ -6,7 +6,7 @@
       <div class="flex flex-wrap items-center gap-4">
         <div class="flex-1 min-w-[280px]">
           <h2 class="m-0 text-xl leading-tight font-semibold">
-            {{ (isDocenteEditable ? 'DETALLE.TITLE_EDITABLE' : 'DETALLE.TITLE_READONLY') | translate }}
+            {{ ((isFormularioDocenteEditable || puedeEditarDocumentosDocente) ? 'DETALLE.TITLE_EDITABLE' : 'DETALLE.TITLE_READONLY') | translate }}
           </h2>
           <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-black/70">
             <span>{{ 'DETALLE.RADICADO' | translate }}: <b>{{ radicado }}</b></span>
@@ -40,7 +40,7 @@
          VISTA DOCENTE EDITABLE
          (solo NO_ENV / CORR)
     ============================= -->
-    <ng-container *ngIf="isDocenteEditable && !cargandoDetalle">
+    <ng-container *ngIf="(isFormularioDocenteEditable || puedeEditarDocumentosDocente) && !cargandoDetalle">
 
       <!-- Seleccion de documento + acciones -->
       <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
@@ -91,6 +91,7 @@
       <!-- FR-010 DIGITAL -->
       <app-fr010-form *ngIf="isFR010Selected()"
         [datosIniciales]="formularioRecuperado"
+        [readOnly]="!isFormularioDocenteEditable"
         (saved)="onFr010Saved($event)">
       </app-fr010-form>
 
@@ -210,13 +211,13 @@
       <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
         <div class="flex flex-wrap items-center justify-end gap-2">
           <button mat-stroked-button class="h-9 px-3.5 rounded-lg border-black/20"
-            [disabled]="guardando || cambiandoEstado"
+            [disabled]="guardando || cambiandoEstado || !isFormularioDocenteEditable"
             (click)="guardarSolicitudDocente()">
             {{ 'ACTIONS.GUARDAR' | translate }}
           </button>
 
           <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-            [disabled]="!puedeEnviarDocente"
+            [disabled]="!puedeEnviarDocente || !isFormularioDocenteEditable"
             (click)="enviarDocente()">
             {{ 'ACTIONS.ENVIAR' | translate }}
           </button>

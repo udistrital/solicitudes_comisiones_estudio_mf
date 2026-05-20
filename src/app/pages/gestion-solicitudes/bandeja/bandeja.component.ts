@@ -86,7 +86,7 @@ export class BandejaComponent implements OnInit {
   get actions(): TableAction<SolicitudRow>[] {
     if (this.selectedRole === 'DOCENTE') {
       const editable = (row: SolicitudRow) =>
-        ['NO_ENV', 'CORR', 'SUBS_PROY', 'SUBS_SEC_ACAD', 'SUBS_SEC_GRAL', 'SUBS_DEC'].includes(row.estado);
+        ['NO_ENV', 'CORR', 'REV_PROY', 'REV_SEC_ACAD', 'SUBS_PROY', 'SUBS_SEC_ACAD', 'SUBS_SEC_GRAL'].includes(row.estado);
 
       return [
         {

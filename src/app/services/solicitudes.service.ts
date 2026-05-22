@@ -81,7 +81,7 @@ export class SolicitudesService {
 
   obtenerTipoDocumentoPorCodigo(codigoAbreviacion: string) {
     return this.apiDocCrud.get<any>(
-      `v2/tipo_documento?query=CodigoAbreviacion%3A${codigoAbreviacion}`
+      `v2/tipo_documento?query=CodigoAbreviacion:${encodeURIComponent(codigoAbreviacion)}`
     );
   }
 

@@ -6,7 +6,7 @@
     "SUBTITLE": "Study commission requests assigned to your role.",
     "TITLE_DOCENTE": "My requests",
     "TITLE_COORDINADOR": "Pending requests - Curricular project coordination",
-    "TITLE_ADMINISTRADOR": "Pending requests - Academic Secretary",
+    "TITLE_SECRETARIA_ACADEMICA": "Pending requests - Academic Secretary",
     "TITLE_SECRETARIA_GENERAL": "Pending requests - General Secretary",
     "TITLE_DECANO": "Pending requests - Dean's Office",
     "TITLE_SIN_ROL": "Request inbox",
@@ -20,7 +20,7 @@
   "ROLES": {
     "DOCENTE": "Professor",
     "COORDINADOR": "Curricular project coordination",
-    "ADMINISTRADOR": "Academic Secretary",
+    "SECRETARIA_ACADEMICA": "Academic Secretary",
     "SECRETARIA_GENERAL": "General Secretary",
     "DECANO": "Dean's Office"
   },
@@ -38,7 +38,8 @@
     "VER": "View",
     "ELIMINAR": "Delete",
     "OK": "OK",
-    "FILTER_PLACEHOLDER": "Search..."
+    "FILTER_PLACEHOLDER": "Search...",
+    "ADJUNTAR": "Upload"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "Rows per page:",
@@ -63,7 +64,8 @@
     "ADJUNTAR_DOC": "Attach document",
     "ADJUNTAR_DOCS": "Attach documents",
     "GUARDAR_FORM": "Save form",
-    "CREAR_SOLICITUD": "Create request"
+    "CREAR_SOLICITUD": "Create request",
+    "SALIR": "Exit"
   },
   "TOOLTIPS": {
     "VER_SOLICITUD": "View request",
@@ -72,7 +74,8 @@
     "ENVIAR_SOLICITUD": "Submit request",
     "GESTIONAR_SOLICITUD": "Manage request",
     "VER_DOCUMENTO": "View document",
-    "ELIMINAR_DOCUMENTO": "Delete document"
+    "ELIMINAR_DOCUMENTO": "Delete document",
+    "DOC_YA_CARGADO": "This document is already uploaded. Delete it first to upload another"
   },
   "DETALLE": {
     "TITLE_EDITABLE": "Request detail",
@@ -101,7 +104,14 @@
     "NOMBRE_MINIMO_SOPORTE": "Name must have at least 12 characters.",
     "NOMBRE_VALIDO_SOPORTE": "Valid name.",
     "BLOQUEO_NOMBRE_SOPORTE": "Each reviewer support must have a descriptive name of at least 12 characters.",
-    "CARGANDO_DETALLE": "Loading request details..."
+    "CARGANDO_DETALLE": "Loading request details...",
+    "ADJUNTANDO_DOC": "Uploading...",
+    "GUARDANDO_DOC_MSG": "Uploading and saving document {{nombre}}. Please wait.",
+    "DOC_YA_CARGADO_MSG": "A document of this type is already attached.",
+    "ENVIANDO": "Sending...",
+    "RETORNANDO": "Returning...",
+    "RECHAZANDO": "Rejecting...",
+    "PROCESANDO_INICIO": "Processing..."
   },
   "SUPERVISOR": {
     "TITLE": "Commission execution start",
@@ -110,8 +120,10 @@
     "FECHA_INICIO": "Start date",
     "FECHA_PRORROGA": "Extension date",
     "FECHA_INICIO_CONTRATO": "Contract start date",
+    "FECHA_FINAL_CONTRATO": "Contract finish date",
     "FECHA_FIN_PRORROGA": "Extension end date",
-    "SELECCIONA_FECHA": "Select date"
+    "SELECCIONA_FECHA_INICIO": "Start date",
+    "SELECCIONA_FECHA_FINAL": "Finish date"
   },
   "ESTADOS": {
     "NO_ENV": "Not submitted",
@@ -143,7 +155,11 @@
     "APROB_PROY": "Approved by curricular project",
     "APROB_SEC_ACAD": "Approved by academic secretary",
     "APROB_SEC_GRAL": "Approved by general secretary",
-    "APROB_DEC": "Approved by dean"
+    "APROB_DEC": "Approved by dean",
+    "SUBS_PROY": "Correction requested by curricular project",
+    "SUBS_SEC_ACAD": "Correction requested by academic secretary",
+    "SUBS_SEC_GRAL": "Correction requested by general secretary",
+    "SUBS_DEC": "Correction requested by dean"
   },
   "VISOR": {
     "TITLE": "View document",
@@ -300,14 +316,14 @@
     "GUARDADO": "Saved (demo)",
     "FR010_NO_LISTO": "The FR-010 form is not ready to be saved",
     "FR010_GUARDADO": "FR-010 saved (demo)",
-    "DOC_ADJUNTADO": "Document attached: {{nombre}} (demo)",
-    "DOC_ELIMINADO": "Document deleted: {{nombre}} (demo)",
+    "DOC_ADJUNTADO": "Document attached",
+    "DOC_ELIMINADO": "Document deleted",
     "ELIMINAR_DOC_MSG": "Do you want to delete document <b>{{nombre}}</b>?",
     "FR010_USE_GUARDAR": "For FR-010 use \"Save form\". (demo)",
     "ADJUNTAR_DOCS": "Attach documents (demo)",
     "CONFIRMAR_ENVIO": "You confirm that you want to submit the request. Once submitted, you cannot edit it.",
-    "SOLICITUD_ENVIADA_OK": "Request submitted (demo)",
     "RETORNAR_MSG": "You confirm that you want to return the request for correction.",
+    "RETORNO_REQUIERE_APROBACION_DOCS_REVISION": "You must first approve the documents uploaded by previous reviewers before returning the request.",
     "SOLICITUD_RETORNADA": "Request returned for correction (demo)",
     "RECHAZAR_MSG": "You confirm that you want to <b>not approve</b> this request. This action cannot be undone.",
     "SOLICITUD_NO_APROBADA": "Request not approved (demo)",
@@ -315,6 +331,7 @@
     "AVALAR_MSG": "You confirm that you want to approve all documents and submit the request.",
     "DOCS_AVALADOS": "All documents are approved (demo).",
     "INICIO_FECHA_REQUIRED": "You must enter the contract start date.",
+    "FINAL_FECHA_REQUIRED": "You must enter the contract finish date.",
     "INICIO_MSG": "You confirm that you want to start the commission execution.",
     "INICIO_REGISTRADO": "Commission start registered (demo).",
     "SOLO_PDF": "Only PDF files are allowed.",
@@ -324,6 +341,7 @@
     "DOC_NO_ENCONTRADO": "Selected document not found.",
     "SOLICITUD_GUARDADA": "Request saved successfully.",
     "ERROR_GUARDAR": "Could not save the request. Please try again.",
+    "ERROR_ELIMINAR": "Could not delete the request. Please try again.",
     "ERROR_ENVIAR": "Could not submit the request. Please try again.",
     "ERROR_CARGAR_TIPOS_DOC": "Could not load document types. Only the FR-010 form will be available.",
     "ERROR_CARGAR_DETALLE": "Could not load request details.",
@@ -335,7 +353,10 @@
     "SOLICITUD_RETORNADA_OK": "Request returned for correction successfully.",
     "SOLICITUD_RECHAZADA_OK": "Request rejected successfully.",
     "SOLICITUD_AVALADA_OK": "Request approved and submitted successfully.",
-    "INICIO_REGISTRADO_OK": "Commission start registered successfully."
+    "INICIO_REGISTRADO_OK": "Commission start registered successfully.",
+    "DOC_YA_CARGADO": "A document is already attached for {{nombre}}. Remove it first if you want to replace it.",
+    "CAMBIOS_SIN_GUARDAR_MSG": "ou have unsaved changes in form FR-010. If you continue, you will lose the unsaved information."
+
   },
   "LANG": {
     "ES": "Espaniol",

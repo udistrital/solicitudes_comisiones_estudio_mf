@@ -6,11 +6,14 @@
       <div class="flex flex-wrap items-center gap-4">
         <div class="flex-1 min-w-[280px]">
           <h2 class="m-0 text-xl leading-tight font-semibold">
-            {{ (isDocenteEditable ? 'DETALLE.TITLE_EDITABLE' : 'DETALLE.TITLE_READONLY') | translate }}
+            {{ ((isFormularioDocenteEditable || puedeEditarDocumentosDocente) ? 'DETALLE.TITLE_EDITABLE' : 'DETALLE.TITLE_READONLY') | translate }}
           </h2>
           <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-black/70">
             <span>{{ 'DETALLE.RADICADO' | translate }}: <b>{{ radicado }}</b></span>
             <span>{{ 'DETALLE.ROL' | translate }}: <b>{{ role }}</b></span>
+            <span *ngIf="!isDocente && docenteNombre">
+              {{ 'TABLE.NOMBRE_DOCENTE' | translate }}: <b>{{ docenteNombre }}</b>
+            </span>
             <span class="inline-flex items-center gap-1.5">
               {{ 'DETALLE.ESTADO' | translate }}:
               <span class="sga-chip" [ngClass]="estadoClass">
@@ -37,7 +40,7 @@
          VISTA DOCENTE EDITABLE
          (solo NO_ENV / CORR)
     ============================= -->
-    <ng-container *ngIf="isDocenteEditable && !cargandoDetalle">
+    <ng-container *ngIf="(isFormularioDocenteEditable || puedeEditarDocumentosDocente) && !cargandoDetalle">
 
       <!-- Seleccion de documento + acciones -->
       <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
@@ -48,8 +51,8 @@
           <div class="flex-1 min-w-[280px]">
             <div class="text-xs text-black/60 mb-1">{{ 'DETALLE.DOC_REQUERIDO' | translate }}</div>
             <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <mat-select [(value)]="selectedRequiredDoc">
-                <mat-option *ngFor="let d of requiredDocs" [value]="d">
+              <mat-select [value]="selectedRequiredDoc" (selectionChange)="onRequiredDocChange($event.value)">
+                <mat-option *ngFor="let d of requiredDocsDocenteDisponibles" [value]="d">
                   {{ d.name }}
                 </mat-option>
               </mat-select>
@@ -65,16 +68,22 @@
           />
 
           <!-- Botones alineados con el select -->
-          <div class="flex flex-wrap items-center gap-2 mb-[22px]">
-            <button *ngIf="isFR010Selected()" mat-flat-button color="primary" class="h-10 px-3.5 rounded-lg"
-              (click)="guardarFR010()">
-              {{ 'ACTIONS.GUARDAR_FORM' | translate }}
+          <div class="flex flex-col gap-1 mb-[22px]">
+            <button *ngIf="!isFR010Selected()"
+              mat-stroked-button
+              class="h-10 px-3.5 rounded-lg border-black/20"
+              [disabled]="!puedeAdjuntarDocumentoSeleccionado"
+              (click)="adjuntarDocumento(docFileInput)">
+              {{ (subiendoDocumentoDocente ? 'DETALLE.ADJUNTANDO_DOC' : 'ACTIONS.ADJUNTAR_DOC') | translate }}
             </button>
 
-            <button *ngIf="!isFR010Selected()" mat-stroked-button class="h-10 px-3.5 rounded-lg border-black/20"
-              (click)="adjuntarDocumento(docFileInput)">
-              {{ 'ACTIONS.ADJUNTAR_DOC' | translate }}
-            </button>
+            <div *ngIf="subiendoDocumentoDocente" class="text-xs text-sga">
+              {{ 'DETALLE.GUARDANDO_DOC_MSG' | translate:{ nombre: documentoDocenteEnProceso } }}
+            </div>
+
+            <div *ngIf="!isFR010Selected() && isDocYaCargado() && !subiendoDocumentoDocente" class="text-xs text-black/60">
+              {{ 'DETALLE.DOC_YA_CARGADO_MSG' | translate }}
+            </div>
           </div>
         </div>
       </mat-card>
@@ -82,6 +91,7 @@
       <!-- FR-010 DIGITAL -->
       <app-fr010-form *ngIf="isFR010Selected()"
         [datosIniciales]="formularioRecuperado"
+        [readOnly]="!isFormularioDocenteEditable"
         (saved)="onFr010Saved($event)">
       </app-fr010-form>
 
@@ -121,9 +131,12 @@
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
                 <button type="button" class="sga-table-action"
+                  [disabled]="d.cargandoArchivo"
                   [attr.aria-label]="'TOOLTIPS.VER_DOCUMENTO' | translate"
                   [matTooltip]="'TOOLTIPS.VER_DOCUMENTO' | translate" (click)="verDocumento(d)">
-                  <mat-icon>visibility</mat-icon>
+                  <mat-icon [class.animate-spin]="d.cargandoArchivo">
+                    {{ d.cargandoArchivo ? 'autorenew' : 'visibility' }}
+                  </mat-icon>
                 </button>
               </td>
             </ng-container>
@@ -133,7 +146,10 @@
                 <div class="text-center text-sga font-semibold">{{ 'TABLE.ELIMINAR' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
-                <button type="button" class="sga-table-action sga-table-action--warn"
+                <button 
+                  *ngIf="puedeEliminarDocumentoDocente(d)"
+                  type="button" 
+                  class="sga-table-action sga-table-action--warn"
                   [attr.aria-label]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
                   [matTooltip]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
                   (click)="eliminarDocumento(d)">
@@ -166,15 +182,6 @@
                 <textarea matInput rows="3" [placeholder]="'DETALLE.PLACEHOLDER_OBS' | translate" [(ngModel)]="observacionDocente"></textarea>
               </mat-form-field>
             </div>
-
-            <footer class="px-3 pb-3 flex justify-end gap-2 flex-wrap">
-              <button mat-stroked-button class="h-9 px-3.5 rounded-lg border-black/20"
-                [disabled]="guardando || cambiandoEstado"
-                (click)="guardarDocente()">{{ 'ACTIONS.GUARDAR' | translate }}</button>
-              <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-                [disabled]="!puedeEnviarDocente"
-                (click)="enviarDocente()">{{ 'ACTIONS.ENVIAR' | translate }}</button>
-            </footer>
           </section>
 
           <!-- Panel historial -->
@@ -198,6 +205,22 @@
             </div>
           </section>
 
+        </div>
+      </mat-card>
+
+      <mat-card class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <button mat-stroked-button class="h-9 px-3.5 rounded-lg border-black/20"
+            [disabled]="guardando || cambiandoEstado || !isFormularioDocenteEditable"
+            (click)="guardarSolicitudDocente()">
+            {{ 'ACTIONS.GUARDAR' | translate }}
+          </button>
+
+          <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
+            [disabled]="!puedeEnviarDocente || !isFormularioDocenteEditable"
+            (click)="enviarDocente()">
+            {{ 'ACTIONS.ENVIAR' | translate }}
+          </button>
         </div>
       </mat-card>
     </ng-container>
@@ -253,9 +276,12 @@
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
                 <button type="button" class="sga-table-action"
+                  [disabled]="d.cargandoArchivo"
                   [attr.aria-label]="'TOOLTIPS.VER_DOCUMENTO' | translate"
                   [matTooltip]="'TOOLTIPS.VER_DOCUMENTO' | translate" (click)="verDocumento(d)">
-                  <mat-icon>visibility</mat-icon>
+                  <mat-icon [class.animate-spin]="d.cargandoArchivo">
+                    {{ d.cargandoArchivo ? 'autorenew' : 'visibility' }}
+                  </mat-icon>
                 </button>
               </td>
             </ng-container>
@@ -333,29 +359,7 @@
                 <div class="text-center text-sga font-semibold">{{ 'TABLE.DOCUMENTO' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-nombre">
-                <ng-container *ngIf="d.esSoporteRevisor && d.pendienteCrear; else nombreNormal">
-                  <div class="flex flex-col gap-1">
-                    <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-                      <input
-                        matInput
-                        [ngModel]="d.nombre"
-                        (ngModelChange)="actualizarNombreSoporteRevisor(d, $event)"
-                        [placeholder]="'DETALLE.NOMBRE_SOPORTE_REVISOR' | translate"
-                        maxlength="120"
-                      />
-                    </mat-form-field>
-
-                    <div class="text-[11px]"
-                      [ngClass]="NombreSoporteRevisorValido(d) ? 'text-green-700' : 'text-red-600'">
-                      <ng-container *ngIf="!NombreSoporteRevisorValido(d)">
-                        {{ 'DETALLE.NOMBRE_MINIMO_SOPORTE' | translate:{ min: MIN_NOMBRE_SOPORTE_REVISOR } }}
-                      </ng-container>
-                      <ng-container *ngIf="NombreSoporteRevisorValido(d)">
-                        {{ 'DETALLE.NOMBRE_VALIDO_SOPORTE' | translate }}
-                      </ng-container>
-                    </div>
-                  </div>
-                </ng-container>
+                <span class="block text-left break-words">{{ d.nombre }}</span>
 
                 <ng-template #nombreNormal>
                   <span class="block text-left break-words">{{ d.nombre }}</span>
@@ -385,33 +389,71 @@
               </td>
             </ng-container>
 
+            <ng-container matColumnDef="adjuntar">
+              <th mat-header-cell *matHeaderCellDef class="doc-th col-icon">
+                <div class="text-center text-sga font-semibold">{{ 'TABLE.ADJUNTAR' | translate }}</div>
+              </th>
+              <td mat-cell *matCellDef="let d" class="doc-td col-icon">
+                <button
+                  *ngIf="d.esDocumentoRolActual"
+                  type="button"
+                  class="sga-table-action"
+                  [disabled]="!!d.base64 || !!d.enlace || !!d.fileName || d.subiendoArchivo"
+                  [ngClass]="(d.base64 || d.enlace || d.fileName || d.subiendoArchivo) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'"
+                  [attr.aria-label]="'ACTIONS.ADJUNTAR_DOCS' | translate"
+                  [matTooltip]="'ACTIONS.ADJUNTAR_DOCS' | translate"
+                  (click)="adjuntarSoporteRevisor(d, reviewerFileInput)">
+                  <mat-icon [class.animate-spin]="d.subiendoArchivo">
+                    {{ d.subiendoArchivo ? 'autorenew' : 'attach_file' }}
+                  </mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="visualizar">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-icon">
                 <div class="text-center text-sga font-semibold">{{ 'TABLE.VER' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-icon">
                 <button type="button" class="sga-table-action"
+                  [disabled]="d.cargandoArchivo"
                   [attr.aria-label]="'TOOLTIPS.VER_DOCUMENTO' | translate"
                   [matTooltip]="'TOOLTIPS.VER_DOCUMENTO' | translate" (click)="verDocumento(d)">
-                  <mat-icon>visibility</mat-icon>
+                  <mat-icon [class.animate-spin]="d.cargandoArchivo">
+                    {{ d.cargandoArchivo ? 'autorenew' : 'visibility' }}
+                  </mat-icon>
                 </button>
+
+                <button
+                  *ngIf="d.esDocumentoRolActual && (d.base64 || d.enlace || d.fileName)"
+                  type="button"
+                  class="sga-table-action sga-table-action--warn"
+                  [attr.aria-label]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
+                  [matTooltip]="'TOOLTIPS.ELIMINAR_DOCUMENTO' | translate"
+                  (click)="eliminarDocumento(d)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="check">
+            <ng-container *ngIf="mostrarChecksRevision" matColumnDef="check">
               <th mat-header-cell *matHeaderCellDef class="doc-th col-check">
                 <div class="text-center text-sga font-semibold">{{ 'TABLE.OK' | translate }}</div>
               </th>
               <td mat-cell *matCellDef="let d" class="doc-td col-check">
                 <div class="flex justify-center">
-                  <mat-checkbox [(ngModel)]="d.checked"
-                    (ngModelChange)="onDocCheckedChange(d)"></mat-checkbox>
+                  <mat-checkbox
+                    [(ngModel)]="d.checked"
+                    [disabled]="d.esDocumentoRolActual || d.actualizandoEstado"
+                    (ngModelChange)="onDocCheckedChange(d)">
+                  </mat-checkbox>
                 </div>
               </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="['nombre','autor','estado','visualizar','check']; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['nombre','autor','estado','visualizar','check'];"></tr>
+            <tr mat-header-row *matHeaderRowDef="columnasDocumentosRevision; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: columnasDocumentosRevision;"></tr>
           </table>
         </div>
       </mat-card>
@@ -447,108 +489,182 @@
                 <textarea matInput rows="3" [placeholder]="'DETALLE.PLACEHOLDER_OBS' | translate" [(ngModel)]="observacionRevision"></textarea>
               </mat-form-field>
             </div>
-
-            <footer class="px-3 pb-3 flex flex-wrap items-center justify-between gap-2">
-              <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20 inline-flex items-center"
-                (click)="adjuntarSoporteRevisor(reviewerFileInput)">
-                <mat-icon class="mr-1 text-[18px]">attach_file</mat-icon>
-                {{ 'ACTIONS.ADJUNTAR_DOCS' | translate }}
-              </button>
-
-              <div class="flex flex-wrap items-center justify-end gap-2">
-                <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="regresar()">{{ 'ACTIONS.REGRESAR' | translate }}</button>
-                <button *ngIf="!permisosListos || permisos['rechazar_solicitud']"
-                  mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="rechazarSolicitud()" [disabled]="!puedeContinuarRevisor || cambiandoEstado">
-                 {{ 'ACTIONS.RECHAZAR' | translate }}</button>
-                <button *ngIf="!permisosListos || permisos['retornar_solicitud']"
-                  mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
-                  (click)="retornarSolicitud()" [disabled]="!puedeContinuarRevisor || cambiandoEstado">
-                  {{ 'ACTIONS.RETORNAR' | translate }}</button>
-                <!-- Enviar solo para revisores no-supervisor -->
-                <button *ngIf="!isSupervisor && (!permisosListos || permisos['enviar_revision'])"
-                  mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-                  (click)="enviarRevisor()" [disabled]="!allDocsChecked || !puedeContinuarRevisor || cambiandoEstado">
-                  {{ 'ACTIONS.ENVIAR' | translate }}</button>
-              </div>
-            </footer>
-
             <div *ngIf="!isSupervisor" class="px-3 pb-1 text-xs text-black/50">
               {{ 'DETALLE.ENVIAR_HABILITADO_MSG' | translate }}
             </div>
           </section>
-          <div *ngIf="haySoportesRevisorInvalidos" class="px-3 pb-1 text-xs text-red-600">
-            {{ 'DETALLE.BLOQUEO_NOMBRE_SOPORTE' | translate:{ min: MIN_NOMBRE_SOPORTE_REVISOR } }}
-          </div>
-          <div *ngIf="!haySoportesRevisorInvalidos && !isSupervisor" class="px-3 pb-1 text-xs text-black/50">
-            {{ 'DETALLE.ENVIAR_HABILITADO_MSG' | translate }}
-          </div>
         </div>
       </mat-card>
 
       <!-- ============================
-           PANEL SUPERVISOR / DECANATURA
-           (inicio ejecucion de la comision)
-      ============================= -->
-      <mat-card *ngIf="isSupervisor" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
-        <header
-          class="px-3 py-2 mb-3 rounded-lg border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-          <div class="font-semibold text-sm">{{ 'SUPERVISOR.TITLE' | translate }}</div>
-          <div class="text-xs text-black/50">{{ 'SUPERVISOR.SUBTITLE' | translate }}</div>
-        </header>
+          PANEL SUPERVISOR / DECANATURA
+      ================================ -->
+      <mat-card
+        *ngIf="isSupervisor"
+        class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3"
+      >
 
-        <div class="flex flex-wrap items-end gap-3">
+        <!-- Tarjeta interna -->
+        <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
 
-          <!-- Tipo de fecha -->
-          <div class="w-[180px]">
-            <div class="text-xs text-black/60 mb-1">{{ 'SUPERVISOR.TIPO_FECHA' | translate }}</div>
-            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <mat-select [(value)]="tipoFechaSupervisor">
-                <mat-option value="INICIO">{{ 'SUPERVISOR.FECHA_INICIO' | translate }}</mat-option>
-                <mat-option value="PRORROGA">{{ 'SUPERVISOR.FECHA_PRORROGA' | translate }}</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-          <!-- Fecha -->
-          <div class="w-[220px]">
-            <div class="text-xs text-black/60 mb-1">
-              {{ (tipoFechaSupervisor === 'INICIO' ? 'SUPERVISOR.FECHA_INICIO_CONTRATO' : 'SUPERVISOR.FECHA_FIN_PRORROGA') | translate }}
+          <!-- Header igual a los paneles superiores -->
+          <header
+            class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3"
+          >
+            <div class="font-semibold text-sm">
+              {{ 'SUPERVISOR.TITLE' | translate }}
             </div>
-            <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch">
-              <input matInput [matDatepicker]="pickerSupervisor"
-                [(ngModel)]="fechaInicioContrato"
-                [placeholder]="'SUPERVISOR.SELECCIONA_FECHA' | translate" readonly />
-              <mat-datepicker-toggle matSuffix [for]="pickerSupervisor"></mat-datepicker-toggle>
-              <mat-datepicker #pickerSupervisor></mat-datepicker>
-            </mat-form-field>
+
+            <div class="text-xs text-black/50">
+              {{ 'SUPERVISOR.SUBTITLE' | translate }}
+            </div>
+          </header>
+
+          <!-- Contenido -->
+          <div class="px-4 pt-4 pb-2">
+
+            <!-- Grid centrado -->
+            <div class="grid grid-cols-12 items-center gap-x-3">
+
+              <!-- Espaciador -->
+              <div class="hidden xl:block xl:col-span-1"></div>
+
+              <!-- Fecha inicio -->
+              <div class="col-span-12 xl:col-span-5">
+                <div class="flex items-center justify-center gap-2">
+
+                  <!-- Label -->
+                  <div
+                    class="w-[145px] h-[44px] rounded-lg bg-sga/10 border border-sga/20
+                          flex items-center justify-center text-center text-xs font-medium text-sga px-2"
+                  >
+                    {{ 'SUPERVISOR.FECHA_INICIO_CONTRATO' | translate }}
+                  </div>
+
+                  <!-- Input -->
+                  <div class="w-[190px]">
+                    <mat-form-field
+                      appearance="outline"
+                      subscriptSizing="dynamic"
+                      class="w-full sga-no-notch mb-0"
+                    >
+                      <input
+                        matInput
+                        [matDatepicker]="pickerSupervisorInicio"
+                        [(ngModel)]="fechaInicioContrato"
+                        [placeholder]="'SUPERVISOR.SELECCIONA_FECHA_INICIO' | translate"
+                        readonly
+                      />
+
+                      <mat-datepicker-toggle
+                        matSuffix
+                        [for]="pickerSupervisorInicio"
+                      ></mat-datepicker-toggle>
+
+                      <mat-datepicker #pickerSupervisorInicio></mat-datepicker>
+                    </mat-form-field>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Fecha final -->
+              <div class="col-span-12 xl:col-span-5">
+                <div class="flex items-center justify-center gap-2">
+
+                  <!-- Label -->
+                  <div
+                    class="w-[145px] h-[44px] rounded-lg bg-sga/10 border border-sga/20
+                          flex items-center justify-center text-center text-xs font-medium text-sga px-2"
+                  >
+                    {{ 'SUPERVISOR.FECHA_FINAL_CONTRATO' | translate }}
+                  </div>
+
+                  <!-- Input -->
+                  <div class="w-[190px]">
+                    <mat-form-field
+                      appearance="outline"
+                      subscriptSizing="dynamic"
+                      class="w-full sga-no-notch mb-0"
+                    >
+                      <input
+                        matInput
+                        [matDatepicker]="pickerSupervisorFinal"
+                        [(ngModel)]="fechaFinalContrato"
+                        [placeholder]="'SUPERVISOR.SELECCIONA_FECHA_FINAL' | translate"
+                        readonly
+                      />
+
+                      <mat-datepicker-toggle
+                        matSuffix
+                        [for]="pickerSupervisorFinal"
+                      ></mat-datepicker-toggle>
+
+                      <mat-datepicker #pickerSupervisorFinal></mat-datepicker>
+                    </mat-form-field>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Espaciador -->
+              <div class="hidden xl:block xl:col-span-1"></div>
+
+            </div>
+
+            <!-- Botón -->
+            <div class="mt-1 flex justify-center">
+              <button
+                mat-flat-button
+                color="primary"
+                class="h-10 px-8 rounded-lg text-sm"
+                (click)="darInicioComision()"
+                [disabled]="
+                  !fechaInicioContrato ||
+                  !fechaFinalContrato ||
+                  !puedeContinuarRevisor ||
+                  cambiandoEstado
+                "
+              >
+                <mat-icon *ngIf="accionRevisionEnProceso === 'DAR_INICIO'" class="animate-spin">autorenew</mat-icon>
+                {{ (accionRevisionEnProceso === 'DAR_INICIO' ? 'DETALLE.PROCESANDO_INICIO' : 'ACTIONS.DAR_INICIO') | translate }}
+              </button>
+            </div>
           </div>
 
-          <!-- Adjuntar docs -->
-          <div class="mb-[22px]">
-            <button mat-stroked-button class="h-10 px-3 rounded-lg border-black/20 inline-flex items-center"
-              (click)="adjuntarSoporteRevisor(reviewerFileInput)">
-              <mat-icon class="mr-1 text-[18px]">attach_file</mat-icon>
-              {{ 'ACTIONS.ADJUNTAR_DOCS' | translate }}
-            </button>
-          </div>
-
-          <!-- Dar inicio -->
-          <div class="mb-[22px]">
-            <button mat-flat-button color="primary" class="h-10 px-5 rounded-lg"
-              (click)="darInicioComision()"
-              [disabled]="!allDocsChecked || !fechaInicioContrato || !puedeContinuarRevisor || cambiandoEstado">
-              {{ 'ACTIONS.DAR_INICIO' | translate }}
-            </button>
-          </div>
-        </div>
-
-        <div *ngIf="!allDocsChecked" class="mt-1 text-xs text-black/50">
-          {{ 'DETALLE.VALIDAR_DOCS_MSG' | translate }}
-        </div>
+        </section>
       </mat-card>
 
+
+      <mat-card *ngIf="!isSupervisor" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
+            (click)="regresar()">
+            {{ 'ACTIONS.REGRESAR' | translate }}
+          </button>
+
+          <button *ngIf="!permisosListos || permisos['rechazar_solicitud']"
+            mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
+            (click)="rechazarSolicitud()" [disabled]="cambiandoEstado">
+            <mat-icon *ngIf="accionRevisionEnProceso === 'RECHAZAR'" class="animate-spin">autorenew</mat-icon>
+            {{ (accionRevisionEnProceso === 'RECHAZAR' ? 'DETALLE.RECHAZANDO' : 'ACTIONS.RECHAZAR') | translate }}
+          </button>
+
+          <button *ngIf="!permisosListos || permisos['retornar_solicitud']"
+            mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
+            (click)="retornarSolicitud()" [disabled]="!puedeRetornarRevisor || cambiandoEstado">
+            <mat-icon *ngIf="accionRevisionEnProceso === 'RETORNAR'" class="animate-spin">autorenew</mat-icon>
+            {{ (accionRevisionEnProceso === 'RETORNAR' ? 'DETALLE.RETORNANDO' : 'ACTIONS.RETORNAR') | translate }}
+          </button>
+
+          <button *ngIf="!permisosListos || permisos['enviar_revision']"
+            mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
+            (click)="enviarRevisor()" [disabled]="!allDocsChecked || !puedeContinuarRevisor || cambiandoEstado">
+            <mat-icon *ngIf="accionRevisionEnProceso === 'ENVIAR'" class="animate-spin">autorenew</mat-icon>
+            {{ (accionRevisionEnProceso === 'ENVIAR' ? 'DETALLE.ENVIANDO' : 'ACTIONS.ENVIAR') | translate }}
+          </button>
+        </div>
+      </mat-card>
     </ng-container>
 
   </div>

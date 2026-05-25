@@ -6,7 +6,7 @@
     "SUBTITLE": "Solicitudes de comision de estudio asignadas a su rol.",
     "TITLE_DOCENTE": "Mis solicitudes",
     "TITLE_COORDINADOR": "Solicitudes pendientes - Coordinacion de proyecto curricular",
-    "TITLE_ADMINISTRADOR": "Solicitudes pendientes - Secretaria Academica",
+    "TITLE_SECRETARIA_ACADEMICA": "Solicitudes pendientes - Secretaria Academica",
     "TITLE_SECRETARIA_GENERAL": "Solicitudes pendientes - Secretaria General",
     "TITLE_DECANO": "Solicitudes pendientes - Decanatura",
     "TITLE_SIN_ROL": "Bandeja de solicitudes",
@@ -20,7 +20,7 @@
   "ROLES": {
     "DOCENTE": "Docente",
     "COORDINADOR": "Coordinacion de proyecto curricular",
-    "ADMINISTRADOR": "Secretaria Academica",
+    "SECRETARIA_ACADEMICA": "Secretaria Academica",
     "SECRETARIA_GENERAL": "Secretaria General",
     "DECANO": "Decanatura"
   },
@@ -38,7 +38,8 @@
     "VER": "Ver",
     "ELIMINAR": "Eliminar",
     "OK": "OK",
-    "FILTER_PLACEHOLDER": "Buscar..."
+    "FILTER_PLACEHOLDER": "Buscar...",
+    "ADJUNTAR": "Adjuntar"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "Filas por pagina:",
@@ -63,7 +64,8 @@
     "ADJUNTAR_DOC": "Adjuntar documento",
     "ADJUNTAR_DOCS": "Adjuntar documentos",
     "GUARDAR_FORM": "Guardar formulario",
-    "CREAR_SOLICITUD": "Crear solicitud"
+    "CREAR_SOLICITUD": "Crear solicitud",
+    "SALIR": "Salir"
   },
   "TOOLTIPS": {
     "VER_SOLICITUD": "Ver solicitud",
@@ -72,7 +74,8 @@
     "ENVIAR_SOLICITUD": "Enviar solicitud",
     "GESTIONAR_SOLICITUD": "Gestionar solicitud",
     "VER_DOCUMENTO": "Ver documento",
-    "ELIMINAR_DOCUMENTO": "Eliminar documento"
+    "ELIMINAR_DOCUMENTO": "Eliminar documento",
+    "DOC_YA_CARGADO": "Este documento ya fue cargado. Elimínelo primero para subir otro"
   },
   "DETALLE": {
     "TITLE_EDITABLE": "Detalle solicitud",
@@ -100,7 +103,15 @@
     "NOMBRE_MINIMO_SOPORTE": "El nombre debe tener al menos 12 caracteres.",
     "NOMBRE_VALIDO_SOPORTE": "Nombre válido.",
     "BLOQUEO_NOMBRE_SOPORTE": "Debe asignar a cada soporte del revisor un nombre descriptivo de mínimo 12 caracteres.",
-    "CARGANDO_DETALLE": "Cargando detalle de la solicitud..."
+    "CARGANDO_DETALLE": "Cargando detalle de la solicitud...",
+    "ADJUNTANDO_DOC": "Adjuntando...",
+    "GUARDANDO_DOC_MSG": "Cargando y guardando el documento {{nombre}}. Por favor espere.",
+    "DOC_YA_CARGADO_MSG": "Ya existe un documento adjunto para este tipo.",
+    "ENVIANDO": "Enviando...",
+    "RETORNANDO": "Retornando...",
+    "RECHAZANDO": "Rechazando...",
+    "PROCESANDO_INICIO": "Procesando..."
+
   },
   "SUPERVISOR": {
     "TITLE": "Inicio de ejecucion de la comision",
@@ -109,8 +120,10 @@
     "FECHA_INICIO": "Fecha de inicio",
     "FECHA_PRORROGA": "Fecha de prorroga",
     "FECHA_INICIO_CONTRATO": "Fecha inicio contrato",
+    "FECHA_FINAL_CONTRATO": "Fecha final contrato",
     "FECHA_FIN_PRORROGA": "Fecha fin prorroga",
-    "SELECCIONA_FECHA": "Selecciona fecha"
+    "SELECCIONA_FECHA_INICIO": "Fecha inicio",
+    "SELECCIONA_FECHA_FINAL": "Fecha final"
   },
   "ESTADOS": {
     "NO_ENV": "No enviada",
@@ -142,7 +155,11 @@
     "APROB_PROY": "Aprobado por proyecto curricular",
     "APROB_SEC_ACAD": "Aprobado por secretaria academica",
     "APROB_SEC_GRAL": "Aprobado por secretaria general",
-    "APROB_DEC": "Aprobado por decanatura"
+    "APROB_DEC": "Aprobado por decanatura",
+    "SUBS_PROY": "Subsanacion por proyecto curricular",
+    "SUBS_SEC_ACAD": "Subsanacion por secretaria academica",
+    "SUBS_SEC_GRAL": "Subsanacion por secretaria general",
+    "SUBS_DEC": "Subsanacion por decanatura"
   },
   "VISOR": {
     "TITLE": "Visualizar documento",
@@ -299,21 +316,22 @@
     "GUARDADO": "Guardado (demo)",
     "FR010_NO_LISTO": "El formulario FR-010 no esta listo para guardarse",
     "FR010_GUARDADO": "FR-010 guardado (demo)",
-    "DOC_ADJUNTADO": "Documento adjuntado: {{nombre}} (demo)",
-    "DOC_ELIMINADO": "Documento eliminado: {{nombre}} (demo)",
+    "DOC_ADJUNTADO": "Documento adjuntado",
+    "DOC_ELIMINADO": "Documento eliminado",
     "ELIMINAR_DOC_MSG": "Desea eliminar el documento <b>{{nombre}}</b>?",
     "FR010_USE_GUARDAR": "Para FR-010 usa \"Guardar formulario\". (demo)",
     "ADJUNTAR_DOCS": "Adjuntar documentos (demo)",
     "CONFIRMAR_ENVIO": "Usted confirma que desea enviar la solicitud. Una vez enviada, no podra editarla.",
-    "SOLICITUD_ENVIADA_OK": "Solicitud enviada (demo)",
     "RETORNAR_MSG": "Usted confirma que desea retornar la solicitud para correccion.",
-    "SOLICITUD_RETORNADA": "Solicitud retornada para correccion (demo)",
+    "RETORNO_REQUIERE_APROBACION_DOCS_REVISION": "Debe aprobar primero los documentos cargados por revisores anteriores antes de retornar la solicitud.",
+    "SOLICITUD_RETORNADA": "Solicitud retornada para correccion",
     "RECHAZAR_MSG": "Usted confirma que desea <b>no aprobar</b> esta solicitud. Esta accion no se puede deshacer.",
     "SOLICITUD_NO_APROBADA": "Solicitud no aprobada (demo)",
     "DOCS_NO_VALIDOS": "Alguno de los documentos no ha sido aprobado. Retorna la solicitud para correccion. (demo)",
     "AVALAR_MSG": "Usted confirma que desea aprobar todos los documentos y enviar la solicitud.",
     "DOCS_AVALADOS": "Todos los documentos estan aprobados (demo).",
     "INICIO_FECHA_REQUIRED": "Debe ingresar la fecha de inicio del contrato.",
+    "FINAL_FECHA_REQUIRED": "Debe ingresar la fecha final del contrato.",
     "INICIO_MSG": "Usted confirma que desea dar inicio a la ejecucion de la comision.",
     "INICIO_REGISTRADO": "Inicio de comision registrado (demo).",
     "SOLO_PDF": "Solo se permiten archivos PDF.",
@@ -323,6 +341,7 @@
     "DOC_NO_ENCONTRADO": "No se encontro el documento seleccionado.",
     "SOLICITUD_GUARDADA": "Solicitud guardada exitosamente.",
     "ERROR_GUARDAR": "No fue posible guardar la solicitud. Intente de nuevo.",
+    "ERROR_ELIMINAR": "No fue posible eliminar la solicitud. Intente de nuevo.",
     "ERROR_ENVIAR": "No fue posible enviar la solicitud. Intente de nuevo.",
     "ERROR_CARGAR_TIPOS_DOC": "No fue posible cargar los tipos de documento. Solo el formulario FR-010 estara disponible.",
     "ERROR_CARGAR_DETALLE": "No fue posible cargar el detalle de la solicitud.",
@@ -334,7 +353,10 @@
     "SOLICITUD_RETORNADA_OK": "Solicitud retornada para correccion exitosamente.",
     "SOLICITUD_RECHAZADA_OK": "Solicitud rechazada exitosamente.",
     "SOLICITUD_AVALADA_OK": "Solicitud avalada y enviada exitosamente.",
-    "INICIO_REGISTRADO_OK": "Inicio de comision registrado exitosamente."
+    "INICIO_REGISTRADO_OK": "Inicio de comision registrado exitosamente.",
+    "DOC_YA_CARGADO": "Ya existe un documento adjunto para {{nombre}}. Si desea reemplazarlo, primero eliminelo.",
+    "CAMBIOS_SIN_GUARDAR_MSG": "Tiene cambios sin guardar en el formulario FR-010. Si continua, perdera la informacion no guardada."
+
   },
   "LANG": {
     "ES": "Espaniol",

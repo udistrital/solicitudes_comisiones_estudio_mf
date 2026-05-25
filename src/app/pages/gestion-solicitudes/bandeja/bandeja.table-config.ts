@@ -3,7 +3,7 @@ import { SolicitudRow } from '../../../models/solicitud.model';
 import { ColumnDef } from '../../../shared/dynamic-table/dynamic-table.types';
 import { estadoSolicitudClass } from '../../../utils/estado-solicitud.util';
 
-export type BandejaActionKey = 'EDITAR' | 'ELIMINAR' | 'ENVIAR' | 'VER' | 'GESTIONAR';
+export type BandejaActionKey = 'EDITAR' | 'ELIMINAR' | 'VER' | 'GESTIONAR';
 
 // Columnas comunes reutilizables
 const COL_ID: ColumnDef<SolicitudRow> = {
@@ -39,8 +39,8 @@ export const ROLE_TABLE_CONFIGS: Record<Role, { title: string; columns: ColumnDe
     title: 'BANDEJA.TITLE_COORDINADOR',
     columns: COLUMNS_REVIEWER,
   },
-  ADMINISTRADOR: {
-    title: 'BANDEJA.TITLE_ADMINISTRADOR',
+  SECRETARIA_ACADEMICA: {
+    title: 'BANDEJA.TITLE_SECRETARIA_ACADEMICA',
     columns: COLUMNS_REVIEWER,
   },
   SECRETARIA_GENERAL: {

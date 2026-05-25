@@ -14,7 +14,7 @@ import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
 import { PermisosUtils } from '../../../utils/role-permissions';
 
 /** Roles que ya tienen endpoint de bandeja */
-const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'ADMINISTRADOR', 'SECRETARIA_GENERAL', 'DECANO'];
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'SECRETARIA_ACADEMICA', 'SECRETARIA_GENERAL', 'DECANO'];
 
 @Component({
     selector: 'app-bandeja',
@@ -86,7 +86,7 @@ export class BandejaComponent implements OnInit {
   get actions(): TableAction<SolicitudRow>[] {
     if (this.selectedRole === 'DOCENTE') {
       const editable = (row: SolicitudRow) =>
-        row.estado === 'NO_ENV' || row.estado === 'CORR';
+        ['NO_ENV', 'CORR', 'REV_PROY', 'REV_SEC_ACAD', 'SUBS_PROY', 'SUBS_SEC_ACAD', 'SUBS_SEC_GRAL'].includes(row.estado);
 
       return [
         {
@@ -110,14 +110,6 @@ export class BandejaComponent implements OnInit {
           tooltip: 'TOOLTIPS.ELIMINAR_SOLICITUD',
           color: 'warn',
           visible: (row: SolicitudRow) => row.estado === 'NO_ENV',
-        },
-        {
-          key: 'ENVIAR',
-          label: 'ACTIONS.ENVIAR',
-          icon: 'send',
-          tooltip: 'TOOLTIPS.ENVIAR_SOLICITUD',
-          color: 'primary',
-          visible: editable,
         },
       ];
     }
@@ -177,7 +169,7 @@ export class BandejaComponent implements OnInit {
         });
         break;
 
-      case 'ADMINISTRADOR':
+      case 'SECRETARIA_ACADEMICA':
         this.solicitudesService.listarPendientesSecretaria(cedula).subscribe({
           next: (resp) => this.procesarRespuestaRevisor(resp),
           error: () => this.onErrorCarga(),
@@ -195,22 +187,36 @@ export class BandejaComponent implements OnInit {
   }
 
   private procesarRespuestaDocente(resp: any, idsActivos: Set<number>): void {
-    const data: any[] = (resp?.Data || []).filter((item: any) => idsActivos.has(item.id));
-    this.rows = data.map((item) => {
-      // esado_solicitud (typo del backend) puede ser objeto o null
+    const data: any[] = (resp?.Data || []).filter((item: any) => {
+      const solicitudId = this.extraerSolicitudIdDocente(item);
+      const comisionId = this.extraerComisionIdDocente(item);
+
+      return (solicitudId !== null && idsActivos.has(solicitudId)) || comisionId !== null;
+    });
+
+    this.rows = data.reduce((acc: SolicitudRow[], item: any) => {
+      const solicitudId = this.extraerSolicitudIdDocente(item);
+      if (solicitudId === null) {
+        return acc;
+      }
+
       const estadoObj = item.esado_solicitud || item.estado_solicitud || null;
       const estadoNombre = estadoObj?.Nombre || null;
       const estadoCodigo = mapEstadoNombreACodigo(estadoNombre);
 
-      return {
-        id: item.id,
-        docente: item.nombre || '',
+      acc.push({
+        id: solicitudId,
+        comisionId: this.extraerComisionIdDocente(item),
+        docente: item.nombre || item.nombre_docente || '',
         idDocente: '',
-        proyecto: item.programa || '',
+        proyecto: item.programa || item.proyecto || '',
         estado: estadoCodigo,
         fecha: this.formatFecha(item.fecha_creacion),
-      };
-    });
+      });
+
+      return acc;
+    }, []);
+
     this.cargando = false;
   }
 
@@ -314,6 +320,50 @@ export class BandejaComponent implements OnInit {
     return 'REV_SEC_GRAL';
   }
 
+  private extraerSolicitudIdDocente(item: any): number | null {
+    if (!item) return null;
+
+    const candidatos = [
+      item.solicitud_id,
+      item.solicitudId,
+      item.id_solicitud,
+      item.SolicitudId?.Id,
+      item.SolicitudId?.id,
+      item.solicitud?.Id,
+      item.solicitud?.id,
+      item.id,
+    ];
+
+    for (const candidato of candidatos) {
+      if (typeof candidato === 'number' && Number.isFinite(candidato)) {
+        return candidato;
+      }
+    }
+
+    return null;
+  }
+
+  private extraerComisionIdDocente(item: any): number | null {
+    if (!item) return null;
+
+    const candidatos = [
+      item.comision_id,
+      item.comisionId,
+      item.ComisionId?.Id,
+      item.ComisionId?.id,
+      item.comision?.Id,
+      item.comision?.id,
+    ];
+
+    for (const candidato of candidatos) {
+      if (typeof candidato === 'number' && Number.isFinite(candidato)) {
+        return candidato;
+      }
+    }
+
+    return null;
+  }
+
   private extraerDocenteDeDetalle(data: any): { nombre: string; documento: string } {
     if (!data) return { nombre: '', documento: '' };
 
@@ -365,9 +415,9 @@ export class BandejaComponent implements OnInit {
 
     const payload = {
       identificacion: Number(cedula),
-      tipo_solicitud_id: 2,
+      cod_abreviacion_tipo_solicitud: 'SOL_INI',
       observacion: '',
-      cod_abreviacion_rol: 'PROFE',
+      cod_abreviacion_rol: 'DOCENTE',
       documento_solicitud: [],
     };
 
@@ -435,24 +485,15 @@ export class BandejaComponent implements OnInit {
               this.cargando = false;
               this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ELIMINADA', { id: row.id }));
             },
+            error: () => {
+              this.cargando = false;
+              this.popup.error(this.translate.instant('POPUPS.ERROR_ELIMINAR'));
+            },
           });
         }
       });
       return;
     }
 
-    if (a === 'ENVIAR') {
-      this.popup.confirm(
-        this.translate.instant('POPUPS.ENVIAR_SOLICITUD_MSG', { id: row.id }),
-        this.translate.instant('ACTIONS.ENVIAR'),
-        this.translate.instant('ACTIONS.CANCELAR'),
-      ).then((result) => {
-        if (result.isConfirmed) {
-          row.estado = 'RAD';
-          this.rows = [...this.rows];
-          this.popup.success(this.translate.instant('POPUPS.SOLICITUD_ENVIADA', { id: row.id }));
-        }
-      });
-    }
   }
 }

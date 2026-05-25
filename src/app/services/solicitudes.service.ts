@@ -27,7 +27,7 @@ export class SolicitudesService {
   }
 
   listarTiposDocumentoSolicitud() {
-    return this.apiCrud.get<any>('v1/tipo_documento_solicitud');
+    return this.apiCrud.get<any>('v1/tipo_documento_solicitud?limit=-1');
   }
 
   eliminarSolicitudDocente(id: number){
@@ -61,7 +61,14 @@ export class SolicitudesService {
   }
 
   cambiarEstadoSolicitud(payload: any) {
+    console.log(payload)
     return this.apiMid.post<any>('v1/solicitud/estados', payload);
+  }
+
+  actualizarEstadosDocumento(payload: { 
+    Documentos: { DocumentoSolicitudId: number; EstadoDocumentoCodigo: string }[];
+  }) {
+    return this.apiMid.put<any>('v1/solicitud/documento_solicitud/estados', payload)
   }
 
   listarHistoricoEstadoPorCodigo(codigoEstado: string) {

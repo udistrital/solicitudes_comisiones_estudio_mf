@@ -14,8 +14,7 @@ import { SolicitudesService } from '../../../services/solicitudes.service';
 import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 import { PermisosUtils } from '../../../utils/role-permissions';
 
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { forkJoin} from 'rxjs';
 
 type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
 
@@ -170,6 +169,8 @@ export class DetalleSolicitudComponent implements OnInit {
     DECANATURA: 4,
   };
 
+  
+
   // Tipos documentales: FR-010 fijo + los que vengan del CRUD
   requiredDocs: RequiredDocOption[] = [this.FR010_OPTION];
   cargandoTiposDoc = false;
@@ -192,6 +193,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private ultimoFormularioGuardado = '';
 
+  private idTipoDocumentoGestor: number | null = null;
 
   private readonly ESTADOS_SOLICITUD_SUBSANACION: EstadoSolicitud[] = [
     'SUBS_PROY',
@@ -309,6 +311,19 @@ export class DetalleSolicitudComponent implements OnInit {
     this.cargarTiposDocumentoCrud();
   }
 
+  private cargarIdTipoDocumentoGestor(codigoAbreviacion: string, callback: (id: number | null) => void): void {
+    this.solicitudesService.obtenerTipoDocumentoPorCodigo(codigoAbreviacion).subscribe({
+      next: (resp: any) => {
+        const data = Array.isArray(resp) ? resp : [];
+        const id = data.length > 0 ? Number(data[0].Id) : null;
+        callback(id);
+      },
+      error: () => {
+        callback(null);
+        this.popup.error(this.translate.instant('POPUPS.ERROR_TIPO_DOC_NO_RESUELTO'));
+      },
+    });
+  }
 
   private cargarTiposDocumentoCrud(): void {
     this.cargandoTiposDoc = true;
@@ -1419,10 +1434,15 @@ export class DetalleSolicitudComponent implements OnInit {
       d.code !== 'FR010'
     );
 
+    if (!this.idTipoDocumentoGestor || this.idTipoDocumentoGestor <= 0) {
+      this.popup.error(this.translate.instant('POPUPS.ERROR_TIPO_DOC_NO_RESUELTO'));
+      return null;
+    }
+
     const estadoDocumentoNuevo = this.obtenerEstadoDocumentoNuevoPorRol();
 
     const documentosMapeados = documentosRevisor.map((d) => ({
-      IdTipoDocumento: d.idTipoDocumento ?? null,
+      IdTipoDocumento: this.idTipoDocumentoGestor ?? null,
       TipoDocumento: String(d.code ?? ''),
       EstadoDocumento: estadoDocumentoNuevo,
       Nombre: d.nombre,
@@ -1455,33 +1475,68 @@ export class DetalleSolicitudComponent implements OnInit {
     const nuevoEstado = this.resolverNuevoEstado(accion);
     if (!nuevoEstado) return;
 
-    let payload: CambioEstadoPayload | null;
-    if (fechaInicio !== '' && fechaFinal !== '') {
-      payload = this.construirPayloadCambioEstado(
-        nuevoEstado,
-        observacion,
-        fechaInicio,
-        fechaFinal
-      );
-    } else {
-      payload = this.construirPayloadCambioEstado(
-        nuevoEstado,
-        observacion
-      );
-    }
+    this.cargarIdTipoDocumentoGestor('DE_SOL_COM', (id) => {
+      this.idTipoDocumentoGestor = id;
 
-    if (!payload) return;
+      if (!this.idTipoDocumentoGestor || this.idTipoDocumentoGestor <= 0) {
+        this.popup.error(this.translate.instant('POPUPS.ERROR_TIPO_DOC_NO_RESUELTO'));
+        this.cambiandoEstado = false;
+        this.accionRevisionEnProceso = null;
+        return;
+      }
 
-    const actualizacionesDocumento = this.construirActualizacionesDocumentoPorAccion(accion);
+      let payload: CambioEstadoPayload | null;
+      if (fechaInicio !== '' && fechaFinal !== '') {
+        payload = this.construirPayloadCambioEstado(
+          nuevoEstado,
+          observacion,
+          fechaInicio,
+          fechaFinal
+        );
+      } else {
+        payload = this.construirPayloadCambioEstado(
+          nuevoEstado,
+          observacion
+        );
+      }
 
-    const ejecutarCambioSolicitud = () => {
-      this.solicitudesService.cambiarEstadoSolicitud(payload).subscribe({
-        next: () => {
-          this.cambiandoEstado = false;
-          this.accionRevisionEnProceso = null;
-          this.popup.alertSuccess(this.translate.instant(mensajeExito));
-          this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
-        },
+      if (!payload) {
+        this.cambiandoEstado = false;
+        this.accionRevisionEnProceso = null;
+        return;
+      }
+
+      const actualizacionesDocumento = this.construirActualizacionesDocumentoPorAccion(accion);
+
+      const ejecutarCambioSolicitud = () => {
+        this.solicitudesService.cambiarEstadoSolicitud(payload!).subscribe({
+          next: () => {
+            this.cambiandoEstado = false;
+            this.accionRevisionEnProceso = null;
+            this.popup.alertSuccess(this.translate.instant(mensajeExito));
+            this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+          },
+          error: () => {
+            this.cambiandoEstado = false;
+            this.accionRevisionEnProceso = null;
+            this.cargarDetalleSolicitud(this.id);
+            this.popup.error(this.translate.instant('POPUPS.ERROR_CAMBIAR_ESTADO'));
+          },
+        });
+      };
+
+      if (!actualizacionesDocumento.length) {
+        ejecutarCambioSolicitud();
+        return;
+      }
+
+      this.solicitudesService.actualizarEstadosDocumento({
+        Documentos: actualizacionesDocumento.map(({ doc, estado }) => ({
+          DocumentoSolicitudId: doc.documentoSolicitudId!,
+          EstadoDocumentoCodigo: estado,
+        })),
+      }).subscribe({
+        next: () => ejecutarCambioSolicitud(),
         error: () => {
           this.cambiandoEstado = false;
           this.accionRevisionEnProceso = null;
@@ -1489,29 +1544,8 @@ export class DetalleSolicitudComponent implements OnInit {
           this.popup.error(this.translate.instant('POPUPS.ERROR_CAMBIAR_ESTADO'));
         },
       });
-    };
-
-    this.cambiandoEstado = true;
-
-    if (!actualizacionesDocumento.length) {
-      ejecutarCambioSolicitud();
-      return;
-    }
-
-    this.solicitudesService.actualizarEstadosDocumento({
-      Documentos: actualizacionesDocumento.map(({ doc, estado }) => ({
-        DocumentoSolicitudId: doc.documentoSolicitudId!,
-        EstadoDocumentoCodigo: estado,
-      })),
-    }).subscribe({
-      next: () => ejecutarCambioSolicitud(),
-      error: () => {
-        this.cambiandoEstado = false;
-        this.accionRevisionEnProceso = null;
-        this.cargarDetalleSolicitud(this.id);
-        this.popup.error(this.translate.instant('POPUPS.ERROR_CAMBIAR_ESTADO'));
-      },
     });
+    return;
   }
 
   // ========== Construcción del payload para el MID ==========
@@ -1519,6 +1553,11 @@ export class DetalleSolicitudComponent implements OnInit {
     // Validar identificación
     if (!this.identificacionDocente) {
       this.popup.error(this.translate.instant('POPUPS.ERROR_SIN_IDENTIFICACION'));
+      return null;
+    }
+    
+    if (!this.idTipoDocumentoGestor || this.idTipoDocumentoGestor <= 0) {
+      this.popup.error(this.translate.instant('POPUPS.ERROR_TIPO_DOC_NO_RESUELTO'));
       return null;
     }
 
@@ -1546,7 +1585,7 @@ export class DetalleSolicitudComponent implements OnInit {
     }
 
     const documentoSolicitud = documentosParaCrear.map((d) => ({
-      IdTipoDocumento: d.idTipoDocumento,
+      IdTipoDocumento: this.idTipoDocumentoGestor,
       TipoDocumento: String(d.code ?? ''),
       EstadoDocumento: 'CARG',
       Nombre: d.fileName ?? d.nombre,
@@ -1618,7 +1657,7 @@ export class DetalleSolicitudComponent implements OnInit {
     }
 
     const documentosNuevos = documentosParaCrear.map((d) => ({
-      IdTipoDocumento: d.idTipoDocumento,
+      IdTipoDocumento: this.idTipoDocumentoGestor,
       TipoDocumento: String(d.code ?? ''),
       EstadoDocumento: 'CARG',
       Nombre: d.fileName ?? d.nombre,
@@ -1654,53 +1693,70 @@ export class DetalleSolicitudComponent implements OnInit {
     const onFinally = opciones?.onFinally;
 
     this.guardando = true;
+    this.cargarIdTipoDocumentoGestor('DE_SOL_COM', (id) => {
+      this.idTipoDocumentoGestor = id;
 
-    this.solicitudesService.editarSolicitud(this.id, payload).subscribe({
-      next: () => {
+      if (!this.idTipoDocumentoGestor || this.idTipoDocumentoGestor <= 0) {
         this.guardando = false;
-        this.documentosDesactivarIds = [];
+        this.popup.error(this.translate.instant('POPUPS.ERROR_TIPO_DOC_NO_RESUELTO'));
+        return;
+      }
 
-        this.documentos
-          .filter((d) => d.pendienteCrear)
-          .forEach((d) => {
-            d.pendienteCrear = false;
-          });
-      
-        this.marcarFormularioComoGuardado();
-
-        if (recargarDetalle && !this.isCreating && this.id) {
-          this.cargarDetalleSolicitud(this.id);
-        }
-
-        if (mostrarPopup && mensajeExito) {
-          this.popup.alertSuccess(this.translate.instant(mensajeExito));
-        }
-
-        if (onSuccess) {
-          onSuccess();
-        }
-
-        if (onFinally){
-          onFinally();
-        }
-        if (redirigir) {
-          this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
-        }
-      },
-      error: () => {
+      const payload = this.construirPayloadEditarSolicitud();
+      if (!payload) {
         this.guardando = false;
+        return;
+      }
 
-        if (onError) {
-          onError();
-        }
+      this.solicitudesService.editarSolicitud(this.id, payload).subscribe({
+        next: () => {
+          this.guardando = false;
+          this.documentosDesactivarIds = [];
 
-        if (onFinally) {
-          onFinally();
-        }
+          this.documentos
+            .filter((d) => d.pendienteCrear)
+            .forEach((d) => {
+              d.pendienteCrear = false;
+            });
 
-        this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
-      },
+          this.marcarFormularioComoGuardado();
+
+          if (recargarDetalle && !this.isCreating && this.id) {
+            this.cargarDetalleSolicitud(this.id);
+          }
+
+          if (mostrarPopup && mensajeExito) {
+            this.popup.alertSuccess(this.translate.instant(mensajeExito));
+          }
+
+          if (onSuccess) {
+            onSuccess();
+          }
+
+          if (onFinally) {
+            onFinally();
+          }
+
+          if (redirigir) {
+            this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+          }
+        },
+        error: () => {
+          this.guardando = false;
+
+          if (onError) {
+            onError();
+          }
+
+          if (onFinally) {
+            onFinally();
+          }
+
+          this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
+        },
+      });
     });
+    return;
   }
 
 // Manejo documentos

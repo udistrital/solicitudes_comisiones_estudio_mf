@@ -275,16 +275,11 @@ export class DetalleSolicitudComponent implements OnInit {
     this.role = resolverRolEfectivo(this.roles) ?? 'DOCENTE';
     this.mode = (this.route.snapshot.queryParamMap.get('mode') as any) || 'GESTIONAR';
 
-    // Permisos: en paralelo, controlan visibilidad de secciones y acciones
-    forkJoin(
-      this.opcionesPermisos.map(op => this.permisosUtils.tienePermiso(this.roles, op))
-    ).subscribe({
-      next: (results) => {
-        this.opcionesPermisos.forEach((op, i) => { this.permisos[op] = results[i]; });
+    // Permisos: una sola consulta bulk, controlan visibilidad de secciones y acciones
+    this.permisosUtils.obtenerPermisos(this.roles, this.opcionesPermisos).subscribe({
+      next: (permisos) => {
+        this.permisos = permisos;
         this.permisosListos = true;
-        // console.log('[Detalle] Permisos resueltos:', JSON.stringify(this.permisos));
-        // console.log('[Detalle] estadoSolicitud:', this.estadoSolicitud, '| isCreating:', this.isCreating, '| isDocente:', this.isDocente);
-        // console.log('[Detalle] isDocenteEditable:', this.isDocenteEditable, '| isDocenteReadOnly:', this.isDocenteReadOnly);
       },
       error: () => {
         this.permisosListos = true;

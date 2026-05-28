@@ -57,12 +57,10 @@ export class BandejaComponent implements OnInit {
       this.cargarSolicitudes();
     }
 
-    // Permisos: en paralelo, solo controlan visibilidad de botones
-    forkJoin(
-      this.opcionesPermisos.map(op => this.permisosUtils.tienePermiso(this.roles, op))
-    ).subscribe({
-      next: (results) => {
-        this.opcionesPermisos.forEach((op, i) => { this.permisos[op] = results[i]; });
+    // Permisos: una sola consulta bulk, solo controlan visibilidad de botones
+    this.permisosUtils.obtenerPermisos(this.roles, this.opcionesPermisos).subscribe({
+      next: (permisos) => {
+        this.permisos = permisos;
         this.permisosListos = true;
       },
       error: () => {

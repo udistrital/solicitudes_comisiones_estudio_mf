@@ -123,6 +123,7 @@ export class DetalleSolicitudComponent implements OnInit {
   estadoSolicitud: EstadoSolicitud = 'NO_ENV';
   docenteNombre = '';
   proyecto = '';
+  tipoSolicitudCodigo = 'SOL_INI';
 
   isCreating = false;
   cargandoDetalle = false;
@@ -295,15 +296,13 @@ export class DetalleSolicitudComponent implements OnInit {
       this.docenteNombre = '';
       this.observacionDocente = '';
       this.observacionesSubsanacion = [];
+      this.selectedRequiredDoc = this.requiredDocs[0];
+      this.cargarTiposDocumentoCrud();
     } else {
       this.isCreating = false;
       this.id = Number(rawId);
       this.cargarDetalleSolicitud(this.id);
     }
-
-    this.selectedRequiredDoc = this.requiredDocs[0];
-
-    this.cargarTiposDocumentoCrud();
   }
 
   private cargarIdTipoDocumentoGestor(codigoAbreviacion: string, callback: (id: number | null) => void): void {
@@ -335,10 +334,13 @@ export class DetalleSolicitudComponent implements OnInit {
           descripcion: d.Descripcion ?? d.Nombre,
           rolUsuario: this.obtenerRolUsuarioDocumento(d),
         }));
+        const docsCrudFiltradosPorTipo = docsCrud.filter((d) =>
+          this.documentoCoincideConTipoSolicitud(String(d.code), d.rolUsuario)
+        );
 
         const rolesVisibles = this.obtenerRolesDocumentalesVisibles();
 
-        const docsVisibles = docsCrud
+        const docsVisibles = docsCrudFiltradosPorTipo
           .filter((d) => rolesVisibles.includes(d.rolUsuario ?? 'DOCENTE'))
           .sort((a, b) => {
             const ordenA = this.ORDEN_ROL_DOCUMENTAL[a.rolUsuario ?? 'DOCENTE'];
@@ -346,9 +348,13 @@ export class DetalleSolicitudComponent implements OnInit {
             return ordenA - ordenB;
           });
 
-        this.requiredDocs = this.role === 'DOCENTE'
-          ? [this.FR010_OPTION, ...docsCrud.filter((d) => d.rolUsuario === 'DOCENTE')]
-          : [this.FR010_OPTION, ...docsVisibles];
+        const docsDocente = docsCrudFiltradosPorTipo.filter((d) => d.rolUsuario === 'DOCENTE');
+        const docsFinales = this.role === 'DOCENTE' ? docsDocente : docsVisibles;
+        const incluirFr010 = this.debeMostrarFr010();
+
+        this.requiredDocs = incluirFr010
+          ? [this.FR010_OPTION, ...docsFinales]
+          : [...docsFinales];
 
         this.documentos = this.buildDocumentos(this.requiredDocs);
         this.selectedRequiredDoc = this.requiredDocs[0];
@@ -382,6 +388,7 @@ export class DetalleSolicitudComponent implements OnInit {
         this.detalleSolicitudActual = data;
         this.poblarDesdeDetalle(data);
         this.observacionesSubsanacion = this.extraerObservacionesDesdeDetalle(data);
+        this.cargarTiposDocumentoCrud();
         this.cargandoDetalle = false;
       },
       error: () => {
@@ -394,6 +401,15 @@ export class DetalleSolicitudComponent implements OnInit {
   private poblarDesdeDetalle(data: any): void {
     // --- Solicitud ---
     const sol = data.Solicitud || {};
+    const tipoSolicitud =
+      sol?.TipoSolicitudId?.CodigoAbreviacion
+      || sol?.TipoSolicitudId?.codigo_abreviacion
+      || '';
+
+    if (tipoSolicitud) {
+      this.tipoSolicitudCodigo = String(tipoSolicitud).trim().toUpperCase();
+    }
+
     this.id = sol.Id || this.id;
     this.radicado = sol.Id ? `SOL-${sol.Id}` : '';
     this.identificacionDocente = sol.TerceroId || this.identificacionDocente;
@@ -465,6 +481,30 @@ export class DetalleSolicitudComponent implements OnInit {
     this.poblarDocumentosDesdeDetalle(data);
   }
 
+  private documentoCoincideConTipoSolicitud(code: string | undefined, rolUsuario?: string): boolean {
+    const codigo = String(code ?? '').trim().toUpperCase();
+    const rol = String(rolUsuario ?? '').trim().toUpperCase();
+    const tipoSolicitud = String(this.tipoSolicitudCodigo ?? '').trim().toUpperCase();
+
+    if (!codigo) {
+      return false;
+    }
+
+    // El filtro por SOL_INI / SOL_PRO aplica solo para documentos del docente.
+    if (rol !== 'DOCENTE') {
+      return true;
+    }
+
+    switch (tipoSolicitud) {
+      case 'SOL_INI':
+        return codigo.startsWith('SOL_INI');
+      case 'SOL_PRORROGA':
+        return codigo.startsWith('SOL_PRO');
+      default:
+        return true;
+    }
+  }
+
   private extraerObservacionesDesdeDetalle(data: any): ObservacionItem[] {
     const source: any[] = Array.isArray(data?.Observaciones) ? data.Observaciones : [];
 
@@ -523,6 +563,10 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   get columnasDocumentosRevision(): string[] {
+    if (this.esSolicitudProrroga) {
+      return ['nombre', 'autor', 'estado', 'visualizar'];
+    }
+
     return this.mostrarChecksRevision
       ? ['nombre', 'autor', 'estado', 'adjuntar', 'visualizar', 'check']
       : ['nombre', 'autor', 'estado', 'adjuntar', 'visualizar'];
@@ -593,7 +637,7 @@ export class DetalleSolicitudComponent implements OnInit {
     return `ESTADOS.${this.estadoSolicitud}`;
   }
 
-   get documentosRolActual(): DocumentoItem[] {
+  get documentosRolActual(): DocumentoItem[] {
     return this.documentos.filter((d) => d.esDocumentoRolActual);
   }
 
@@ -604,7 +648,8 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   get puedeRetornarRevisor(): boolean {
-    return !this.cambiandoEstado
+    return !this.esSolicitudProrroga
+      && !this.cambiandoEstado
       && !this.hayDocumentosRolActualAdjuntos
       && !this.allDocsChecked;
   }
@@ -626,6 +671,14 @@ export class DetalleSolicitudComponent implements OnInit {
     return !this.hayDocumentosRolActualPendientes;
   }
 
+  get puedeEnviarRevision(): boolean {
+    if (this.esSolicitudProrroga && this.role === 'SECRETARIA_GENERAL') {
+      return !this.cambiandoEstado;
+    }
+
+    return this.allDocsChecked && this.puedeContinuarRevisor && !this.cambiandoEstado;
+  }
+
   get puedeEnviarDocente(): boolean {
     if (!this.id || !this.fr010Json || !this.identificacionDocente || this.cambiandoEstado || this.guardando) {
       return false;
@@ -645,6 +698,20 @@ export class DetalleSolicitudComponent implements OnInit {
       const actual = this.documentos.find((item) => item.code === doc.code);
       return actual ? this.puedeEditarDocumentoDocente(actual) : true;
     });
+  }
+
+  get esSolicitudProrroga(): boolean {
+    return String(this.tipoSolicitudCodigo ?? '').trim().toUpperCase() === 'SOL_PRORROGA';
+  }
+
+  get tipoSolicitudLabel(): string {
+    const codigo = String(this.tipoSolicitudCodigo ?? '').trim().toUpperCase();
+
+    if (!codigo) {
+      return '';
+    }
+
+    return `TIPOS_SOLICITUD.${codigo}`;
   }
 
   puedeEliminarDocumentoDocente(doc: DocumentoItem): boolean {
@@ -783,6 +850,10 @@ export class DetalleSolicitudComponent implements OnInit {
 
   isFR010Selected(): boolean {
     return this.selectedRequiredDoc?.code === 'FR010';
+  }
+
+  private debeMostrarFr010(): boolean {
+    return String(this.tipoSolicitudCodigo ?? '').trim().toUpperCase() === 'SOL_INI';
   }
 
   /** El doc seleccionado ya tiene un archivo cargado (debe eliminarse antes de subir otro) */
@@ -1382,11 +1453,20 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private construirActualizacionesEnvioRevisor(): Array<{ doc: DocumentoItem; estado: EstadoDocumento }> {
-    const destino = this.ESTADO_DOCUMENTO_SIGUIENTE_POR_ROL[this.role];
+    const esProrrogaSecretariaGeneral = this.esSolicitudProrroga && this.role === 'SECRETARIA_GENERAL';
+
+    const destino = esProrrogaSecretariaGeneral
+      ? 'APROB_SEC_GRAL'
+      : this.ESTADO_DOCUMENTO_SIGUIENTE_POR_ROL[this.role];
+
     if (!destino) return [];
 
     return this.documentos
-      .filter((d) => !d.esDocumentoRolActual && d.checked && !!d.documentoSolicitudId)
+      .filter((d) =>
+        !d.esDocumentoRolActual &&
+        !!d.documentoSolicitudId &&
+        (esProrrogaSecretariaGeneral || d.checked)
+      )
       .map((doc) => ({ doc, estado: destino }));
   }
 
@@ -1591,7 +1671,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
     return {
       identificacion: this.identificacionDocente,
-      cod_abreviacion_tipo_solicitud: 'SOL_INI',
+      cod_abreviacion_tipo_solicitud: this.tipoSolicitudCodigo,
       formulario,
       observacion: this.observacionDocente?.trim() || '',
       cod_abreviacion_rol: 'DOCENTE',
@@ -1666,7 +1746,7 @@ export class DetalleSolicitudComponent implements OnInit {
     )];
 
     return {
-      cod_abreviacion_tipo_solicitud: 'SOL_INI',
+      cod_abreviacion_tipo_solicitud: this.tipoSolicitudCodigo,
       formulario,
       observacion: this.observacionDocente?.trim() || '',
       documentos_nuevos: documentosNuevos,
@@ -1845,7 +1925,8 @@ export class DetalleSolicitudComponent implements OnInit {
         }
       });
 
-    this.documentos = [...documentosBase, ...documentosAdicionales];
+    this.documentos = [...documentosBase, ...documentosAdicionales]
+      .filter((doc) => !this.ocultarPlaceholderProrroga(doc));
   }
 
   private rolDocumentalActual(): string {
@@ -1993,6 +2074,21 @@ export class DetalleSolicitudComponent implements OnInit {
       || null;
   }
 
+  private ocultarPlaceholderProrroga(doc: DocumentoItem): boolean {
+    if (!this.esSolicitudProrroga) {
+      return false;
+    }
+
+    if (doc.code === 'FR010') {
+      return true;
+    }
+
+    return doc.rolUsuario !== 'DOCENTE'
+      && !doc.documentoSolicitudId
+      && !doc.enlace
+      && !doc.base64;
+  }
+
   // ========== Acciones revisor ==========
   adjuntarSoporteRevisor(doc: DocumentoItem, fileInput: HTMLInputElement): void {
     if (this.permisosListos && !this.permisos['adjuntar_soporte_revision']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
@@ -2000,6 +2096,24 @@ export class DetalleSolicitudComponent implements OnInit {
     this.documentoRolEnCarga = doc;
     fileInput.value = '';
     fileInput.click();
+  }
+
+  aprobarProrrogaDecano(): void {
+    if (this.permisosListos && !this.permisos['dar_inicio_solicitud']) {
+      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
+      return;
+    }
+
+    this.popup.confirm(
+      this.translate.instant('POPUPS.AVALAR_MSG'),
+      this.translate.instant('ACTIONS.APROBAR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.accionRevisionEnProceso = 'DAR_INICIO';
+        this.ejecutarCambioEstado('DAR_INICIO', this.observacionRevision?.trim(), 'POPUPS.SOLICITUD_AVALADA_OK');
+      }
+    });
   }
 
   async onReviewerFileSelected(event: Event): Promise<void> {
@@ -2067,6 +2181,7 @@ export class DetalleSolicitudComponent implements OnInit {
   retornarSolicitud() {
     if (this.permisosListos && !this.permisos['retornar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     if (!this.puedeRetornarRevisor) { return; }
+    if (this.esSolicitudProrroga) { return; }
 
     if (this.hayDocumentosDeRevisoresSinAprobarParaRetorno) {
       this.popup.alertError(this.translate.instant('POPUPS.RETORNO_REQUIERE_APROBACION_DOCS_REVISION'));
@@ -2101,7 +2216,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   enviarRevisor() {
     if (this.permisosListos && !this.permisos['enviar_revision']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
-    if (!this.isSupervisor && !this.allDocsChecked) {
+    if (!this.puedeEnviarRevision) {
       this.popup.alertError(this.translate.instant('POPUPS.DOCS_NO_VALIDOS'));
       return;
     }

@@ -637,7 +637,7 @@ export class DetalleSolicitudComponent implements OnInit {
     return `ESTADOS.${this.estadoSolicitud}`;
   }
 
-   get documentosRolActual(): DocumentoItem[] {
+  get documentosRolActual(): DocumentoItem[] {
     return this.documentos.filter((d) => d.esDocumentoRolActual);
   }
 
@@ -648,7 +648,8 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   get puedeRetornarRevisor(): boolean {
-    return !this.cambiandoEstado
+    return !this.esSolicitudProrroga
+      && !this.cambiandoEstado
       && !this.hayDocumentosRolActualAdjuntos
       && !this.allDocsChecked;
   }
@@ -668,6 +669,14 @@ export class DetalleSolicitudComponent implements OnInit {
 
   get puedeContinuarRevisor(): boolean {
     return !this.hayDocumentosRolActualPendientes;
+  }
+
+  get puedeEnviarRevision(): boolean {
+    if (this.esSolicitudProrroga && this.role === 'SECRETARIA_GENERAL') {
+      return !this.cambiandoEstado;
+    }
+
+    return this.allDocsChecked && this.puedeContinuarRevisor && !this.cambiandoEstado;
   }
 
   get puedeEnviarDocente(): boolean {
@@ -693,6 +702,16 @@ export class DetalleSolicitudComponent implements OnInit {
 
   get esSolicitudProrroga(): boolean {
     return String(this.tipoSolicitudCodigo ?? '').trim().toUpperCase() === 'SOL_PRORROGA';
+  }
+
+  get tipoSolicitudLabel(): string {
+    const codigo = String(this.tipoSolicitudCodigo ?? '').trim().toUpperCase();
+
+    if (!codigo) {
+      return '';
+    }
+
+    return `TIPOS_SOLICITUD.${codigo}`;
   }
 
   puedeEliminarDocumentoDocente(doc: DocumentoItem): boolean {
@@ -1434,11 +1453,20 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private construirActualizacionesEnvioRevisor(): Array<{ doc: DocumentoItem; estado: EstadoDocumento }> {
-    const destino = this.ESTADO_DOCUMENTO_SIGUIENTE_POR_ROL[this.role];
+    const esProrrogaSecretariaGeneral = this.esSolicitudProrroga && this.role === 'SECRETARIA_GENERAL';
+
+    const destino = esProrrogaSecretariaGeneral
+      ? 'APROB_SEC_GRAL'
+      : this.ESTADO_DOCUMENTO_SIGUIENTE_POR_ROL[this.role];
+
     if (!destino) return [];
 
     return this.documentos
-      .filter((d) => !d.esDocumentoRolActual && d.checked && !!d.documentoSolicitudId)
+      .filter((d) =>
+        !d.esDocumentoRolActual &&
+        !!d.documentoSolicitudId &&
+        (esProrrogaSecretariaGeneral || d.checked)
+      )
       .map((doc) => ({ doc, estado: destino }));
   }
 
@@ -2070,6 +2098,24 @@ export class DetalleSolicitudComponent implements OnInit {
     fileInput.click();
   }
 
+  aprobarProrrogaDecano(): void {
+    if (this.permisosListos && !this.permisos['dar_inicio_solicitud']) {
+      this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
+      return;
+    }
+
+    this.popup.confirm(
+      this.translate.instant('POPUPS.AVALAR_MSG'),
+      this.translate.instant('ACTIONS.APROBAR'),
+      this.translate.instant('ACTIONS.CANCELAR'),
+    ).then((result) => {
+      if (result.isConfirmed) {
+        this.accionRevisionEnProceso = 'DAR_INICIO';
+        this.ejecutarCambioEstado('DAR_INICIO', this.observacionRevision?.trim(), 'POPUPS.SOLICITUD_AVALADA_OK');
+      }
+    });
+  }
+
   async onReviewerFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -2135,6 +2181,7 @@ export class DetalleSolicitudComponent implements OnInit {
   retornarSolicitud() {
     if (this.permisosListos && !this.permisos['retornar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     if (!this.puedeRetornarRevisor) { return; }
+    if (this.esSolicitudProrroga) { return; }
 
     if (this.hayDocumentosDeRevisoresSinAprobarParaRetorno) {
       this.popup.alertError(this.translate.instant('POPUPS.RETORNO_REQUIERE_APROBACION_DOCS_REVISION'));
@@ -2169,7 +2216,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   enviarRevisor() {
     if (this.permisosListos && !this.permisos['enviar_revision']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
-    if (!this.isSupervisor && !this.allDocsChecked) {
+    if (!this.puedeEnviarRevision) {
       this.popup.alertError(this.translate.instant('POPUPS.DOCS_NO_VALIDOS'));
       return;
     }

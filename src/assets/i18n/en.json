@@ -39,7 +39,8 @@
     "ELIMINAR": "Delete",
     "OK": "OK",
     "FILTER_PLACEHOLDER": "Search...",
-    "ADJUNTAR": "Upload"
+    "ADJUNTAR": "Upload",
+    "TIPO_SOLICITUD": "Request type"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "Rows per page:",
@@ -65,7 +66,8 @@
     "ADJUNTAR_DOCS": "Attach documents",
     "GUARDAR_FORM": "Save form",
     "CREAR_SOLICITUD": "Create request",
-    "SALIR": "Exit"
+    "SALIR": "Exit",
+    "APROBAR": "Approve"
   },
   "TOOLTIPS": {
     "VER_SOLICITUD": "View request",
@@ -357,6 +359,10 @@
     "DOC_YA_CARGADO": "A document is already attached for {{nombre}}. Remove it first if you want to replace it.",
     "CAMBIOS_SIN_GUARDAR_MSG": "ou have unsaved changes in form FR-010. If you continue, you will lose the unsaved information."
 
+  },
+  "TIPOS_SOLICITUD": {
+    "SOL_INI": "Commission request",
+    "SOL_PRORROGA": "Extension request"
   },
   "LANG": {
     "ES": "Espaniol",

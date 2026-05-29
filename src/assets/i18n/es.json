@@ -39,7 +39,8 @@
     "ELIMINAR": "Eliminar",
     "OK": "OK",
     "FILTER_PLACEHOLDER": "Buscar...",
-    "ADJUNTAR": "Adjuntar"
+    "ADJUNTAR": "Adjuntar",
+    "TIPO_SOLICITUD": "Tipo solicitud"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "Filas por pagina:",
@@ -65,7 +66,8 @@
     "ADJUNTAR_DOCS": "Adjuntar documentos",
     "GUARDAR_FORM": "Guardar formulario",
     "CREAR_SOLICITUD": "Crear solicitud",
-    "SALIR": "Salir"
+    "SALIR": "Salir",
+    "APROBAR": "Aprobar"
   },
   "TOOLTIPS": {
     "VER_SOLICITUD": "Ver solicitud",
@@ -357,6 +359,10 @@
     "DOC_YA_CARGADO": "Ya existe un documento adjunto para {{nombre}}. Si desea reemplazarlo, primero eliminelo.",
     "CAMBIOS_SIN_GUARDAR_MSG": "Tiene cambios sin guardar en el formulario FR-010. Si continua, perdera la informacion no guardada."
 
+  },
+  "TIPOS_SOLICITUD": {
+    "SOL_INI": "Solicitud de Comision",
+    "SOL_PRORROGA": "Solicitud de prorroga"
   },
   "LANG": {
     "ES": "Espaniol",

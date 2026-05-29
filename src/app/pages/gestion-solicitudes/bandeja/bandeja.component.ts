@@ -192,7 +192,7 @@ export class BandejaComponent implements OnInit {
       return (solicitudId !== null && idsActivos.has(solicitudId)) || comisionId !== null;
     });
 
-    this.rows = data.reduce((acc: SolicitudRow[], item: any) => {
+    const filasBase = data.reduce((acc: SolicitudRow[], item: any) => {
       const solicitudId = this.extraerSolicitudIdDocente(item);
       if (solicitudId === null) {
         return acc;
@@ -210,29 +210,106 @@ export class BandejaComponent implements OnInit {
         proyecto: item.programa || item.proyecto || '',
         estado: estadoCodigo,
         fecha: this.formatFecha(item.fecha_creacion),
+        tipoSolicitudCodigo: '',
+        tipoSolicitudNombre: '',
       });
 
       return acc;
     }, []);
 
-    this.cargando = false;
+    if (filasBase.length === 0) {
+      this.rows = [];
+      this.cargando = false;
+      return;
+    }
+
+    const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
+
+    for (const fila of filasBase) {
+      detalleCalls[String(fila.id)] = this.solicitudesService.obtenerDetalleSolicitud(fila.id);
+    }
+
+    forkJoin(detalleCalls).subscribe({
+      next: (detalles) => {
+        this.rows = filasBase.map((fila) => {
+          const detalle = detalles[String(fila.id)]?.Data;
+          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud);
+
+          return {
+            ...fila,
+            tipoSolicitudCodigo: codigoTipo,
+            tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
+          };
+        });
+
+        this.cargando = false;
+      },
+      error: () => {
+        this.rows = filasBase;
+        this.cargando = false;
+      },
+    });
   }
 
   private procesarRespuestaRevisor(resp: any): void {
     const data: any[] = resp?.Data || [];
-    this.rows = data.map((item) => {
-      const estadoCodigo = mapEstadoNombreACodigo(item.estado_solicitud);
 
-      return {
-        id: item.id,
-        docente: item.nombre_docente || '',
-        idDocente: item.documento_docente || '',
-        proyecto: '',
-        estado: estadoCodigo,
-        fecha: this.formatFecha(item.fecha_creacion),
-      };
+    if (data.length === 0) {
+      this.rows = [];
+      this.cargando = false;
+      return;
+    }
+
+    const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
+
+    for (const item of data) {
+      const solicitudId = item.id;
+      if (solicitudId) {
+        detalleCalls[String(solicitudId)] = this.solicitudesService.obtenerDetalleSolicitud(solicitudId);
+      }
+    }
+
+    forkJoin(detalleCalls).subscribe({
+      next: (detalles) => {
+        this.rows = data.map((item) => {
+          const estadoCodigo = mapEstadoNombreACodigo(item.estado_solicitud);
+          const detalle = detalles[String(item.id)]?.Data;
+          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud);
+
+          return {
+            id: item.id,
+            docente: item.nombre_docente || '',
+            idDocente: item.documento_docente || '',
+            proyecto: '',
+            estado: estadoCodigo,
+            fecha: this.formatFecha(item.fecha_creacion),
+            tipoSolicitudCodigo: codigoTipo,
+            tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
+          };
+        });
+
+        this.cargando = false;
+      },
+      error: () => {
+        this.rows = data.map((item) => {
+          const estadoCodigo = mapEstadoNombreACodigo(item.estado_solicitud);
+          const codigoTipo = this.extraerTipoSolicitudCodigo(item);
+
+          return {
+            id: item.id,
+            docente: item.nombre_docente || '',
+            idDocente: item.documento_docente || '',
+            proyecto: '',
+            estado: estadoCodigo,
+            fecha: this.formatFecha(item.fecha_creacion),
+            tipoSolicitudCodigo: codigoTipo,
+            tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
+          };
+        });
+
+        this.cargando = false;
+      },
     });
-    this.cargando = false;
   }
 
   private procesarRespuestaHistorico(resp: any): void {
@@ -269,6 +346,7 @@ export class BandejaComponent implements OnInit {
         this.rows = items.map((item) => {
           const solId = this.extraerSolicitudId(item)!;
           const detalle = detalles[String(solId)]?.Data;
+          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud);
           const { nombre, documento } = this.extraerDocenteDeDetalle(detalle);
 
           return {
@@ -278,6 +356,8 @@ export class BandejaComponent implements OnInit {
             proyecto: '',
             estado: this.extraerEstadoCodigo(item),
             fecha: this.formatFecha(item.SolicitudId?.FechaCreacion || item.FechaCreacion),
+            tipoSolicitudCodigo: codigoTipo,
+            tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
           };
         });
         this.cargando = false;
@@ -381,6 +461,29 @@ export class BandejaComponent implements OnInit {
     // Fallback: TerceroId de la solicitud
     const terceroId = data.Solicitud?.TerceroId;
     return { nombre: '', documento: terceroId ? String(terceroId) : '' };
+  }
+
+  private extraerTipoSolicitudCodigo(source: any): string {
+    return String(
+      source?.TipoSolicitudId?.CodigoAbreviacion ||
+      source?.TipoSolicitudId?.codigo_abreviacion ||
+      source?.tipo_solicitud?.CodigoAbreviacion ||
+      source?.tipo_solicitud?.codigo_abreviacion ||
+      source?.tipo_solicitud ||
+      source?.cod_abreviacion_tipo_solicitud ||
+      ''
+    ).trim().toUpperCase();
+  }
+
+  private nombreTipoSolicitud(codigo: string): string {
+    switch (String(codigo || '').trim().toUpperCase()) {
+      case 'SOL_INI':
+        return 'Solicitud de Comision';
+      case 'SOL_PRORROGA':
+        return 'Solicitud de prorroga';
+      default:
+        return codigo || '';
+    }
   }
 
   private onErrorCarga(): void {

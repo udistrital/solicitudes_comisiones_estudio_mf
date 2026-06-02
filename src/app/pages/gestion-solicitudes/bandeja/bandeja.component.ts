@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 
 import { Role, resolverRolEfectivo } from '../../../models/roles.model';
 import { SolicitudRow } from '../../../models/solicitud.model';
@@ -226,14 +226,16 @@ export class BandejaComponent implements OnInit {
     const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
 
     for (const fila of filasBase) {
-      detalleCalls[String(fila.id)] = this.solicitudesService.obtenerDetalleSolicitud(fila.id);
+      detalleCalls[String(fila.id)] = this.solicitudesService.obtenerDetalleSolicitud(fila.id).pipe(
+        catchError(() => of(null))
+      );
     }
 
     forkJoin(detalleCalls).subscribe({
       next: (detalles) => {
         this.rows = filasBase.map((fila) => {
           const detalle = detalles[String(fila.id)]?.Data;
-          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud);
+          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud) || fila.tipoSolicitudCodigo || '';
 
           return {
             ...fila,

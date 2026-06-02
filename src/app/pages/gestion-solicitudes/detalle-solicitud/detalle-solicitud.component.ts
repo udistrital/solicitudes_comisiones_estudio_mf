@@ -176,7 +176,7 @@ export class DetalleSolicitudComponent implements OnInit {
   requiredDocs: RequiredDocOption[] = [this.FR010_OPTION];
   cargandoTiposDoc = false;
 
-  selectedRequiredDoc: RequiredDocOption = this.FR010_OPTION;
+  selectedRequiredDoc: RequiredDocOption | null = null;
 
   // Tabla docs — se reconstruye cuando llegan los tipos del CRUD
   documentos: DocumentoItem[] = this.buildDocumentos(this.requiredDocs);
@@ -356,8 +356,12 @@ export class DetalleSolicitudComponent implements OnInit {
           ? [this.FR010_OPTION, ...docsFinales]
           : [...docsFinales];
 
+        const selectedCode = this.selectedRequiredDoc?.code;
+
         this.documentos = this.buildDocumentos(this.requiredDocs);
-        this.selectedRequiredDoc = this.requiredDocs[0];
+        this.selectedRequiredDoc = selectedCode
+          ? this.requiredDocs.find((d) => d.code === selectedCode) ?? null
+          : null;
 
         if (this.detalleSolicitudActual) {
           this.poblarDocumentosDesdeDetalle(this.detalleSolicitudActual);
@@ -483,15 +487,16 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private documentoCoincideConTipoSolicitud(code: string | undefined, rolUsuario?: string): boolean {
     const codigo = String(code ?? '').trim().toUpperCase();
-    const rol = String(rolUsuario ?? '').trim().toUpperCase();
     const tipoSolicitud = String(this.tipoSolicitudCodigo ?? '').trim().toUpperCase();
 
     if (!codigo) {
       return false;
     }
 
-    // El filtro por SOL_INI / SOL_PRO aplica solo para documentos del docente.
-    if (rol !== 'DOCENTE') {
+    const tienePrefijoTipoSolicitud =
+      codigo.startsWith('SOL_INI') || codigo.startsWith('SOL_PRO');
+
+    if (!tienePrefijoTipoSolicitud) {
       return true;
     }
 
@@ -564,7 +569,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   get columnasDocumentosRevision(): string[] {
     if (this.esSolicitudProrroga) {
-      return ['nombre', 'autor', 'estado', 'visualizar'];
+      return ['nombre', 'autor', 'estado', 'adjuntar', 'visualizar'];
     }
 
     return this.mostrarChecksRevision
@@ -858,20 +863,24 @@ export class DetalleSolicitudComponent implements OnInit {
 
   /** El doc seleccionado ya tiene un archivo cargado (debe eliminarse antes de subir otro) */
   isDocYaCargado(): boolean {
-    if (!this.selectedRequiredDoc || this.selectedRequiredDoc.kind === 'FORM') {
+    const selected = this.selectedRequiredDoc;
+
+    if (!selected || selected.kind === 'FORM') {
       return false;
     }
 
-    const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
+    const doc = this.documentos.find((d) => d.nombre === selected.name);
     return !!doc && (!!doc.base64 || !!doc.enlace || !!doc.fileName) && doc.estado !== 'PENDIENTE';
   }
 
   get puedeAdjuntarDocumentoSeleccionado(): boolean {
-    if (!this.selectedRequiredDoc || this.selectedRequiredDoc.kind === 'FORM') {
+    const selected = this.selectedRequiredDoc;
+
+    if (!selected || selected.kind === 'FORM') {
       return false;
     }
 
-    const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
+    const doc = this.documentos.find((d) => d.nombre === selected.name);
     if (!doc) {
       return false;
     }
@@ -964,7 +973,7 @@ export class DetalleSolicitudComponent implements OnInit {
     return 'CARG';
   }
   
-  onRequiredDocChange(doc: RequiredDocOption): void {
+  onRequiredDocChange(doc: RequiredDocOption | null): void {
     if (this.selectedRequiredDoc?.code === 'FR010' && doc?.code !== 'FR010') {
       this.sincronizarBorradorFr010();
     }
@@ -1100,14 +1109,16 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   adjuntarDocumento(fileInput: HTMLInputElement): void {
-    if (!this.selectedRequiredDoc) return;
+    const selected = this.selectedRequiredDoc;
 
-    if (this.selectedRequiredDoc.kind === 'FORM') {
+    if (!selected) return;
+
+    if (selected.kind === 'FORM') {
       this.popup.error(this.translate.instant('POPUPS.FR010_USE_GUARDAR'));
       return;
     }
 
-    const doc = this.documentos.find((d) => d.nombre === this.selectedRequiredDoc.name);
+    const doc = this.documentos.find((d) => d.nombre === selected.name);
     if (!doc) return;
 
     if (this.isDocYaCargado()) {
@@ -2079,14 +2090,7 @@ export class DetalleSolicitudComponent implements OnInit {
       return false;
     }
 
-    if (doc.code === 'FR010') {
-      return true;
-    }
-
-    return doc.rolUsuario !== 'DOCENTE'
-      && !doc.documentoSolicitudId
-      && !doc.enlace
-      && !doc.base64;
+    return doc.code === 'FR010';
   }
 
   // ========== Acciones revisor ==========

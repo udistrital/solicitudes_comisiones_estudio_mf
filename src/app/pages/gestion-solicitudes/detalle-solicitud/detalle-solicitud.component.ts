@@ -787,6 +787,10 @@ export class DetalleSolicitudComponent implements OnInit {
     if (!this.puedeEditarDocumentosDocente) {
       return false;
     }
+ 
+    if (this.normalizarRolUsuario(doc.rolUsuario, '') !== 'DOCENTE') {
+      return false;
+    }
 
     if (!this.esSolicitudEnSubsanacion()) {
       return !this.esDocumentoBloqueadoParaEdicionDocente(doc);
@@ -1954,12 +1958,12 @@ export class DetalleSolicitudComponent implements OnInit {
       .map(([rol]) => rol);
   }
 
-  private normalizarRolUsuario(value: any): string {
-    return String(value ?? 'DOCENTE').trim().toUpperCase();
+  private normalizarRolUsuario(value: any, fallback = ''): string {
+    return String(value ?? fallback).trim().toUpperCase();
   }
 
   private obtenerRolUsuarioDocumento(d: any): string {
-    return this.normalizarRolUsuario(d.RolUsuario ?? d.rol_usuario ?? 'DOCENTE');
+    return this.normalizarRolUsuario(d.RolUsuario ?? d.rol_usuario ?? '');
   }
 
   private agregarDocumentoAEliminar(id: number | undefined): void {

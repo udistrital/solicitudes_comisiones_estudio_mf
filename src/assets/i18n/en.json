@@ -125,7 +125,10 @@
     "FECHA_FINAL_CONTRATO": "Contract finish date",
     "FECHA_FIN_PRORROGA": "Extension end date",
     "SELECCIONA_FECHA_INICIO": "Start date",
-    "SELECCIONA_FECHA_FINAL": "Finish date"
+    "SELECCIONA_FECHA_FINAL": "Finish date",
+    "TITLE_PRORROGA": "Extension approval",
+    "FECHA_INICIO_PRORROGA": "Extension start date",
+    "FECHA_TERMINACION_PRORROGA": "Extension end date"
   },
   "ESTADOS": {
     "NO_ENV": "Not submitted",
@@ -357,8 +360,11 @@
     "SOLICITUD_AVALADA_OK": "Request approved and submitted successfully.",
     "INICIO_REGISTRADO_OK": "Commission start registered successfully.",
     "DOC_YA_CARGADO": "A document is already attached for {{nombre}}. Remove it first if you want to replace it.",
-    "CAMBIOS_SIN_GUARDAR_MSG": "ou have unsaved changes in form FR-010. If you continue, you will lose the unsaved information."
-
+    "CAMBIOS_SIN_GUARDAR_MSG": "ou have unsaved changes in form FR-010. If you continue, you will lose the unsaved information.",
+    "FECHA_INICIO_PRORROGA_REQUIRED": "The extension start date was not found.",
+    "FECHA_TERMINACION_PRORROGA_REQUIRED": "You must enter the extension end date.",
+    "FECHA_TERMINACION_PRORROGA_INVALIDA": "The extension end date must be after the start date.",
+    "AVALAR_PRORROGA_MSG": "You confirm that you want to approve the extension and update the commission end date."
   },
   "TIPOS_SOLICITUD": {
     "SOL_INI": "Commission request",

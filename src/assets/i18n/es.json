@@ -125,7 +125,10 @@
     "FECHA_FINAL_CONTRATO": "Fecha final contrato",
     "FECHA_FIN_PRORROGA": "Fecha fin prorroga",
     "SELECCIONA_FECHA_INICIO": "Fecha inicio",
-    "SELECCIONA_FECHA_FINAL": "Fecha final"
+    "SELECCIONA_FECHA_FINAL": "Fecha final",
+    "TITLE_PRORROGA": "Aprobacion de prorroga",
+    "FECHA_INICIO_PRORROGA": "Fecha inicial de la prorroga",
+    "FECHA_TERMINACION_PRORROGA": "Fecha de terminacion de la prorroga"
   },
   "ESTADOS": {
     "NO_ENV": "No enviada",
@@ -357,8 +360,11 @@
     "SOLICITUD_AVALADA_OK": "Solicitud avalada y enviada exitosamente.",
     "INICIO_REGISTRADO_OK": "Inicio de comision registrado exitosamente.",
     "DOC_YA_CARGADO": "Ya existe un documento adjunto para {{nombre}}. Si desea reemplazarlo, primero eliminelo.",
-    "CAMBIOS_SIN_GUARDAR_MSG": "Tiene cambios sin guardar en el formulario FR-010. Si continua, perdera la informacion no guardada."
-
+    "CAMBIOS_SIN_GUARDAR_MSG": "Tiene cambios sin guardar en el formulario FR-010. Si continua, perdera la informacion no guardada.",
+    "FECHA_INICIO_PRORROGA_REQUIRED": "No se encontro la fecha inicial de la prorroga.",
+    "FECHA_TERMINACION_PRORROGA_REQUIRED": "Debe ingresar la fecha de terminacion de la prorroga.",
+    "FECHA_TERMINACION_PRORROGA_INVALIDA": "La fecha de terminacion de la prorroga debe ser posterior a la fecha inicial.",
+    "AVALAR_PRORROGA_MSG": "Usted confirma que desea aprobar la prorroga y actualizar la fecha final de la comision."
   },
   "TIPOS_SOLICITUD": {
     "SOL_INI": "Solicitud de Comision",

@@ -68,6 +68,8 @@ interface CambioEstadoPayload {
   }[];
   FechaInicio?: string;
   FechaFinal?: string;
+  FechaFinalAnterior?: string;
+  Formulario?: any;
 }
 
 
@@ -135,9 +137,13 @@ export class DetalleSolicitudComponent implements OnInit {
   /** Datos del formulario FR-010 recuperados del backend (para pasar al componente hijo) */
   formularioRecuperado: any = null;
 
-  // Supervisor: fecha inicio contrato
+  // Decanatura: fecha inicio contrato
   fechaInicioContrato: Date | null = null;
   fechaFinalContrato: Date | null = null;
+
+  // Decanatura: fecha inicio/fin prorroga
+  fechaInicioProrroga: Date | null = null; // fecha_final actual de la comision
+  fechaTerminacionProrroga: Date | null = null; // nueva fecha_final
 
   // Para saber qué documento se está cargando
   documentoEnCarga: DocumentoItem | null = null;
@@ -414,6 +420,13 @@ export class DetalleSolicitudComponent implements OnInit {
       this.tipoSolicitudCodigo = String(tipoSolicitud).trim().toUpperCase();
     }
 
+    if (this.esSolicitudProrroga) {
+      const fechaFinalActualComision = this.extraerFechaFinalComision(data);
+
+      this.fechaInicioProrroga = this.parseDateOnly(fechaFinalActualComision);
+      this.fechaTerminacionProrroga = null;
+    }
+
     this.id = sol.Id || this.id;
     this.radicado = sol.Id ? `SOL-${sol.Id}` : '';
     this.identificacionDocente = sol.TerceroId || this.identificacionDocente;
@@ -483,6 +496,50 @@ export class DetalleSolicitudComponent implements OnInit {
     this.observacionesSubsanacion = this.extraerObservacionesDesdeDetalle(data);
     // --- Documentos ---
     this.poblarDocumentosDesdeDetalle(data);
+  }
+
+  private extraerFechaFinalComision(data: any): string | null {
+    const sol = data?.Solicitud || {};
+
+    const fechaFinal = [
+      data?.Comision?.FechaFinal,
+      data?.Comision?.fecha_final,
+      data?.comision?.FechaFinal,
+      data?.comision?.fecha_final,
+      sol?.ComisionId?.FechaFinal,
+      sol?.ComisionId?.fecha_final,
+      sol?.comision?.FechaFinal,
+      sol?.comision?.fecha_final,
+    ];
+
+    const valor = fechaFinal.find((item) => !!item);
+
+    return valor ? String(valor).slice(0, 10) : null;
+  }
+
+  private parseDateOnly(value: string | null): Date | null {
+    if (!value) return null;
+
+    const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return null;
+
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  }
+
+  private formatDateOnly(value: Date): string {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  get fechasProrrogaValidas(): boolean {
+    if (!this.fechaInicioProrroga || !this.fechaTerminacionProrroga) {
+      return false;
+    }
+
+    return this.fechaTerminacionProrroga.getTime() > this.fechaInicioProrroga.getTime();
   }
 
   private documentoCoincideConTipoSolicitud(code: string | undefined, rolUsuario?: string): boolean {
@@ -789,7 +846,7 @@ export class DetalleSolicitudComponent implements OnInit {
     }
  
     if (this.normalizarRolUsuario(doc.rolUsuario, '') !== 'DOCENTE') {
-      return false;
+      return false;0
     }
 
     if (!this.esSolicitudEnSubsanacion()) {
@@ -1516,7 +1573,7 @@ export class DetalleSolicitudComponent implements OnInit {
     return 'CARG';
   }
 
-  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string,fechaInicio: string = '',fechaFinal: string = ''): CambioEstadoPayload | null {
+  private construirPayloadCambioEstado(nuevoEstado: EstadoSolicitud, observacion: string, fechaInicio: string = '', fechaFinal: string = '', fechaFinalAnterior: string = '',): CambioEstadoPayload | null {
     const documentosRevisor = this.documentos.filter((d) => 
       d.esDocumentoRolActual &&
       d.base64 &&
@@ -1558,10 +1615,26 @@ export class DetalleSolicitudComponent implements OnInit {
       payload.FechaFinal = fechaFinal;
     }
 
+    if (fechaFinalAnterior !== '') {
+      payload.FechaFinalAnterior = fechaFinalAnterior;
+    }
+
+    if (this.esSolicitudProrroga && fechaFinalAnterior !== '') {
+      const formularioBase = this.formularioRecuperado || {};
+
+      payload.Formulario = {
+        ...formularioBase,
+        solicitud: {
+          ...(formularioBase.solicitud || {}),
+          fecha_finalizacion_anterior_comision: fechaFinalAnterior,
+        },
+      };
+    }
+
     return payload;
   }
 
-  private ejecutarCambioEstado(accion: AccionEstado, observacion: string, mensajeExito: string,fechaInicio:string = '', fechaFinal:string=''): void {
+  private ejecutarCambioEstado(accion: AccionEstado, observacion: string, mensajeExito: string, fechaInicio: string = '', fechaFinal: string ='', fechaFinalAnterior: string = '',): void {
     const nuevoEstado = this.resolverNuevoEstado(accion);
     if (!nuevoEstado) return;
 
@@ -1575,20 +1648,13 @@ export class DetalleSolicitudComponent implements OnInit {
         return;
       }
 
-      let payload: CambioEstadoPayload | null;
-      if (fechaInicio !== '' && fechaFinal !== '') {
-        payload = this.construirPayloadCambioEstado(
-          nuevoEstado,
-          observacion,
-          fechaInicio,
-          fechaFinal
-        );
-      } else {
-        payload = this.construirPayloadCambioEstado(
-          nuevoEstado,
-          observacion
-        );
-      }
+      const payload = this.construirPayloadCambioEstado(
+        nuevoEstado,
+        observacion,
+        fechaInicio,
+        fechaFinal,
+        fechaFinalAnterior,
+      );
 
       if (!payload) {
         this.cambiandoEstado = false;
@@ -2112,14 +2178,40 @@ export class DetalleSolicitudComponent implements OnInit {
       return;
     }
 
+    if (!this.fechaInicioProrroga) {
+      this.popup.alertError(this.translate.instant('POPUPS.FECHA_INICIO_PRORROGA_REQUIRED'));
+      return;
+    }
+
+    if (!this.fechaTerminacionProrroga) {
+      this.popup.alertError(this.translate.instant('POPUPS.FECHA_TERMINACION_PRORROGA_REQUIRED'));
+      return;
+    }
+
+    if (!this.fechasProrrogaValidas) {
+      this.popup.alertError(this.translate.instant('POPUPS.FECHA_TERMINACION_PRORROGA_INVALIDA'));
+      return;
+    }
+
     this.popup.confirm(
-      this.translate.instant('POPUPS.AVALAR_MSG'),
+      this.translate.instant('POPUPS.AVALAR_PRORROGA_MSG'),
       this.translate.instant('ACTIONS.APROBAR'),
       this.translate.instant('ACTIONS.CANCELAR'),
     ).then((result) => {
       if (result.isConfirmed) {
+        const fechaFinalAnteriorStr = this.formatDateOnly(this.fechaInicioProrroga!);
+        const fechaFinalNuevaStr = this.formatDateOnly(this.fechaTerminacionProrroga!);
+
         this.accionRevisionEnProceso = 'DAR_INICIO';
-        this.ejecutarCambioEstado('DAR_INICIO', this.observacionRevision?.trim(), 'POPUPS.SOLICITUD_AVALADA_OK');
+
+        this.ejecutarCambioEstado(
+          'DAR_INICIO',
+          this.observacionRevision?.trim(),
+          'POPUPS.SOLICITUD_AVALADA_OK',
+          '',
+          fechaFinalNuevaStr,
+          fechaFinalAnteriorStr,
+        );
       }
     });
   }

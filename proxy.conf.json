@@ -1,0 +1,11 @@
+{
+  "/notificacion_mid_proxy": {
+    "target": "https://autenticacion.portaloas.udistrital.edu.co",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/notificacion_mid_proxy": "/apioas/notificacion_mid"
+    },
+    "logLevel": "debug"
+  }
+}

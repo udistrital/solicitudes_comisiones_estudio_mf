@@ -10,10 +10,12 @@ import { ColumnDef, TableAction } from '../../../shared/dynamic-table/dynamic-ta
 import { BandejaActionKey, ROLE_TABLE_CONFIGS } from './bandeja.table-config';
 import { PopUpManager } from '../../../managers/popup.manager';
 import { SolicitudesService } from '../../../services/solicitudes.service';
-import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
+import { getDocumento, getCorreoSesion, getRolesUsuario } from '../../../utils/auth.util';
 import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
 import { PermisosUtils } from '../../../utils/role-permissions';
 import { AvisoCreacionComponent } from '../components/aviso-creacion/aviso-creacion.component';
+import { NotificacionesService } from '../../../services/notificaciones.service';
+import { DocenteInfoService } from '../../../services/docente-info.service';
 
 /** Roles que ya tienen endpoint de bandeja */
 const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'SECRETARIA_ACADEMICA', 'SECRETARIA_GENERAL', 'DECANO'];
@@ -43,6 +45,8 @@ export class BandejaComponent implements OnInit {
     private readonly translate: TranslateService,
     private readonly solicitudesService: SolicitudesService,
     private readonly permisosUtils: PermisosUtils,
+    private readonly notificaciones: NotificacionesService,
+    private readonly docenteInfoService: DocenteInfoService,
   ) {}
 
   ngOnInit(): void {
@@ -550,6 +554,8 @@ export class BandejaComponent implements OnInit {
             return;
           }
 
+          this.enviarNotificacionCreacion(String(cedula), nuevaId);
+
           this.router.navigate(['/solicitudes', nuevaId], {
             queryParams: { mode: 'EDITAR' },
           });
@@ -610,5 +616,38 @@ export class BandejaComponent implements OnInit {
       return;
     }
 
+  }
+
+  private enviarNotificacionCreacion(cedula: string, solicitudId: number): void {
+    const emailDocente = getCorreoSesion() ?? '';
+    const role = this.selectedRole ?? 'DOCENTE';
+
+    this.docenteInfoService.consultarDocentePlanta(cedula).subscribe({
+      next: (info) => {
+        const nombre = [info?.nombres, info?.apellidos].filter(Boolean).join(' ') || emailDocente;
+        const data = {
+          nombre_docente: nombre,
+          id_solicitud: String(solicitudId),
+          tipo_solicitud: this.notificaciones.tipoSolicitudLabel('SOL_INI'),
+          instancia: this.notificaciones.instanciaLabel(role),
+          observaciones: '',
+          url_sistema: this.notificaciones.urlDocente(solicitudId),
+          fecha: this.notificaciones.fechaActual(),
+        };
+        this.notificaciones.notificarSolicitudCreada(emailDocente, data);
+      },
+      error: () => {
+        const data = {
+          nombre_docente: emailDocente,
+          id_solicitud: String(solicitudId),
+          tipo_solicitud: this.notificaciones.tipoSolicitudLabel('SOL_INI'),
+          instancia: this.notificaciones.instanciaLabel(role),
+          observaciones: '',
+          url_sistema: this.notificaciones.urlDocente(solicitudId),
+          fecha: this.notificaciones.fechaActual(),
+        };
+        this.notificaciones.notificarSolicitudCreada(emailDocente, data);
+      },
+    });
   }
 }

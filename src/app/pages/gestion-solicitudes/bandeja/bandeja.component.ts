@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { catchError, forkJoin, of } from 'rxjs';
 
@@ -12,6 +13,7 @@ import { SolicitudesService } from '../../../services/solicitudes.service';
 import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
 import { PermisosUtils } from '../../../utils/role-permissions';
+import { AvisoCreacionComponent } from '../components/aviso-creacion/aviso-creacion.component';
 
 /** Roles que ya tienen endpoint de bandeja */
 const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'SECRETARIA_ACADEMICA', 'SECRETARIA_GENERAL', 'DECANO'];
@@ -36,6 +38,7 @@ export class BandejaComponent implements OnInit {
 
   constructor(
     private readonly router: Router,
+    private readonly dialog: MatDialog,
     private readonly popup: PopUpManager,
     private readonly translate: TranslateService,
     private readonly solicitudesService: SolicitudesService,
@@ -514,39 +517,48 @@ export class BandejaComponent implements OnInit {
       return;
     }
 
-    this.cargando = true;
+    const dialogRef = this.dialog.open(AvisoCreacionComponent, {
+      width: '600px',
+      disableClose: true,
+    });
 
-    const payload = {
-      identificacion: Number(cedula),
-      cod_abreviacion_tipo_solicitud: 'SOL_INI',
-      observacion: '',
-      cod_abreviacion_rol: 'DOCENTE',
-      documento_solicitud: [],
-    };
+    dialogRef.afterClosed().subscribe((aceptado: boolean) => {
+      if (!aceptado) return;
 
-    this.solicitudesService.crearSolicitud(payload).subscribe({
-      next: (resp: any) => {
-        this.cargando = false;
+      this.cargando = true;
 
-        const nuevaId =
-          resp?.Data?.Id ||
-          resp?.Data?.id ||
-          resp?.Data?.Solicitud?.Id ||
-          resp?.Data?.solicitud?.Id;
+      const payload = {
+        identificacion: Number(cedula),
+        cod_abreviacion_tipo_solicitud: 'SOL_INI',
+        observacion: '',
+        cod_abreviacion_rol: 'DOCENTE',
+        documento_solicitud: [],
+      };
 
-        if (!nuevaId) {
-          this.popup.error('La solicitud se creó, pero no fue posible obtener el ID.');
-          return;
-        }
+      this.solicitudesService.crearSolicitud(payload).subscribe({
+        next: (resp: any) => {
+          this.cargando = false;
 
-        this.router.navigate(['/solicitudes', nuevaId], {
-          queryParams: { mode: 'EDITAR' },
-        });
-      },
-      error: () => {
-        this.cargando = false;
-        this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
-      },
+          const nuevaId =
+            resp?.Data?.Id ||
+            resp?.Data?.id ||
+            resp?.Data?.Solicitud?.Id ||
+            resp?.Data?.solicitud?.Id;
+
+          if (!nuevaId) {
+            this.popup.error('La solicitud se creó, pero no fue posible obtener el ID.');
+            return;
+          }
+
+          this.router.navigate(['/solicitudes', nuevaId], {
+            queryParams: { mode: 'EDITAR' },
+          });
+        },
+        error: () => {
+          this.cargando = false;
+          this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
+        },
+      });
     });
   }
 

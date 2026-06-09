@@ -13,6 +13,7 @@ import { EmptyRouteComponent } from './empty-route/empty-route.component';
 import { BandejaComponent } from './pages/gestion-solicitudes/bandeja/bandeja.component';
 import { DetalleSolicitudComponent } from './pages/gestion-solicitudes/detalle-solicitud/detalle-solicitud.component';
 import { VisorDocumentosComponent } from './pages/gestion-solicitudes/components/visor-documentos/visor-documentos.component';
+import { AvisoCreacionComponent } from './pages/gestion-solicitudes/components/aviso-creacion/aviso-creacion.component';
 
 import { DynamicTableComponent } from './shared/dynamic-table/dynamic-table.component';
 import { Fr010FormComponent } from './pages/gestion-solicitudes/components/fr010-form/fr010-form.component';
@@ -97,6 +98,7 @@ registerLocaleData(localeEs);
     BandejaComponent,
     DetalleSolicitudComponent,
     VisorDocumentosComponent,
+    AvisoCreacionComponent,
     DynamicTableComponent,
     Fr010FormComponent,
   ],

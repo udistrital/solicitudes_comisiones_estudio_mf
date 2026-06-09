@@ -370,6 +370,13 @@
     "SOL_INI": "Solicitud de Comision",
     "SOL_PRORROGA": "Solicitud de prorroga"
   },
+  "AVISO_CREACION": {
+    "TITLE": "Normativa del proceso",
+    "CUERPO": "Docente, a continuación encontrará la normativa relacionada con el proceso de Comisiones de Estudio para formación posgradual de alto nivel. Se recomienda consultarla antes de iniciar o gestionar su solicitud, con el fin de actualizar o reforzar el conocimiento sobre los requisitos, condiciones y lineamientos aplicables. Para revisar la norma de su interés, seleccione el enlace correspondiente.",
+    "NORMATIVA_TITLE": "Normativa vigente para comisiones de estudio:",
+    "CHECKBOX": "He leido y entiendo la informacion anterior, y acepto los terminos establecidos en la normativa.",
+    "BTN_CONTINUAR": "Continuar"
+  },
   "LANG": {
     "ES": "Espaniol",
     "EN": "English"

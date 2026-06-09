@@ -370,6 +370,13 @@
     "SOL_INI": "Commission request",
     "SOL_PRORROGA": "Extension request"
   },
+  "AVISO_CREACION": {
+    "TITLE": "Process regulations",
+    "CUERPO": "Professor, below you will find the regulations related to the Study Commissions process for high-level postgraduate training. It is recommended to review them before starting or managing your request, in order to update or reinforce your knowledge of the applicable requirements, conditions, and guidelines. To review the regulation of your interest, select the corresponding link.",
+    "NORMATIVA_TITLE": "Applicable regulations for study commissions:",
+    "CHECKBOX": "I have read and understand the above information, and I accept the terms established in the regulations.",
+    "BTN_CONTINUAR": "Continue"
+  },
   "LANG": {
     "ES": "Espaniol",
     "EN": "English"

@@ -5,7 +5,6 @@
   "BANDEJA": {
     "SUBTITLE": "Solicitudes de comision de estudio asignadas a su rol.",
     "TITLE_DOCENTE": "Mis solicitudes",
-    "TITLE_COORDINADOR": "Solicitudes pendientes - Coordinacion de proyecto curricular",
     "TITLE_SECRETARIA_ACADEMICA": "Solicitudes pendientes - Secretaria Academica",
     "TITLE_SECRETARIA_GENERAL": "Solicitudes pendientes - Secretaria General",
     "TITLE_DECANO": "Solicitudes pendientes - Decanatura",
@@ -19,7 +18,6 @@
   },
   "ROLES": {
     "DOCENTE": "Docente",
-    "COORDINADOR": "Coordinacion de proyecto curricular",
     "SECRETARIA_ACADEMICA": "Secretaria Academica",
     "SECRETARIA_GENERAL": "Secretaria General",
     "DECANO": "Decanatura"
@@ -133,14 +131,12 @@
   "ESTADOS": {
     "NO_ENV": "No enviada",
     "RAD": "Radicada",
-    "REV_PROY": "En gestion de proyecto curricular",
     "REV_SEC_ACAD": "En gestion de secretaria academica",
     "REV_SEC_GRAL": "En gestion de secretaria general",
     "REV_DEC": "En revision por decanatura",
     "CORR": "Por corregir",
     "NO_APROB": "No aprobada",
     "APROB_EJEC": "Aprobada",
-    "SUBS_PROY": "Subsanacion por proyecto curricular",
     "SUBS_SEC_ACAD": "Subsanacion por secretaria academica",
     "SUBS_SEC_GRAL": "Subsanacion por secretaria general",
     "SUBS_DEC": "Subsanacion por decanatura"
@@ -153,15 +149,12 @@
     "CORR": "Por corregir",
     "SUBS": "Subsanado",
     "ANUL": "Anulado",
-    "ENV_REV_PROY": "Enviado revision proyecto curricular",
     "ENV_REV_SEC_ACAD": "Enviado revision secretaria academica",
     "ENV_REV_SEC_GRAL": "Enviado revision secretaria general",
     "ENV_REV_DEC": "Enviado revision decanatura",
-    "APROB_PROY": "Aprobado por proyecto curricular",
     "APROB_SEC_ACAD": "Aprobado por secretaria academica",
     "APROB_SEC_GRAL": "Aprobado por secretaria general",
     "APROB_DEC": "Aprobado por decanatura",
-    "SUBS_PROY": "Subsanacion por proyecto curricular",
     "SUBS_SEC_ACAD": "Subsanacion por secretaria academica",
     "SUBS_SEC_GRAL": "Subsanacion por secretaria general",
     "SUBS_DEC": "Subsanacion por decanatura"

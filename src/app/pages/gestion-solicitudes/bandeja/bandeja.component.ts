@@ -480,9 +480,11 @@ export class BandejaComponent implements OnInit {
   private nombreTipoSolicitud(codigo: string): string {
     switch (String(codigo || '').trim().toUpperCase()) {
       case 'SOL_INI':
-        return 'Solicitud de Comision';
+        return 'Solicitud de comision';
       case 'SOL_PRORROGA':
         return 'Solicitud de prorroga';
+      case 'SOL_CIERRE':
+        return 'Solicitud de cierre';
       default:
         return codigo || '';
     }

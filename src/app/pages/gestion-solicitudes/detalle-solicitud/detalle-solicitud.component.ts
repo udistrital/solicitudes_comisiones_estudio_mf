@@ -195,6 +195,9 @@ export class DetalleSolicitudComponent implements OnInit {
 
   fr010Json: any = null;
 
+  // Cierre
+  esSolicitudCierre = false;
+
   private documentosDesactivarIds: number[] = [];
   private detalleSolicitudActual: any = null;
 
@@ -418,6 +421,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
     if (tipoSolicitud) {
       this.tipoSolicitudCodigo = String(tipoSolicitud).trim().toUpperCase();
+      this.esSolicitudCierre = this.tipoSolicitudCodigo === 'SOL_CIERRE';
     }
 
     if (this.esSolicitudProrroga) {
@@ -2384,5 +2388,22 @@ export class DetalleSolicitudComponent implements OnInit {
         this.navegarABandeja();
       }
     });
+  }
+
+  revisarComision(): void {
+
+    const idComision =
+      this.detalleSolicitudActual?.Solicitud?.ComisionId;
+
+    if (!idComision) {
+      this.popup.alertError(
+        'No se encontró la comisión asociada a esta solicitud.'
+      );
+      return;
+    }
+
+    const url = `/seguimiento-comisiones/seguimiento/16`;
+
+    window.open(url, '_blank');
   }
 }

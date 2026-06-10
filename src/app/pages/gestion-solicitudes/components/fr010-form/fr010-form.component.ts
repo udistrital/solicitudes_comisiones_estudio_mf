@@ -135,7 +135,7 @@ export class Fr010FormComponent implements OnInit {
           ],
           q19_fecha_aceptacion: [null, [Validators.required, this.dateValueValidator()]],
           q20_num_semestres: ['', [Validators.required, this.integerRangeValidator(1, 4)]],
-          q22_tipo_apoyo_requerido: [null, [Validators.required]],
+          q22_tipo_apoyo_requerido: ['', [Validators.required]],
           q23_fecha_inicio_estudios: [null, [Validators.required, this.dateValueValidator()]],
           q24_fecha_culminacion_estudios: [null, [Validators.required, this.dateValueValidator()]],
           q25_tiempo_requerido_culminacion: [
@@ -698,7 +698,7 @@ export class Fr010FormComponent implements OnInit {
         ...raw.solicitud,
         q13_tipo_estudio: raw.solicitud.q13_tipo_estudio || '',
         q19_fecha_aceptacion: this.formatDate(raw.solicitud.q19_fecha_aceptacion),
-        q22_tipo_apoyo_requerido: raw.solicitud.q22_tipo_apoyo_requerido || [],
+        q22_tipo_apoyo_requerido: raw.solicitud.q22_tipo_apoyo_requerido || '',
         q23_fecha_inicio_estudios: this.formatDate(raw.solicitud.q23_fecha_inicio_estudios),
         q24_fecha_culminacion_estudios: this.formatDate(raw.solicitud.q24_fecha_culminacion_estudios),
       },

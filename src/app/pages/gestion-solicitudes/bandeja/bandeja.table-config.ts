@@ -39,10 +39,6 @@ export const ROLE_TABLE_CONFIGS: Record<Role, { title: string; columns: ColumnDe
     title: 'BANDEJA.TITLE_DOCENTE',
     columns: [COL_ID, COL_FECHA, COL_TIPO_SOLICITUD, COL_ESTADO],
   },
-  COORDINADOR: {
-    title: 'BANDEJA.TITLE_COORDINADOR',
-    columns: COLUMNS_REVIEWER,
-  },
   SECRETARIA_ACADEMICA: {
     title: 'BANDEJA.TITLE_SECRETARIA_ACADEMICA',
     columns: COLUMNS_REVIEWER,

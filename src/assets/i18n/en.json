@@ -5,7 +5,6 @@
   "BANDEJA": {
     "SUBTITLE": "Study commission requests assigned to your role.",
     "TITLE_DOCENTE": "My requests",
-    "TITLE_COORDINADOR": "Pending requests - Curricular project coordination",
     "TITLE_SECRETARIA_ACADEMICA": "Pending requests - Academic Secretary",
     "TITLE_SECRETARIA_GENERAL": "Pending requests - General Secretary",
     "TITLE_DECANO": "Pending requests - Dean's Office",
@@ -19,7 +18,6 @@
   },
   "ROLES": {
     "DOCENTE": "Professor",
-    "COORDINADOR": "Curricular project coordination",
     "SECRETARIA_ACADEMICA": "Academic Secretary",
     "SECRETARIA_GENERAL": "General Secretary",
     "DECANO": "Dean's Office"
@@ -133,14 +131,12 @@
   "ESTADOS": {
     "NO_ENV": "Not submitted",
     "RAD": "Filed",
-    "REV_PROY": "Under curricular project review",
     "REV_SEC_ACAD": "Under academic secretary review",
     "REV_SEC_GRAL": "Under general secretary review",
     "REV_DEC": "Under dean review",
     "CORR": "Pending correction",
     "NO_APROB": "Not approved",
     "APROB_EJEC": "Approved",
-    "SUBS_PROY": "Correction by curricular project",
     "SUBS_SEC_ACAD": "Correction by academic secretary",
     "SUBS_SEC_GRAL": "Correction by general secretary",
     "SUBS_DEC": "Correction by dean"
@@ -153,15 +149,12 @@
     "CORR": "Pending correction",
     "SUBS": "Corrected",
     "ANUL": "Voided",
-    "ENV_REV_PROY": "Sent for curricular project review",
     "ENV_REV_SEC_ACAD": "Sent for academic secretary review",
     "ENV_REV_SEC_GRAL": "Sent for general secretary review",
     "ENV_REV_DEC": "Sent for dean review",
-    "APROB_PROY": "Approved by curricular project",
     "APROB_SEC_ACAD": "Approved by academic secretary",
     "APROB_SEC_GRAL": "Approved by general secretary",
     "APROB_DEC": "Approved by dean",
-    "SUBS_PROY": "Correction requested by curricular project",
     "SUBS_SEC_ACAD": "Correction requested by academic secretary",
     "SUBS_SEC_GRAL": "Correction requested by general secretary",
     "SUBS_DEC": "Correction requested by dean"

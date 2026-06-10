@@ -16,7 +16,7 @@ import { PermisosUtils } from '../../../utils/role-permissions';
 import { AvisoCreacionComponent } from '../components/aviso-creacion/aviso-creacion.component';
 
 /** Roles que ya tienen endpoint de bandeja */
-const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'SECRETARIA_ACADEMICA', 'SECRETARIA_GENERAL', 'DECANO'];
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'SECRETARIA_ACADEMICA', 'SECRETARIA_GENERAL', 'DECANO'];
 
 @Component({
     selector: 'app-bandeja',
@@ -87,7 +87,7 @@ export class BandejaComponent implements OnInit {
   get actions(): TableAction<SolicitudRow>[] {
     if (this.selectedRole === 'DOCENTE') {
       const editable = (row: SolicitudRow) =>
-        ['NO_ENV', 'CORR', 'REV_PROY', 'REV_SEC_ACAD', 'SUBS_PROY', 'SUBS_SEC_ACAD', 'SUBS_SEC_GRAL'].includes(row.estado);
+        ['NO_ENV', 'CORR', 'REV_SEC_ACAD', 'SUBS_SEC_ACAD', 'SUBS_SEC_GRAL'].includes(row.estado);
 
       return [
         {
@@ -162,14 +162,6 @@ export class BandejaComponent implements OnInit {
           error: () => this.onErrorCarga(),
         });
         break;
-
-      case 'COORDINADOR':
-        this.solicitudesService.listarPendientesCoordinador(cedula).subscribe({
-          next: (resp) => this.procesarRespuestaRevisor(resp),
-          error: () => this.onErrorCarga(),
-        });
-        break;
-
       case 'SECRETARIA_ACADEMICA':
         this.solicitudesService.listarPendientesSecretaria(cedula).subscribe({
           next: (resp) => this.procesarRespuestaRevisor(resp),

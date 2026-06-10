@@ -236,7 +236,7 @@
     <ng-container *ngIf="isDocenteReadOnly && !cargandoDetalle">
 
       <!-- Tabla de documentos (solo lectura, sin eliminar) -->
-      <mat-card class="p-3 rounded-xl border border-black/10 bg-white mb-3">
+      <mat-card *ngIf="!esSolicitudCierre" class="p-3 rounded-xl border border-black/10 bg-white mb-3">
         <div class="rounded-xl border-2 border-sga overflow-hidden bg-white">
           <div class="h-2.5 bg-gradient-to-r from-sga to-sga/60" aria-hidden="true"></div>
 
@@ -351,7 +351,7 @@
         (change)="onReviewerFileSelected($event)"
       />
       <!-- Tabla documentos (Revisor) -->
-      <mat-card class="p-3 rounded-xl border border-black/10 bg-white mb-3">
+      <mat-card *ngIf="!esSolicitudCierre" class="p-3 rounded-xl border border-black/10 bg-white mb-3">
         <div class="rounded-xl border-2 border-sga overflow-hidden bg-white">
           <div class="h-2.5 bg-gradient-to-r from-sga to-sga/60" aria-hidden="true"></div>
 
@@ -503,7 +503,7 @@
       <!-- ============================
           PANEL SUPERVISOR / DECANATURA
       ================================ -->
-      <mat-card *ngIf="isSupervisor && !esSolicitudProrroga" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
+      <mat-card *ngIf="isSupervisor && !esSolicitudProrroga && !esSolicitudCierre" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
 
         <!-- Tarjeta interna -->
         <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
@@ -729,6 +729,75 @@
         </section>
       </mat-card>
 
+      <mat-card
+        *ngIf="isSupervisor && esSolicitudCierre"
+        class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
+
+        <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+
+          <header
+            class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+
+            <div class="font-semibold text-sm">
+              Gestión de solicitud de cierre
+            </div>
+
+            <div class="text-xs text-black/50">
+              Revise la comisión y tome una decisión sobre la solicitud
+            </div>
+
+          </header>
+
+          <div class="px-4 pt-4 pb-3">
+
+            <!-- Acción principal -->
+            <div class="flex justify-center">
+              <button
+                mat-flat-button
+                color="primary"
+                class="h-10 px-6 rounded-lg"
+                (click)="revisarComision()">
+
+                <mat-icon>fact_check</mat-icon>
+                Revisar comisión
+
+              </button>
+            </div>
+
+            <!-- Separador -->
+            <div class="my-5 border-t border-black/10"></div>
+
+            <!-- Acciones finales -->
+            <div class="flex flex-wrap justify-center gap-3">
+
+              <button
+                mat-stroked-button
+                class="h-10 px-5 rounded-lg border-red-300 text-red-600"
+                (click)="rechazarCierreSolicitud()">
+
+                <mat-icon>close</mat-icon>
+                Rechazar solicitud
+
+              </button>
+
+              <button
+                mat-flat-button
+                color="primary"
+                class="h-10 px-5 rounded-lg"
+                (click)="aprobarCierreSolicitud()">
+
+                <mat-icon>check_circle</mat-icon>
+                Aprobar solicitud
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </mat-card>
       <mat-card *ngIf="!isSupervisor" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
         <div class="flex flex-wrap items-center justify-end gap-2">
           <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"

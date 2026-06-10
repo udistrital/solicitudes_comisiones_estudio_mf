@@ -88,5 +88,31 @@ export class SolicitudesService {
   obtenerDocumentoPorEnlace(enlace: string) {
     return this.apiGestorDocMid.get<any>(`v1/document/${encodeURIComponent(enlace)}`);
   }
-  
+
+  // ========== Solicitud de cierre ==========
+  aprobarCierre(payload: {
+    SolicitudId: number;
+    ComisionId: number;
+    Observacion: string;
+    TerceroId: number;
+    RolUsuario: string;
+  }) {
+    return this.apiMid.post(
+      `v1/comision/aprobar_cierre`,
+      payload
+    );
+  }
+
+  rechazarCierre(payload: {
+    SolicitudId: number;
+    Observacion: string;
+    TerceroId: number;
+    RolUsuario: string;
+  }) {
+    return this.apiMid.post(
+      `v1/comision/rechazar_cierre`,
+      payload
+    );
+  }
+
 }

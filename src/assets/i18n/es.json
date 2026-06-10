@@ -5,7 +5,6 @@
   "BANDEJA": {
     "SUBTITLE": "Solicitudes de comision de estudio asignadas a su rol.",
     "TITLE_DOCENTE": "Mis solicitudes",
-    "TITLE_COORDINADOR": "Solicitudes pendientes - Coordinacion de proyecto curricular",
     "TITLE_SECRETARIA_ACADEMICA": "Solicitudes pendientes - Secretaria Academica",
     "TITLE_SECRETARIA_GENERAL": "Solicitudes pendientes - Secretaria General",
     "TITLE_DECANO": "Solicitudes pendientes - Decanatura",
@@ -19,7 +18,6 @@
   },
   "ROLES": {
     "DOCENTE": "Docente",
-    "COORDINADOR": "Coordinacion de proyecto curricular",
     "SECRETARIA_ACADEMICA": "Secretaria Academica",
     "SECRETARIA_GENERAL": "Secretaria General",
     "DECANO": "Decanatura"
@@ -39,7 +37,8 @@
     "ELIMINAR": "Eliminar",
     "OK": "OK",
     "FILTER_PLACEHOLDER": "Buscar...",
-    "ADJUNTAR": "Adjuntar"
+    "ADJUNTAR": "Adjuntar",
+    "TIPO_SOLICITUD": "Tipo solicitud"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "Filas por pagina:",
@@ -65,7 +64,8 @@
     "ADJUNTAR_DOCS": "Adjuntar documentos",
     "GUARDAR_FORM": "Guardar formulario",
     "CREAR_SOLICITUD": "Crear solicitud",
-    "SALIR": "Salir"
+    "SALIR": "Salir",
+    "APROBAR": "Aprobar"
   },
   "TOOLTIPS": {
     "VER_SOLICITUD": "Ver solicitud",
@@ -123,19 +123,20 @@
     "FECHA_FINAL_CONTRATO": "Fecha final contrato",
     "FECHA_FIN_PRORROGA": "Fecha fin prorroga",
     "SELECCIONA_FECHA_INICIO": "Fecha inicio",
-    "SELECCIONA_FECHA_FINAL": "Fecha final"
+    "SELECCIONA_FECHA_FINAL": "Fecha final",
+    "TITLE_PRORROGA": "Aprobacion de prorroga",
+    "FECHA_INICIO_PRORROGA": "Fecha inicial de la prorroga",
+    "FECHA_TERMINACION_PRORROGA": "Fecha de terminacion de la prorroga"
   },
   "ESTADOS": {
     "NO_ENV": "No enviada",
     "RAD": "Radicada",
-    "REV_PROY": "En gestion de proyecto curricular",
     "REV_SEC_ACAD": "En gestion de secretaria academica",
     "REV_SEC_GRAL": "En gestion de secretaria general",
     "REV_DEC": "En revision por decanatura",
     "CORR": "Por corregir",
     "NO_APROB": "No aprobada",
     "APROB_EJEC": "Aprobada",
-    "SUBS_PROY": "Subsanacion por proyecto curricular",
     "SUBS_SEC_ACAD": "Subsanacion por secretaria academica",
     "SUBS_SEC_GRAL": "Subsanacion por secretaria general",
     "SUBS_DEC": "Subsanacion por decanatura"
@@ -148,15 +149,12 @@
     "CORR": "Por corregir",
     "SUBS": "Subsanado",
     "ANUL": "Anulado",
-    "ENV_REV_PROY": "Enviado revision proyecto curricular",
     "ENV_REV_SEC_ACAD": "Enviado revision secretaria academica",
     "ENV_REV_SEC_GRAL": "Enviado revision secretaria general",
     "ENV_REV_DEC": "Enviado revision decanatura",
-    "APROB_PROY": "Aprobado por proyecto curricular",
     "APROB_SEC_ACAD": "Aprobado por secretaria academica",
     "APROB_SEC_GRAL": "Aprobado por secretaria general",
     "APROB_DEC": "Aprobado por decanatura",
-    "SUBS_PROY": "Subsanacion por proyecto curricular",
     "SUBS_SEC_ACAD": "Subsanacion por secretaria academica",
     "SUBS_SEC_GRAL": "Subsanacion por secretaria general",
     "SUBS_DEC": "Subsanacion por decanatura"
@@ -355,8 +353,22 @@
     "SOLICITUD_AVALADA_OK": "Solicitud avalada y enviada exitosamente.",
     "INICIO_REGISTRADO_OK": "Inicio de comision registrado exitosamente.",
     "DOC_YA_CARGADO": "Ya existe un documento adjunto para {{nombre}}. Si desea reemplazarlo, primero eliminelo.",
-    "CAMBIOS_SIN_GUARDAR_MSG": "Tiene cambios sin guardar en el formulario FR-010. Si continua, perdera la informacion no guardada."
-
+    "CAMBIOS_SIN_GUARDAR_MSG": "Tiene cambios sin guardar en el formulario FR-010. Si continua, perdera la informacion no guardada.",
+    "FECHA_INICIO_PRORROGA_REQUIRED": "No se encontro la fecha inicial de la prorroga.",
+    "FECHA_TERMINACION_PRORROGA_REQUIRED": "Debe ingresar la fecha de terminacion de la prorroga.",
+    "FECHA_TERMINACION_PRORROGA_INVALIDA": "La fecha de terminacion de la prorroga debe ser posterior a la fecha inicial.",
+    "AVALAR_PRORROGA_MSG": "Usted confirma que desea aprobar la prorroga y actualizar la fecha final de la comision."
+  },
+  "TIPOS_SOLICITUD": {
+    "SOL_INI": "Solicitud de Comision",
+    "SOL_PRORROGA": "Solicitud de prorroga"
+  },
+  "AVISO_CREACION": {
+    "TITLE": "Normativa del proceso",
+    "CUERPO": "Docente, a continuación encontrará la normativa relacionada con el proceso de Comisiones de Estudio para formación posgradual de alto nivel. Se recomienda consultarla antes de iniciar o gestionar su solicitud, con el fin de actualizar o reforzar el conocimiento sobre los requisitos, condiciones y lineamientos aplicables. Para revisar la norma de su interés, seleccione el enlace correspondiente.",
+    "NORMATIVA_TITLE": "Normativa vigente para comisiones de estudio:",
+    "CHECKBOX": "He leido y entiendo la informacion anterior, y acepto los terminos establecidos en la normativa.",
+    "BTN_CONTINUAR": "Continuar"
   },
   "LANG": {
     "ES": "Espaniol",

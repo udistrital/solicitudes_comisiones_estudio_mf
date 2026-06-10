@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 
 import { Role, resolverRolEfectivo } from '../../../models/roles.model';
 import { SolicitudRow } from '../../../models/solicitud.model';
@@ -12,9 +13,10 @@ import { SolicitudesService } from '../../../services/solicitudes.service';
 import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 import { mapEstadoNombreACodigo } from '../../../utils/estado-solicitud.util';
 import { PermisosUtils } from '../../../utils/role-permissions';
+import { AvisoCreacionComponent } from '../components/aviso-creacion/aviso-creacion.component';
 
 /** Roles que ya tienen endpoint de bandeja */
-const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'SECRETARIA_ACADEMICA', 'SECRETARIA_GENERAL', 'DECANO'];
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'SECRETARIA_ACADEMICA', 'SECRETARIA_GENERAL', 'DECANO'];
 
 @Component({
     selector: 'app-bandeja',
@@ -36,6 +38,7 @@ export class BandejaComponent implements OnInit {
 
   constructor(
     private readonly router: Router,
+    private readonly dialog: MatDialog,
     private readonly popup: PopUpManager,
     private readonly translate: TranslateService,
     private readonly solicitudesService: SolicitudesService,
@@ -57,12 +60,10 @@ export class BandejaComponent implements OnInit {
       this.cargarSolicitudes();
     }
 
-    // Permisos: en paralelo, solo controlan visibilidad de botones
-    forkJoin(
-      this.opcionesPermisos.map(op => this.permisosUtils.tienePermiso(this.roles, op))
-    ).subscribe({
-      next: (results) => {
-        this.opcionesPermisos.forEach((op, i) => { this.permisos[op] = results[i]; });
+    // Permisos: una sola consulta bulk, solo controlan visibilidad de botones
+    this.permisosUtils.obtenerPermisos(this.roles, this.opcionesPermisos).subscribe({
+      next: (permisos) => {
+        this.permisos = permisos;
         this.permisosListos = true;
       },
       error: () => {
@@ -86,7 +87,7 @@ export class BandejaComponent implements OnInit {
   get actions(): TableAction<SolicitudRow>[] {
     if (this.selectedRole === 'DOCENTE') {
       const editable = (row: SolicitudRow) =>
-        ['NO_ENV', 'CORR', 'REV_PROY', 'REV_SEC_ACAD', 'SUBS_PROY', 'SUBS_SEC_ACAD', 'SUBS_SEC_GRAL'].includes(row.estado);
+        ['NO_ENV', 'CORR', 'REV_SEC_ACAD', 'SUBS_SEC_ACAD', 'SUBS_SEC_GRAL'].includes(row.estado);
 
       return [
         {
@@ -161,14 +162,6 @@ export class BandejaComponent implements OnInit {
           error: () => this.onErrorCarga(),
         });
         break;
-
-      case 'COORDINADOR':
-        this.solicitudesService.listarPendientesCoordinador(cedula).subscribe({
-          next: (resp) => this.procesarRespuestaRevisor(resp),
-          error: () => this.onErrorCarga(),
-        });
-        break;
-
       case 'SECRETARIA_ACADEMICA':
         this.solicitudesService.listarPendientesSecretaria(cedula).subscribe({
           next: (resp) => this.procesarRespuestaRevisor(resp),
@@ -194,7 +187,7 @@ export class BandejaComponent implements OnInit {
       return (solicitudId !== null && idsActivos.has(solicitudId)) || comisionId !== null;
     });
 
-    this.rows = data.reduce((acc: SolicitudRow[], item: any) => {
+    const filasBase = data.reduce((acc: SolicitudRow[], item: any) => {
       const solicitudId = this.extraerSolicitudIdDocente(item);
       if (solicitudId === null) {
         return acc;
@@ -212,29 +205,108 @@ export class BandejaComponent implements OnInit {
         proyecto: item.programa || item.proyecto || '',
         estado: estadoCodigo,
         fecha: this.formatFecha(item.fecha_creacion),
+        tipoSolicitudCodigo: '',
+        tipoSolicitudNombre: '',
       });
 
       return acc;
     }, []);
 
-    this.cargando = false;
+    if (filasBase.length === 0) {
+      this.rows = [];
+      this.cargando = false;
+      return;
+    }
+
+    const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
+
+    for (const fila of filasBase) {
+      detalleCalls[String(fila.id)] = this.solicitudesService.obtenerDetalleSolicitud(fila.id).pipe(
+        catchError(() => of(null))
+      );
+    }
+
+    forkJoin(detalleCalls).subscribe({
+      next: (detalles) => {
+        this.rows = filasBase.map((fila) => {
+          const detalle = detalles[String(fila.id)]?.Data;
+          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud) || fila.tipoSolicitudCodigo || '';
+
+          return {
+            ...fila,
+            tipoSolicitudCodigo: codigoTipo,
+            tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
+          };
+        });
+
+        this.cargando = false;
+      },
+      error: () => {
+        this.rows = filasBase;
+        this.cargando = false;
+      },
+    });
   }
 
   private procesarRespuestaRevisor(resp: any): void {
     const data: any[] = resp?.Data || [];
-    this.rows = data.map((item) => {
-      const estadoCodigo = mapEstadoNombreACodigo(item.estado_solicitud);
 
-      return {
-        id: item.id,
-        docente: item.nombre_docente || '',
-        idDocente: item.documento_docente || '',
-        proyecto: '',
-        estado: estadoCodigo,
-        fecha: this.formatFecha(item.fecha_creacion),
-      };
+    if (data.length === 0) {
+      this.rows = [];
+      this.cargando = false;
+      return;
+    }
+
+    const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
+
+    for (const item of data) {
+      const solicitudId = item.id;
+      if (solicitudId) {
+        detalleCalls[String(solicitudId)] = this.solicitudesService.obtenerDetalleSolicitud(solicitudId);
+      }
+    }
+
+    forkJoin(detalleCalls).subscribe({
+      next: (detalles) => {
+        this.rows = data.map((item) => {
+          const estadoCodigo = mapEstadoNombreACodigo(item.estado_solicitud);
+          const detalle = detalles[String(item.id)]?.Data;
+          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud);
+
+          return {
+            id: item.id,
+            docente: item.nombre_docente || '',
+            idDocente: item.documento_docente || '',
+            proyecto: '',
+            estado: estadoCodigo,
+            fecha: this.formatFecha(item.fecha_creacion),
+            tipoSolicitudCodigo: codigoTipo,
+            tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
+          };
+        });
+
+        this.cargando = false;
+      },
+      error: () => {
+        this.rows = data.map((item) => {
+          const estadoCodigo = mapEstadoNombreACodigo(item.estado_solicitud);
+          const codigoTipo = this.extraerTipoSolicitudCodigo(item);
+
+          return {
+            id: item.id,
+            docente: item.nombre_docente || '',
+            idDocente: item.documento_docente || '',
+            proyecto: '',
+            estado: estadoCodigo,
+            fecha: this.formatFecha(item.fecha_creacion),
+            tipoSolicitudCodigo: codigoTipo,
+            tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
+          };
+        });
+
+        this.cargando = false;
+      },
     });
-    this.cargando = false;
   }
 
   private procesarRespuestaHistorico(resp: any): void {
@@ -271,6 +343,7 @@ export class BandejaComponent implements OnInit {
         this.rows = items.map((item) => {
           const solId = this.extraerSolicitudId(item)!;
           const detalle = detalles[String(solId)]?.Data;
+          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud);
           const { nombre, documento } = this.extraerDocenteDeDetalle(detalle);
 
           return {
@@ -280,6 +353,8 @@ export class BandejaComponent implements OnInit {
             proyecto: '',
             estado: this.extraerEstadoCodigo(item),
             fecha: this.formatFecha(item.SolicitudId?.FechaCreacion || item.FechaCreacion),
+            tipoSolicitudCodigo: codigoTipo,
+            tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
           };
         });
         this.cargando = false;
@@ -385,6 +460,29 @@ export class BandejaComponent implements OnInit {
     return { nombre: '', documento: terceroId ? String(terceroId) : '' };
   }
 
+  private extraerTipoSolicitudCodigo(source: any): string {
+    return String(
+      source?.TipoSolicitudId?.CodigoAbreviacion ||
+      source?.TipoSolicitudId?.codigo_abreviacion ||
+      source?.tipo_solicitud?.CodigoAbreviacion ||
+      source?.tipo_solicitud?.codigo_abreviacion ||
+      source?.tipo_solicitud ||
+      source?.cod_abreviacion_tipo_solicitud ||
+      ''
+    ).trim().toUpperCase();
+  }
+
+  private nombreTipoSolicitud(codigo: string): string {
+    switch (String(codigo || '').trim().toUpperCase()) {
+      case 'SOL_INI':
+        return 'Solicitud de Comision';
+      case 'SOL_PRORROGA':
+        return 'Solicitud de prorroga';
+      default:
+        return codigo || '';
+    }
+  }
+
   private onErrorCarga(): void {
     this.cargando = false;
     this.errorCarga = true;
@@ -411,39 +509,48 @@ export class BandejaComponent implements OnInit {
       return;
     }
 
-    this.cargando = true;
+    const dialogRef = this.dialog.open(AvisoCreacionComponent, {
+      width: '600px',
+      disableClose: true,
+    });
 
-    const payload = {
-      identificacion: Number(cedula),
-      cod_abreviacion_tipo_solicitud: 'SOL_INI',
-      observacion: '',
-      cod_abreviacion_rol: 'DOCENTE',
-      documento_solicitud: [],
-    };
+    dialogRef.afterClosed().subscribe((aceptado: boolean) => {
+      if (!aceptado) return;
 
-    this.solicitudesService.crearSolicitud(payload).subscribe({
-      next: (resp: any) => {
-        this.cargando = false;
+      this.cargando = true;
 
-        const nuevaId =
-          resp?.Data?.Id ||
-          resp?.Data?.id ||
-          resp?.Data?.Solicitud?.Id ||
-          resp?.Data?.solicitud?.Id;
+      const payload = {
+        identificacion: Number(cedula),
+        cod_abreviacion_tipo_solicitud: 'SOL_INI',
+        observacion: '',
+        cod_abreviacion_rol: 'DOCENTE',
+        documento_solicitud: [],
+      };
 
-        if (!nuevaId) {
-          this.popup.error('La solicitud se creó, pero no fue posible obtener el ID.');
-          return;
-        }
+      this.solicitudesService.crearSolicitud(payload).subscribe({
+        next: (resp: any) => {
+          this.cargando = false;
 
-        this.router.navigate(['/solicitudes', nuevaId], {
-          queryParams: { mode: 'EDITAR' },
-        });
-      },
-      error: () => {
-        this.cargando = false;
-        this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
-      },
+          const nuevaId =
+            resp?.Data?.Id ||
+            resp?.Data?.id ||
+            resp?.Data?.Solicitud?.Id ||
+            resp?.Data?.solicitud?.Id;
+
+          if (!nuevaId) {
+            this.popup.error('La solicitud se creó, pero no fue posible obtener el ID.');
+            return;
+          }
+
+          this.router.navigate(['/solicitudes', nuevaId], {
+            queryParams: { mode: 'EDITAR' },
+          });
+        },
+        error: () => {
+          this.cargando = false;
+          this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
+        },
+      });
     });
   }
 

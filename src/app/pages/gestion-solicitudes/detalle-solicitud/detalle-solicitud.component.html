@@ -14,6 +14,10 @@
             <span *ngIf="!isDocente && docenteNombre">
               {{ 'TABLE.NOMBRE_DOCENTE' | translate }}: <b>{{ docenteNombre }}</b>
             </span>
+            <span *ngIf="isDocente">
+              {{ 'TABLE.TIPO_SOLICITUD' | translate }}:
+              <b>{{ tipoSolicitudLabel | translate }}</b>
+            </span>
             <span class="inline-flex items-center gap-1.5">
               {{ 'DETALLE.ESTADO' | translate }}:
               <span class="sga-chip" [ngClass]="estadoClass">
@@ -499,10 +503,7 @@
       <!-- ============================
           PANEL SUPERVISOR / DECANATURA
       ================================ -->
-      <mat-card
-        *ngIf="isSupervisor"
-        class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3"
-      >
+      <mat-card *ngIf="isSupervisor && !esSolicitudProrroga" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
 
         <!-- Tarjeta interna -->
         <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
@@ -635,6 +636,98 @@
         </section>
       </mat-card>
 
+      <mat-card *ngIf="isSupervisor && esSolicitudProrroga" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
+        <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+          <header class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+            <div class="font-semibold text-sm">
+              {{ 'SUPERVISOR.TITLE_PRORROGA' | translate }}
+            </div>
+
+            <div class="text-xs text-black/50">
+              {{ 'SUPERVISOR.SUBTITLE' | translate }}
+            </div>
+          </header>
+
+          <div class="px-4 pt-4 pb-2">
+            <div class="grid grid-cols-12 items-center gap-x-3 gap-y-3">
+              <div class="hidden xl:block xl:col-span-1"></div>
+
+              <div class="col-span-12 xl:col-span-5">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-[165px] h-[44px] rounded-lg bg-sga/10 border border-sga/20 flex items-center justify-center text-center text-xs font-medium text-sga px-2">
+                    {{ 'SUPERVISOR.FECHA_INICIO_PRORROGA' | translate }}
+                  </div>
+
+                  <div class="w-[190px]">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sga-no-notch mb-0">
+                      <input
+                        matInput
+                        [matDatepicker]="pickerInicioProrroga"
+                        [(ngModel)]="fechaInicioProrroga"
+                        disabled
+                      />
+
+                      <mat-datepicker-toggle matSuffix [for]="pickerInicioProrroga"></mat-datepicker-toggle>
+                      <mat-datepicker #pickerInicioProrroga></mat-datepicker>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-span-12 xl:col-span-5">
+                <div class="flex items-center justify-center gap-2">
+                  <div class="w-[165px] h-[44px] rounded-lg bg-sga/10 border border-sga/20 flex items-center justify-center text-center text-xs font-medium text-sga px-2">
+                    {{ 'SUPERVISOR.FECHA_TERMINACION_PRORROGA' | translate }}
+                  </div>
+
+                  <div class="w-[190px]">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sga-no-notch mb-0">
+                      <input
+                        matInput
+                        [matDatepicker]="pickerTerminacionProrroga"
+                        [(ngModel)]="fechaTerminacionProrroga"
+                        [min]="fechaInicioProrroga"
+                        [placeholder]="'SUPERVISOR.SELECCIONA_FECHA_FINAL' | translate"
+                        readonly
+                      />
+
+                      <mat-datepicker-toggle matSuffix [for]="pickerTerminacionProrroga"></mat-datepicker-toggle>
+                      <mat-datepicker #pickerTerminacionProrroga></mat-datepicker>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+
+              <div class="hidden xl:block xl:col-span-1"></div>
+            </div>
+
+            <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <button
+                mat-stroked-button
+                class="h-9 px-3 rounded-lg border-black/20"
+                (click)="regresar()">
+                {{ 'ACTIONS.REGRESAR' | translate }}
+              </button>
+
+              <button
+                mat-flat-button
+                color="primary"
+                class="h-9 px-3.5 rounded-lg"
+                (click)="aprobarProrrogaDecano()"
+                [disabled]="
+                  !fechaInicioProrroga ||
+                  !fechaTerminacionProrroga ||
+                  !fechasProrrogaValidas ||
+                  !puedeContinuarRevisor ||
+                  cambiandoEstado
+                ">
+                <mat-icon *ngIf="accionRevisionEnProceso === 'DAR_INICIO'" class="animate-spin">autorenew</mat-icon>
+                {{ (accionRevisionEnProceso === 'DAR_INICIO' ? 'DETALLE.PROCESANDO_INICIO' : 'ACTIONS.APROBAR') | translate }}
+              </button>
+            </div>
+          </div>
+        </section>
+      </mat-card>
 
       <mat-card *ngIf="!isSupervisor" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
         <div class="flex flex-wrap items-center justify-end gap-2">
@@ -650,7 +743,8 @@
             {{ (accionRevisionEnProceso === 'RECHAZAR' ? 'DETALLE.RECHAZANDO' : 'ACTIONS.RECHAZAR') | translate }}
           </button>
 
-          <button *ngIf="!permisosListos || permisos['retornar_solicitud']"
+          <button *ngIf="(!permisosListos || permisos['retornar_solicitud']) && !esSolicitudProrroga"
+
             mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"
             (click)="retornarSolicitud()" [disabled]="!puedeRetornarRevisor || cambiandoEstado">
             <mat-icon *ngIf="accionRevisionEnProceso === 'RETORNAR'" class="animate-spin">autorenew</mat-icon>
@@ -659,7 +753,7 @@
 
           <button *ngIf="!permisosListos || permisos['enviar_revision']"
             mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-            (click)="enviarRevisor()" [disabled]="!allDocsChecked || !puedeContinuarRevisor || cambiandoEstado">
+            (click)="enviarRevisor()" [disabled]="!puedeEnviarRevision">
             <mat-icon *ngIf="accionRevisionEnProceso === 'ENVIAR'" class="animate-spin">autorenew</mat-icon>
             {{ (accionRevisionEnProceso === 'ENVIAR' ? 'DETALLE.ENVIANDO' : 'ACTIONS.ENVIAR') | translate }}
           </button>

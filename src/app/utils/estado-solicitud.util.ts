@@ -8,12 +8,10 @@ export function estadoSolicitudClass(estado: string): string {
   switch (estado) {
     case 'NO_ENV':        return 'st-no-env';
     case 'RAD':           return 'st-rad';
-    case 'REV_PROY':
     case 'REV_SEC_ACAD':
     case 'REV_SEC_GRAL':
     case 'REV_DEC':       return 'st-revision';
     case 'CORR':          return 'st-corr';
-    case 'SUBS_PROY':
     case 'SUBS_SEC_ACAD':
     case 'SUBS_SEC_GRAL':
     case 'SUBS_DEC':      return 'st-subsanar';
@@ -30,18 +28,15 @@ export function estadoDocumentoClass(estado: EstadoDocumento): string {
   switch (estado) {
     case 'PENDIENTE':       return 'doc-chip--pendiente';
     case 'CARG':
-    case 'ENV_REV_PROY':
     case 'ENV_REV_SEC_ACAD':
     case 'ENV_REV_SEC_GRAL':
     case 'ENV_REV_DEC':     return 'doc-chip--carg';
     case 'APROB':
-    case 'APROB_PROY':
     case 'APROB_SEC_ACAD':
     case 'APROB_SEC_GRAL':
     case 'APROB_DEC':       return 'doc-chip--aprob';
     case 'CORR':
     case 'SUBS':
-    case 'SUBS_PROY':
     case 'SUBS_SEC_ACAD':
     case 'SUBS_SEC_GRAL':
     case 'SUBS_DEC':        return 'doc-chip--corr';
@@ -58,8 +53,6 @@ export function estadoDocumentoClass(estado: EstadoDocumento): string {
 const ESTADO_NOMBRE_TO_CODE: Record<string, string> = {
   'no enviada':                                          'NO_ENV',
   'radicada':                                            'RAD',
-  'en gestion de proyecto curricular':                   'REV_PROY',
-  'en gestión de proyecto curricular':                   'REV_PROY',
   'en gestion de secretaria academica':                  'REV_SEC_ACAD',
   'en gestión de secretaria academica':                  'REV_SEC_ACAD',
   'en gestión de secretaría académica':                  'REV_SEC_ACAD',
@@ -75,8 +68,6 @@ const ESTADO_NOMBRE_TO_CODE: Record<string, string> = {
   'aprobada':                                            'APROB_EJEC',
   'aprobada en ejecucion':                               'APROB_EJEC',
   'aprobada en ejecución':                               'APROB_EJEC',
-  'solicitud subsanacion por proyecto curricular':       'SUBS_PROY',
-  'solicitud subsanación por proyecto curricular':       'SUBS_PROY',
   'solicitud subsanacion por secretaria academica':      'SUBS_SEC_ACAD',
   'solicitud subsanación por secretaria academica':      'SUBS_SEC_ACAD',
   'solicitud subsanacion por secretaria general':        'SUBS_SEC_GRAL',

@@ -5,7 +5,6 @@
   "BANDEJA": {
     "SUBTITLE": "Study commission requests assigned to your role.",
     "TITLE_DOCENTE": "My requests",
-    "TITLE_COORDINADOR": "Pending requests - Curricular project coordination",
     "TITLE_SECRETARIA_ACADEMICA": "Pending requests - Academic Secretary",
     "TITLE_SECRETARIA_GENERAL": "Pending requests - General Secretary",
     "TITLE_DECANO": "Pending requests - Dean's Office",
@@ -19,7 +18,6 @@
   },
   "ROLES": {
     "DOCENTE": "Professor",
-    "COORDINADOR": "Curricular project coordination",
     "SECRETARIA_ACADEMICA": "Academic Secretary",
     "SECRETARIA_GENERAL": "General Secretary",
     "DECANO": "Dean's Office"
@@ -39,7 +37,8 @@
     "ELIMINAR": "Delete",
     "OK": "OK",
     "FILTER_PLACEHOLDER": "Search...",
-    "ADJUNTAR": "Upload"
+    "ADJUNTAR": "Upload",
+    "TIPO_SOLICITUD": "Request type"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "Rows per page:",
@@ -65,7 +64,8 @@
     "ADJUNTAR_DOCS": "Attach documents",
     "GUARDAR_FORM": "Save form",
     "CREAR_SOLICITUD": "Create request",
-    "SALIR": "Exit"
+    "SALIR": "Exit",
+    "APROBAR": "Approve"
   },
   "TOOLTIPS": {
     "VER_SOLICITUD": "View request",
@@ -123,19 +123,20 @@
     "FECHA_FINAL_CONTRATO": "Contract finish date",
     "FECHA_FIN_PRORROGA": "Extension end date",
     "SELECCIONA_FECHA_INICIO": "Start date",
-    "SELECCIONA_FECHA_FINAL": "Finish date"
+    "SELECCIONA_FECHA_FINAL": "Finish date",
+    "TITLE_PRORROGA": "Extension approval",
+    "FECHA_INICIO_PRORROGA": "Extension start date",
+    "FECHA_TERMINACION_PRORROGA": "Extension end date"
   },
   "ESTADOS": {
     "NO_ENV": "Not submitted",
     "RAD": "Filed",
-    "REV_PROY": "Under curricular project review",
     "REV_SEC_ACAD": "Under academic secretary review",
     "REV_SEC_GRAL": "Under general secretary review",
     "REV_DEC": "Under dean review",
     "CORR": "Pending correction",
     "NO_APROB": "Not approved",
     "APROB_EJEC": "Approved",
-    "SUBS_PROY": "Correction by curricular project",
     "SUBS_SEC_ACAD": "Correction by academic secretary",
     "SUBS_SEC_GRAL": "Correction by general secretary",
     "SUBS_DEC": "Correction by dean"
@@ -148,15 +149,12 @@
     "CORR": "Pending correction",
     "SUBS": "Corrected",
     "ANUL": "Voided",
-    "ENV_REV_PROY": "Sent for curricular project review",
     "ENV_REV_SEC_ACAD": "Sent for academic secretary review",
     "ENV_REV_SEC_GRAL": "Sent for general secretary review",
     "ENV_REV_DEC": "Sent for dean review",
-    "APROB_PROY": "Approved by curricular project",
     "APROB_SEC_ACAD": "Approved by academic secretary",
     "APROB_SEC_GRAL": "Approved by general secretary",
     "APROB_DEC": "Approved by dean",
-    "SUBS_PROY": "Correction requested by curricular project",
     "SUBS_SEC_ACAD": "Correction requested by academic secretary",
     "SUBS_SEC_GRAL": "Correction requested by general secretary",
     "SUBS_DEC": "Correction requested by dean"
@@ -355,8 +353,22 @@
     "SOLICITUD_AVALADA_OK": "Request approved and submitted successfully.",
     "INICIO_REGISTRADO_OK": "Commission start registered successfully.",
     "DOC_YA_CARGADO": "A document is already attached for {{nombre}}. Remove it first if you want to replace it.",
-    "CAMBIOS_SIN_GUARDAR_MSG": "ou have unsaved changes in form FR-010. If you continue, you will lose the unsaved information."
-
+    "CAMBIOS_SIN_GUARDAR_MSG": "ou have unsaved changes in form FR-010. If you continue, you will lose the unsaved information.",
+    "FECHA_INICIO_PRORROGA_REQUIRED": "The extension start date was not found.",
+    "FECHA_TERMINACION_PRORROGA_REQUIRED": "You must enter the extension end date.",
+    "FECHA_TERMINACION_PRORROGA_INVALIDA": "The extension end date must be after the start date.",
+    "AVALAR_PRORROGA_MSG": "You confirm that you want to approve the extension and update the commission end date."
+  },
+  "TIPOS_SOLICITUD": {
+    "SOL_INI": "Commission request",
+    "SOL_PRORROGA": "Extension request"
+  },
+  "AVISO_CREACION": {
+    "TITLE": "Process regulations",
+    "CUERPO": "Professor, below you will find the regulations related to the Study Commissions process for high-level postgraduate training. It is recommended to review them before starting or managing your request, in order to update or reinforce your knowledge of the applicable requirements, conditions, and guidelines. To review the regulation of your interest, select the corresponding link.",
+    "NORMATIVA_TITLE": "Applicable regulations for study commissions:",
+    "CHECKBOX": "I have read and understand the above information, and I accept the terms established in the regulations.",
+    "BTN_CONTINUAR": "Continue"
   },
   "LANG": {
     "ES": "Espaniol",

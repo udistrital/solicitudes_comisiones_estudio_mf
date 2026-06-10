@@ -1,0 +1,44 @@
+<div class="p-6 max-w-[560px]">
+
+  <!-- Encabezado -->
+  <h2 class="text-[20px] font-semibold text-[#03678F] m-0 mb-4 leading-tight">
+    {{ 'AVISO_CREACION.TITLE' | translate }}
+  </h2>
+
+  <!-- Cuerpo informativo -->
+  <p class="text-black/80 text-[14px] leading-relaxed mb-5 text-justify">
+    {{ 'AVISO_CREACION.CUERPO' | translate }}
+  </p>
+
+  <!-- Normativa -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5">
+    <p class="text-[13px] font-semibold text-[#03678F] mb-2 m-0">
+      {{ 'AVISO_CREACION.NORMATIVA_TITLE' | translate }}
+    </p>
+    <ul class="m-0 p-0 list-none flex flex-col gap-2">
+      <li *ngFor="let item of normativa">
+        <a [href]="item.url" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-1 text-[13px] text-[#03678F] underline hover:text-blue-800 transition-colors">
+          <mat-icon class="text-[15px] leading-none" style="font-size:15px;width:15px;height:15px;">open_in_new</mat-icon>
+          {{ item.label }}
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Checkbox aceptación -->
+  <mat-checkbox [(ngModel)]="aceptado" class="text-[13px] text-black/80 mb-5 block">
+    {{ 'AVISO_CREACION.CHECKBOX' | translate }}
+  </mat-checkbox>
+
+  <!-- Acciones -->
+  <div class="flex justify-end gap-3 mt-2">
+    <button mat-stroked-button (click)="cancelar()">
+      {{ 'ACTIONS.CANCELAR' | translate }}
+    </button>
+    <button mat-flat-button color="primary" [disabled]="!aceptado" (click)="confirmar()">
+      {{ 'AVISO_CREACION.BTN_CONTINUAR' | translate }}
+    </button>
+  </div>
+
+</div>

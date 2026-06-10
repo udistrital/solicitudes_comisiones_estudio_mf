@@ -24,20 +24,20 @@ const COL_DOCENTE: ColumnDef<SolicitudRow> = {
 const COL_ID_DOCENTE: ColumnDef<SolicitudRow> = {
   key: 'idDocente', header: 'TABLE.ID_DOCENTE', cell: (r) => r.idDocente,
 };
-
+const COL_TIPO_SOLICITUD: ColumnDef<SolicitudRow> = {
+  key: 'tipoSolicitudNombre',
+  header: 'TABLE.TIPO_SOLICITUD',
+  cell: (r) => r.tipoSolicitudNombre || '',
+};
 // Columnas para roles no-docente (todos comparten la misma estructura)
 const COLUMNS_REVIEWER: ColumnDef<SolicitudRow>[] = [
-  COL_ID, COL_FECHA, COL_DOCENTE, COL_ID_DOCENTE, COL_ESTADO,
+  COL_ID, COL_FECHA,COL_TIPO_SOLICITUD, COL_DOCENTE, COL_ID_DOCENTE, COL_ESTADO,
 ];
 
 export const ROLE_TABLE_CONFIGS: Record<Role, { title: string; columns: ColumnDef<SolicitudRow>[] }> = {
   DOCENTE: {
     title: 'BANDEJA.TITLE_DOCENTE',
-    columns: [COL_ID, COL_FECHA, COL_ESTADO],
-  },
-  COORDINADOR: {
-    title: 'BANDEJA.TITLE_COORDINADOR',
-    columns: COLUMNS_REVIEWER,
+    columns: [COL_ID, COL_FECHA, COL_TIPO_SOLICITUD, COL_ESTADO],
   },
   SECRETARIA_ACADEMICA: {
     title: 'BANDEJA.TITLE_SECRETARIA_ACADEMICA',

@@ -132,7 +132,7 @@ export class DetalleSolicitudComponent implements OnInit {
   identificacionDocente = 0;
   guardando = false;
   cambiandoEstado = false;
-  accionRevisionEnProceso: 'RECHAZAR' | 'RETORNAR' | 'ENVIAR' | 'DAR_INICIO' | null = null;
+  accionRevisionEnProceso: 'RECHAZAR' | 'RETORNAR' | 'ENVIAR' | 'DAR_INICIO' | 'APROBAR_CIERRE' | 'RECHAZAR_CIERRE' | null = null;
 
   /** Datos del formulario FR-010 recuperados del backend (para pasar al componente hijo) */
   formularioRecuperado: any = null;
@@ -197,6 +197,9 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // Cierre
   esSolicitudCierre = false;
+
+  // Comision
+  comisionId = 0;
 
   private documentosDesactivarIds: number[] = [];
   private detalleSolicitudActual: any = null;
@@ -399,6 +402,7 @@ export class DetalleSolicitudComponent implements OnInit {
           return;
         }
         this.detalleSolicitudActual = data;
+        console.log(this.detalleSolicitudActual)
         this.poblarDesdeDetalle(data);
         this.observacionesSubsanacion = this.extraerObservacionesDesdeDetalle(data);
         this.cargarTiposDocumentoCrud();
@@ -2402,8 +2406,104 @@ export class DetalleSolicitudComponent implements OnInit {
       return;
     }
 
-    const url = `/seguimiento-comisiones/seguimiento/16`;
+    const url = `/seguimiento-comisiones/seguimiento/${this.detalleSolicitudActual.Comision.Id}`;
 
     window.open(url, '_blank');
+  }
+
+  aprobarCierreSolicitud(): void {
+    this.popup.confirm(
+      '¿Está seguro de aprobar la solicitud de cierre?',
+      'Aprobar',
+      'Cancelar'
+    ).then(result => {
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.cambiandoEstado = true;
+      this.accionRevisionEnProceso = 'APROBAR_CIERRE';
+
+      const payload = {
+        SolicitudId: this.id,
+        ComisionId: this.detalleSolicitudActual.Comision.Id,
+        Observacion: this.observacionRevision || '',
+        TerceroId: this.identificacionDocente,
+        RolUsuario: this.role
+      };
+      console.log(payload)
+
+      this.solicitudesService.aprobarCierre(payload).subscribe({
+        next: () => {
+
+          this.cambiandoEstado = false;
+          this.accionRevisionEnProceso = null;
+
+          this.popup.alertSuccess(
+            'La solicitud de cierre fue aprobada correctamente.'
+          ).then(() => {
+            this.regresar();
+          });
+        },
+
+        error: () => {
+
+          this.cambiandoEstado = false;
+          this.accionRevisionEnProceso = null;
+
+          this.popup.alertError(
+            'No fue posible aprobar la solicitud de cierre.'
+          );
+        }
+      });
+    });
+  }
+
+  rechazarCierreSolicitud(): void {
+    this.popup.confirm(
+      '¿Está seguro de rechazar la solicitud de cierre?',
+      'Rechazar',
+      'Cancelar'
+    ).then(result => {
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.cambiandoEstado = true;
+      this.accionRevisionEnProceso = 'RECHAZAR_CIERRE';
+
+      const payload = {
+        SolicitudId: this.id,
+        Observacion: this.observacionRevision || '',
+        TerceroId: this.identificacionDocente,
+        RolUsuario: this.role
+      };
+
+      this.solicitudesService.rechazarCierre(payload).subscribe({
+        next: () => {
+
+          this.cambiandoEstado = false;
+          this.accionRevisionEnProceso = null;
+
+          this.popup.alertSuccess(
+            'La solicitud de cierre fue rechazada correctamente.'
+          ).then(() => {
+            this.regresar();
+          });
+        },
+
+        error: () => {
+
+          this.cambiandoEstado = false;
+          this.accionRevisionEnProceso = null;
+
+          this.popup.alertError(
+            'No fue posible rechazar la solicitud de cierre.'
+          );
+        }
+      });
+    });
   }
 }

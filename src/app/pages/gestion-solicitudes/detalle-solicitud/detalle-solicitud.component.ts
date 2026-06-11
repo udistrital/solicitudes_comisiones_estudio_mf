@@ -2454,6 +2454,7 @@ export class DetalleSolicitudComponent implements OnInit {
         );
       }
     }
+  }
 
   // ========== Acciones solicitud de cierre ==========
 

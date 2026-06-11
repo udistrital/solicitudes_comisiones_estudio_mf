@@ -133,7 +133,7 @@ export class DetalleSolicitudComponent implements OnInit {
   identificacionDocente = 0;
   guardando = false;
   cambiandoEstado = false;
-  accionRevisionEnProceso: 'RECHAZAR' | 'RETORNAR' | 'ENVIAR' | 'DAR_INICIO' | null = null;
+  accionRevisionEnProceso: 'RECHAZAR' | 'RETORNAR' | 'ENVIAR' | 'DAR_INICIO' | 'APROBAR_CIERRE' | 'RECHAZAR_CIERRE' | null = null;
 
   /** Datos del formulario FR-010 recuperados del backend (para pasar al componente hijo) */
   formularioRecuperado: any = null;
@@ -160,21 +160,19 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // Orden de las observaciones
   private readonly ORDEN_OBS_REVISOR: Record<string, number> = {
-    COORDINADOR: 1,
-    SECRETARIA_ACADEMICA: 2,
-    ADMIN_SGA: 3,
-    SECRETARIA_GENERAL: 3,
-    DECANO: 4,
-    DECANATURA: 4,
+    SECRETARIA_ACADEMICA: 1,
+    ADMIN_SGA: 2,
+    SECRETARIA_GENERAL: 2,
+    DECANO: 3,
+    DECANATURA: 3,
   };
 
   // Orden subida documentos
   private readonly ORDEN_ROL_DOCUMENTAL: Record<string, number> = {
     DOCENTE: 0,
-    COORDINADOR: 1,
-    SECRETARIA_ACADEMICA: 2,
-    SECRETARIA_GENERAL: 3,
-    DECANATURA: 4,
+    SECRETARIA_ACADEMICA: 1,
+    SECRETARIA_GENERAL: 2,
+    DECANATURA: 3,
   };
 
   
@@ -196,6 +194,12 @@ export class DetalleSolicitudComponent implements OnInit {
 
   fr010Json: any = null;
 
+  // Cierre
+  esSolicitudCierre = false;
+
+  // Comision
+  comisionId = 0;
+
   private documentosDesactivarIds: number[] = [];
   private detalleSolicitudActual: any = null;
 
@@ -204,14 +208,12 @@ export class DetalleSolicitudComponent implements OnInit {
   private idTipoDocumentoGestor: number | null = null;
 
   private readonly ESTADOS_SOLICITUD_SUBSANACION: EstadoSolicitud[] = [
-    'SUBS_PROY',
     'SUBS_SEC_ACAD',
     'SUBS_SEC_GRAL',
   ];
 
   private readonly ESTADOS_DOCUMENTO_APROBADOS: EstadoDocumento[] = [
     'APROB',
-    'APROB_PROY',
     'APROB_SEC_ACAD',
     'APROB_SEC_GRAL',
     'APROB_DEC',
@@ -219,7 +221,6 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private readonly ESTADOS_DOCUMENTO_SUBSANACION: EstadoDocumento[] = [
     'SUBS',
-    'SUBS_PROY',
     'SUBS_SEC_ACAD',
     'SUBS_SEC_GRAL',
     'SUBS_DEC',
@@ -227,28 +228,24 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private readonly ESTADO_DOCUMENTO_APROBADO_POR_ROL: Record<Role, EstadoDocumento> = {
     DOCENTE: 'APROB',
-    COORDINADOR: 'APROB_PROY',
     SECRETARIA_ACADEMICA: 'APROB_SEC_ACAD',
     SECRETARIA_GENERAL: 'APROB_SEC_GRAL',
     DECANO: 'APROB_DEC',
   };
 
   private readonly ESTADO_DOCUMENTO_SIGUIENTE_POR_ROL: Partial<Record<Role, EstadoDocumento>> = {
-    COORDINADOR: 'ENV_REV_SEC_ACAD',
     SECRETARIA_ACADEMICA: 'ENV_REV_SEC_GRAL',
     SECRETARIA_GENERAL: 'APROB_SEC_GRAL',
     DECANO: 'APROB_SEC_GRAL',
   };
 
   private readonly ESTADO_DOCUMENTO_SUBSANACION_POR_ROL: Partial<Record<Role, EstadoDocumento>> = {
-    COORDINADOR: 'SUBS_PROY',
     SECRETARIA_ACADEMICA: 'SUBS_SEC_ACAD',
     SECRETARIA_GENERAL: 'SUBS_SEC_GRAL',
     DECANO: 'SUBS_DEC',
   };
 
   private readonly ESTADO_DOCUMENTO_PREVIO_APROBACION: Partial<Record<EstadoDocumento, EstadoDocumento>> = {
-    APROB_PROY: 'ENV_REV_PROY',
     APROB_SEC_ACAD: 'ENV_REV_SEC_ACAD',
     APROB_SEC_GRAL: 'ENV_REV_SEC_GRAL',
     APROB_DEC: 'ENV_REV_DEC',
@@ -256,9 +253,8 @@ export class DetalleSolicitudComponent implements OnInit {
   };
 
   private readonly DESTINO_DOCENTE_POR_ESTADO: Record<string, { solicitud: EstadoSolicitud; documento: EstadoDocumento }> = {
-    NO_ENV: { solicitud: 'REV_PROY', documento: 'ENV_REV_PROY' },
-    CORR: { solicitud: 'REV_PROY', documento: 'ENV_REV_PROY' },
-    SUBS_PROY: { solicitud: 'REV_PROY', documento: 'ENV_REV_PROY' },
+    NO_ENV: { solicitud: 'REV_SEC_ACAD', documento: 'ENV_REV_SEC_ACAD' },
+    CORR: { solicitud: 'REV_SEC_ACAD', documento: 'ENV_REV_SEC_ACAD' },
     SUBS_SEC_ACAD: { solicitud: 'REV_SEC_ACAD', documento: 'ENV_REV_SEC_ACAD' },
     SUBS_SEC_GRAL: { solicitud: 'REV_SEC_GRAL', documento: 'ENV_REV_SEC_GRAL' },
     SUBS_DEC: { solicitud: 'REV_DEC', documento: 'ENV_REV_DEC' },
@@ -398,6 +394,7 @@ export class DetalleSolicitudComponent implements OnInit {
           return;
         }
         this.detalleSolicitudActual = data;
+        console.log(this.detalleSolicitudActual)
         this.poblarDesdeDetalle(data);
         this.observacionesSubsanacion = this.extraerObservacionesDesdeDetalle(data);
         this.cargarTiposDocumentoCrud();
@@ -420,6 +417,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
     if (tipoSolicitud) {
       this.tipoSolicitudCodigo = String(tipoSolicitud).trim().toUpperCase();
+      this.esSolicitudCierre = this.tipoSolicitudCodigo === 'SOL_CIERRE';
     }
 
     if (this.esSolicitudProrroga) {
@@ -649,7 +647,6 @@ export class DetalleSolicitudComponent implements OnInit {
       && (
         this.estadoSolicitud === 'NO_ENV'
         || this.estadoSolicitud === 'CORR'
-        || this.estadoSolicitud === 'SUBS_PROY'
         || this.estadoSolicitud === 'SUBS_SEC_ACAD'
         || this.estadoSolicitud === 'SUBS_SEC_GRAL'
       );
@@ -664,10 +661,8 @@ export class DetalleSolicitudComponent implements OnInit {
       && (
         this.estadoSolicitud === 'NO_ENV'
         || this.estadoSolicitud === 'CORR'
-        || this.estadoSolicitud === 'SUBS_PROY'
         || this.estadoSolicitud === 'SUBS_SEC_ACAD'
         || this.estadoSolicitud === 'SUBS_SEC_GRAL'
-        || this.estadoSolicitud === 'REV_PROY'
         || this.estadoSolicitud === 'REV_SEC_ACAD'
       );
   }
@@ -788,7 +783,6 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private obtenerEstadoDocumentoSubsanacionActual(): EstadoDocumento | null {
     switch (this.estadoSolicitud) {
-      case 'SUBS_PROY': return 'SUBS_PROY';
       case 'SUBS_SEC_ACAD': return 'SUBS_SEC_ACAD';
       case 'SUBS_SEC_GRAL': return 'SUBS_SEC_GRAL';
       case 'SUBS_DEC': return 'SUBS_DEC';
@@ -798,8 +792,8 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private obtenerDestinoEnvioDocente(): { solicitud: EstadoSolicitud; documento: EstadoDocumento } {
     return this.DESTINO_DOCENTE_POR_ESTADO[this.estadoSolicitud] ?? {
-      solicitud: 'REV_PROY',
-      documento: 'ENV_REV_PROY',
+      solicitud: 'REV_SEC_ACAD',
+      documento: 'ENV_REV_SEC_ACAD',
     };
   }
 
@@ -813,10 +807,6 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private obtenerEstadosDocumentoBloqueadosParaDocente(): EstadoDocumento[] {
     switch (this.estadoSolicitud) {
-      case 'REV_PROY':
-      case 'SUBS_PROY':
-        return ['APROB_PROY', 'APROB_SEC_ACAD', 'APROB_SEC_GRAL', 'APROB_DEC'];
-
       case 'REV_SEC_ACAD':
       case 'SUBS_SEC_ACAD':
         return ['APROB_SEC_ACAD', 'APROB_SEC_GRAL', 'APROB_DEC'];
@@ -1028,7 +1018,6 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private obtenerEstadoEnvioSegunDocumento(doc: DocumentoItem): EstadoDocumento {
-    if (doc.estado === 'APROB_PROY') return 'ENV_REV_PROY';
     if (doc.estado === 'APROB_SEC_ACAD') return 'ENV_REV_SEC_ACAD';
     if (doc.estado === 'APROB_SEC_GRAL') return 'ENV_REV_SEC_GRAL';
     if (doc.estado === 'APROB_DEC') return 'ENV_REV_DEC';
@@ -1458,15 +1447,13 @@ export class DetalleSolicitudComponent implements OnInit {
   // ========== Cambio de estado — mapeos y payload ==========
 
   private readonly ESTADO_ENVIAR: Record<Role, EstadoSolicitud> = {
-    DOCENTE: 'REV_PROY',
-    COORDINADOR: 'REV_SEC_ACAD',
+    DOCENTE: 'REV_SEC_ACAD',
     SECRETARIA_ACADEMICA: 'REV_SEC_GRAL',
     SECRETARIA_GENERAL: 'REV_DEC',
     DECANO: 'APROB_EJEC',
   };
 
   private readonly ESTADO_RETORNAR: Partial<Record<Role, EstadoSolicitud>> = {
-    COORDINADOR: 'SUBS_PROY',
     SECRETARIA_ACADEMICA: 'SUBS_SEC_ACAD',
     SECRETARIA_GENERAL: 'SUBS_SEC_GRAL',
     DECANO: 'SUBS_DEC',
@@ -1474,7 +1461,6 @@ export class DetalleSolicitudComponent implements OnInit {
 
   private readonly ROL_USUARIO_MAP: Record<Role, string> = {
     DOCENTE: 'DOCENTE',
-    COORDINADOR: 'COORDINADOR',
     SECRETARIA_ACADEMICA: 'SECRETARIA_ACADEMICA',
     SECRETARIA_GENERAL: 'SECRETARIA_GENERAL',
     DECANO: 'DECANATURA',
@@ -2106,7 +2092,6 @@ export class DetalleSolicitudComponent implements OnInit {
   private obtenerNombreRol(rol: string | undefined | null): string {
     const key = String(rol || '').toUpperCase();
     switch (key) {
-      case 'COORDINADOR': return 'Coordinador';
       case 'SECRETARIA_ACADEMICA': return 'Secretaría Académica';
       case 'SECRETARIA_ACADEMICA': return 'Secretaría Académica';
       case 'SECRETARIA_GENERAL': return 'Secretaría General';
@@ -2135,16 +2120,13 @@ export class DetalleSolicitudComponent implements OnInit {
       RECH: 'NO_APROB',
       CORR: 'CORR',
       SUBS: 'SUBS',
-      SUBS_PROY: 'SUBS_PROY',
       SUBS_SEC_ACAD: 'SUBS_SEC_ACAD',
       SUBS_SEC_GRAL: 'SUBS_SEC_GRAL',
       SUBS_DEC: 'SUBS_DEC',
       ANUL: 'ANUL',
-      ENV_REV_PROY: 'ENV_REV_PROY',
       ENV_REV_SEC_ACAD: 'ENV_REV_SEC_ACAD',
       ENV_REV_SEC_GRAL: 'ENV_REV_SEC_GRAL',
       ENV_REV_DEC: 'ENV_REV_DEC',
-      APROB_PROY: 'APROB_PROY',
       APROB_SEC_ACAD: 'APROB_SEC_ACAD',
       APROB_SEC_GRAL: 'APROB_SEC_GRAL',
       APROB_DEC: 'APROB_DEC',
@@ -2472,5 +2454,119 @@ export class DetalleSolicitudComponent implements OnInit {
         );
       }
     }
+
+  // ========== Acciones solicitud de cierre ==========
+
+  revisarComision(): void {
+
+    const idComision =
+      this.detalleSolicitudActual?.Solicitud?.ComisionId;
+
+    if (!idComision) {
+      this.popup.alertError(
+        'No se encontró la comisión asociada a esta solicitud.'
+      );
+      return;
+    }
+
+    const url = `/seguimiento-comisiones/seguimiento/${this.detalleSolicitudActual.Comision.Id}`;
+
+    window.open(url, '_blank');
+  }
+
+  aprobarCierreSolicitud(): void {
+    this.popup.confirm(
+      '¿Está seguro de aprobar la solicitud de cierre?',
+      'Aprobar',
+      'Cancelar'
+    ).then(result => {
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.cambiandoEstado = true;
+      this.accionRevisionEnProceso = 'APROBAR_CIERRE';
+
+      const payload = {
+        SolicitudId: this.id,
+        ComisionId: this.detalleSolicitudActual.Comision.Id,
+        Observacion: this.observacionRevision || '',
+        TerceroId: this.identificacionDocente,
+        RolUsuario: this.role
+      };
+      console.log(payload)
+
+      this.solicitudesService.aprobarCierre(payload).subscribe({
+        next: () => {
+
+          this.cambiandoEstado = false;
+          this.accionRevisionEnProceso = null;
+
+          this.popup.alertSuccess(
+            'La solicitud de cierre fue aprobada correctamente.'
+          ).then(() => {
+            this.regresar();
+          });
+        },
+
+        error: () => {
+
+          this.cambiandoEstado = false;
+          this.accionRevisionEnProceso = null;
+
+          this.popup.alertError(
+            'No fue posible aprobar la solicitud de cierre.'
+          );
+        }
+      });
+    });
+  }
+
+  rechazarCierreSolicitud(): void {
+    this.popup.confirm(
+      '¿Está seguro de rechazar la solicitud de cierre?',
+      'Rechazar',
+      'Cancelar'
+    ).then(result => {
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.cambiandoEstado = true;
+      this.accionRevisionEnProceso = 'RECHAZAR_CIERRE';
+
+      const payload = {
+        SolicitudId: this.id,
+        Observacion: this.observacionRevision || '',
+        TerceroId: this.identificacionDocente,
+        RolUsuario: this.role
+      };
+
+      this.solicitudesService.rechazarCierre(payload).subscribe({
+        next: () => {
+
+          this.cambiandoEstado = false;
+          this.accionRevisionEnProceso = null;
+
+          this.popup.alertSuccess(
+            'La solicitud de cierre fue rechazada correctamente.'
+          ).then(() => {
+            this.regresar();
+          });
+        },
+
+        error: () => {
+
+          this.cambiandoEstado = false;
+          this.accionRevisionEnProceso = null;
+
+          this.popup.alertError(
+            'No fue posible rechazar la solicitud de cierre.'
+          );
+        }
+      });
+    });
   }
 }

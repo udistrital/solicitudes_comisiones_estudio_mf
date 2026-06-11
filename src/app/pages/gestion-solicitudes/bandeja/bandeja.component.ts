@@ -18,7 +18,7 @@ import { NotificacionesService } from '../../../services/notificaciones.service'
 import { DocenteInfoService } from '../../../services/docente-info.service';
 
 /** Roles que ya tienen endpoint de bandeja */
-const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'COORDINADOR', 'SECRETARIA_ACADEMICA', 'SECRETARIA_GENERAL', 'DECANO'];
+const ROLES_CON_ENDPOINT: Role[] = ['DOCENTE', 'SECRETARIA_ACADEMICA', 'SECRETARIA_GENERAL', 'DECANO'];
 
 @Component({
     selector: 'app-bandeja',
@@ -91,7 +91,7 @@ export class BandejaComponent implements OnInit {
   get actions(): TableAction<SolicitudRow>[] {
     if (this.selectedRole === 'DOCENTE') {
       const editable = (row: SolicitudRow) =>
-        ['NO_ENV', 'CORR', 'REV_PROY', 'REV_SEC_ACAD', 'SUBS_PROY', 'SUBS_SEC_ACAD', 'SUBS_SEC_GRAL'].includes(row.estado);
+        ['NO_ENV', 'CORR', 'REV_SEC_ACAD', 'SUBS_SEC_ACAD', 'SUBS_SEC_GRAL'].includes(row.estado);
 
       return [
         {
@@ -166,14 +166,6 @@ export class BandejaComponent implements OnInit {
           error: () => this.onErrorCarga(),
         });
         break;
-
-      case 'COORDINADOR':
-        this.solicitudesService.listarPendientesCoordinador(cedula).subscribe({
-          next: (resp) => this.procesarRespuestaRevisor(resp),
-          error: () => this.onErrorCarga(),
-        });
-        break;
-
       case 'SECRETARIA_ACADEMICA':
         this.solicitudesService.listarPendientesSecretaria(cedula).subscribe({
           next: (resp) => this.procesarRespuestaRevisor(resp),
@@ -487,9 +479,11 @@ export class BandejaComponent implements OnInit {
   private nombreTipoSolicitud(codigo: string): string {
     switch (String(codigo || '').trim().toUpperCase()) {
       case 'SOL_INI':
-        return 'Solicitud de Comision';
+        return 'Solicitud de comision';
       case 'SOL_PRORROGA':
         return 'Solicitud de prorroga';
+      case 'SOL_CIERRE':
+        return 'Solicitud de cierre';
       default:
         return codigo || '';
     }

@@ -134,6 +134,17 @@ export class NotificacionesService {
    * - Otros (SECRETARIA_GENERAL): no hay endpoint → retorna cadena vacía
    */
   private resolverEmailRevisor(targetRole: string, cedulaDocente: string): Observable<string> {
+    // Secretaría General siempre usa código 2 (dependencia central, no varía por facultad)
+    if (targetRole === 'SECRETARIA_GENERAL') {
+      return this.docenteInfoService.consultarSecretarioDependencia('2').pipe(
+        switchMap((persona) =>
+          persona ? this.docenteInfoService.obtenerEmailPorCedula(persona.documento) : of(null),
+        ),
+        map((email) => email ?? ''),
+        catchError(() => of('')),
+      );
+    }
+
     return this.docenteInfoService.consultarDocentePlanta(cedulaDocente).pipe(
       switchMap((info) => {
         const codigoFacultad = info?.codigoFacultad ?? '';
@@ -157,7 +168,6 @@ export class NotificacionesService {
           );
         }
 
-        // SECRETARIA_GENERAL y otros: sin endpoint disponible aún
         return of('');
       }),
       catchError(() => of('')),

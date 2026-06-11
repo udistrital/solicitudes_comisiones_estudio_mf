@@ -44,10 +44,6 @@ export class SolicitudesService {
     return this.apiMid.get<any>(`v1/solicitud/solicitudes_by_identificacion/${cedula}`);
   }
 
-  listarPendientesCoordinador(cedula: string) {
-    return this.apiMid.get<any>(`v1/solicitud/pendientes_coordinador/${cedula}`);
-  }
-
   listarPendientesSecretaria(cedula: string) {
     return this.apiMid.get<any>(`v1/solicitud/pendientes_secretaria/${cedula}`);
   }

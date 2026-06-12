@@ -1763,7 +1763,7 @@ export class DetalleSolicitudComponent implements OnInit {
     });
   }
 
-  private construirPayloadEditarSolicitud(): any | null {
+  private construirPayloadEditarSolicitud(): any {
     if (!this.id) {
       this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
       return null;
@@ -1898,7 +1898,6 @@ export class DetalleSolicitudComponent implements OnInit {
         },
       });
     });
-    return;
   }
 
 // Manejo documentos
@@ -2086,9 +2085,8 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private obtenerNombreRol(rol: string | undefined | null): string {
-    const key = String(rol || '').toUpperCase();
+    const key = String(rol ?? '').toUpperCase();
     switch (key) {
-      case 'SECRETARIA_ACADEMICA': return 'Secretaría Académica';
       case 'SECRETARIA_ACADEMICA': return 'Secretaría Académica';
       case 'SECRETARIA_GENERAL': return 'Secretaría General';
       case 'ADMIN_SGA': return 'Secretaría General';

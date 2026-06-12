@@ -704,32 +704,4 @@
       </div>
     </section>
   </mat-card>
-
-  <!-- ===== OBSERVACIONES ===== -->
-  <mat-card class="bg-white border border-black/10 rounded-xl p-3">
-    <section class="border border-black/10 rounded-xl overflow-hidden bg-white bg-gradient-to-b from-sga/5 to-white">
-      <header
-        class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
-        <div class="font-semibold text-sm">{{ 'FR010.OBSERVACIONES' | translate }}</div>
-        <div class="text-xs text-black/60">{{ 'FR010.OBSERVACIONES_NOTA' | translate }}</div>
-      </header>
-
-      <div class="p-3">
-        <div class="text-xs text-black/60 mb-1">{{ 'FR010.OBS_LABEL' | translate }}</div>
-        <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
-          <textarea
-            matInput
-            rows="4"
-            maxlength="500"
-            [placeholder]="'FR010.OBS_PH' | translate"
-            formControlName="observaciones"
-            (blur)="normalizeText('observaciones')"></textarea>
-          <mat-error *ngIf="isInvalid('observaciones')">
-            {{ getError('observaciones') }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-    </section>
-  </mat-card>
-
 </form>

@@ -2387,8 +2387,14 @@ export class DetalleSolicitudComponent implements OnInit {
 
   aprobarCierreSolicitud(): void {
     this.popup.confirm(
-      '¿Está seguro de aprobar la solicitud de cierre?',
-      'Aprobar',
+      `
+      Se aprobará la solicitud de cierre de comisión y se dará por finalizado el proceso asociado.
+
+      Verifique que la información de la comisión haya sido revisada y que los soportes presentados cumplan con los requisitos establecidos.
+
+      Esta acción quedará registrada en el sistema.
+      `,
+      'Aprobar solicitud',
       'Cancelar'
     ).then(result => {
 
@@ -2406,7 +2412,8 @@ export class DetalleSolicitudComponent implements OnInit {
         TerceroId: this.identificacionDocente,
         RolUsuario: this.role
       };
-      console.log(payload)
+
+      console.log(payload);
 
       this.solicitudesService.aprobarCierre(payload).subscribe({
         next: () => {
@@ -2436,8 +2443,14 @@ export class DetalleSolicitudComponent implements OnInit {
 
   rechazarCierreSolicitud(): void {
     this.popup.confirm(
-      '¿Está seguro de rechazar la solicitud de cierre?',
-      'Rechazar',
+      `
+      Se rechazará la solicitud de cierre de comisión.
+
+      Antes de continuar, asegúrese de que la observación registrada describa claramente los motivos del rechazo para que puedan ser consultados posteriormente.
+
+      Esta acción quedará registrada en el sistema.
+      `,
+      'Rechazar solicitud',
       'Cancelar'
     ).then(result => {
 

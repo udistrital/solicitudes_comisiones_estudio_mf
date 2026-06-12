@@ -206,17 +206,22 @@ export class Fr010FormComponent implements OnInit {
       Object.keys(sol.controls).forEach((key) => {
         if (key !== 'q1_fecha') sol.get(key)?.enable();
       });
-      sol.patchValue(data.solicitante);
-    }
+      const patchedSolicitante = { ...data.solicitante };
+      ['q10_fecha_ingreso_universidad'].forEach((key) => {
+        const parsedDate = this.parseDateValue(patchedSolicitante[key]);
+        if (parsedDate) patchedSolicitante[key] = parsedDate;
+      });
+
+    sol.patchValue(patchedSolicitante);
+  }
 
     if (data.solicitud) {
       const solicitud = this.form.get('solicitud') as FormGroup;
       // Para fechas que vienen como string, convertir a Date si es necesario
       const patched = { ...data.solicitud };
       ['q19_fecha_aceptacion', 'q23_fecha_inicio_estudios', 'q24_fecha_culminacion_estudios'].forEach((key) => {
-        if (patched[key] && typeof patched[key] === 'string' && patched[key].trim()) {
-          patched[key] = new Date(patched[key]);
-        }
+        const parsedDate = this.parseDateValue(patched[key]);
+        if (parsedDate) patched[key] = parsedDate;
       });
       solicitud.patchValue(patched);
     }

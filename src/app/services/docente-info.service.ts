@@ -12,16 +12,16 @@ interface DatosDocenteResponse {
   };
 }
 
-interface DocumentoTokenResponse {
-  email?: string;
-  documento?: string;
-  role?: string[];
+interface TercerosDatosIdentificacion {
+  TerceroId?: {
+    UsuarioWSO2?: string;
+  };
 }
 
 @Injectable({ providedIn: 'root' })
 export class DocenteInfoService {
   private readonly baseUrl = ((environment as any)['ACADEMICA_JBPM_SERVICE'] ?? '') as string;
-  private readonly autenticacionMidUrl = ((environment as any)['AUTENTICACION_MID_SERVICE'] ?? '') as string;
+  private readonly tercerosCrudUrl = ((environment as any)['TERCEROS_CRUD_SERVICE'] ?? '') as string;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -56,11 +56,11 @@ export class DocenteInfoService {
   }
 
   obtenerEmailPorCedula(cedula: string): Observable<string | null> {
-    const url = `${this.autenticacionMidUrl.replace(/\/+$/, '')}/token/documentoToken`;
+    const url = `${this.tercerosCrudUrl.replace(/\/+$/, '')}/datos_identificacion?query=numero:${encodeURIComponent(cedula)}`;
     return this.http
-      .post<DocumentoTokenResponse>(url, { numero: cedula }, { headers: this.authHeaders() })
+      .get<TercerosDatosIdentificacion[]>(url, { headers: this.authHeaders() })
       .pipe(
-        map((res) => res?.email?.trim() || null),
+        map((res) => res?.[0]?.TerceroId?.UsuarioWSO2?.trim() || null),
         catchError(() => of(null)),
       );
   }

@@ -230,7 +230,7 @@ export class BandejaComponent implements OnInit {
       next: (detalles) => {
         this.rows = filasBase.map((fila) => {
           const detalle = detalles[String(fila.id)]?.Data;
-          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud) || fila.tipoSolicitudCodigo || '';
+          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud) ?? fila.tipoSolicitudCodigo ?? '';
 
           return {
             ...fila,
@@ -601,8 +601,6 @@ export class BandejaComponent implements OnInit {
           });
         }
       });
-      return;
     }
-
   }
 }

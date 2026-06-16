@@ -27,7 +27,7 @@ const COL_ID_DOCENTE: ColumnDef<SolicitudRow> = {
 const COL_TIPO_SOLICITUD: ColumnDef<SolicitudRow> = {
   key: 'tipoSolicitudNombre',
   header: 'TABLE.TIPO_SOLICITUD',
-  cell: (r) => r.tipoSolicitudNombre || '',
+  cell: (r) => r.tipoSolicitudNombre ?? '',
 };
 // Columnas para roles no-docente (todos comparten la misma estructura)
 const COLUMNS_REVIEWER: ColumnDef<SolicitudRow>[] = [

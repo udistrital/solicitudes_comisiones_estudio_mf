@@ -14,11 +14,9 @@ import { SolicitudesService } from '../../../services/solicitudes.service';
 import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
 import { PermisosUtils } from '../../../utils/role-permissions';
 
-import { forkJoin} from 'rxjs';
-
 type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
 
-// Códigos de tipo documental — FR010 es fijo del frontend,
+// Códigos de tipo documental — FR010 es un tipo especial manejado por el frontend
 // el resto viene dinámicamente del CRUD (tipo_documento_solicitud)
 type TipoDocumentalFijo = 'FR010';
 type TipoDocumentalCode = TipoDocumentalFijo | string;
@@ -518,7 +516,7 @@ export class DetalleSolicitudComponent implements OnInit {
   private parseDateOnly(value: string | null): Date | null {
     if (!value) return null;
 
-    const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value));
     if (!match) return null;
 
     return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
@@ -836,7 +834,7 @@ export class DetalleSolicitudComponent implements OnInit {
     }
  
     if (this.normalizarRolUsuario(doc.rolUsuario, '') !== 'DOCENTE') {
-      return false;0
+      return false;
     }
 
     if (!this.esSolicitudEnSubsanacion()) {
@@ -1063,7 +1061,7 @@ export class DetalleSolicitudComponent implements OnInit {
     this.documentos = [...this.documentos];
   }
   
-  private obtenerFormularioActualComparable(): any | null {
+  private obtenerFormularioActualComparable(): any {
     if (this.fr010Comp) {
       return this.fr010Comp.getFormData();
     }
@@ -1098,7 +1096,6 @@ export class DetalleSolicitudComponent implements OnInit {
     }
 
     event.preventDefault();
-    event.returnValue = '';
   }
 
   private navegarABandeja(): void {
@@ -1388,7 +1385,7 @@ export class DetalleSolicitudComponent implements OnInit {
           }
 
           doc.base64 = base64;
-          doc.mimeType = doc.mimeType || 'application/pdf';
+          doc.mimeType = doc.mimeType ?? 'application/pdf';
 
           this.abrirDialogoDocumento(doc);
         },
@@ -1651,7 +1648,7 @@ export class DetalleSolicitudComponent implements OnInit {
       const actualizacionesDocumento = this.construirActualizacionesDocumentoPorAccion(accion);
 
       const ejecutarCambioSolicitud = () => {
-        this.solicitudesService.cambiarEstadoSolicitud(payload!).subscribe({
+        this.solicitudesService.cambiarEstadoSolicitud(payload).subscribe({
           next: () => {
             this.cambiandoEstado = false;
             this.accionRevisionEnProceso = null;
@@ -1687,7 +1684,6 @@ export class DetalleSolicitudComponent implements OnInit {
         },
       });
     });
-    return;
   }
 
   // ========== Construcción del payload para el MID ==========
@@ -1763,7 +1759,7 @@ export class DetalleSolicitudComponent implements OnInit {
     });
   }
 
-  private construirPayloadEditarSolicitud(): any | null {
+  private construirPayloadEditarSolicitud(): any {
     if (!this.id) {
       this.popup.error(this.translate.instant('POPUPS.ERROR_GUARDAR'));
       return null;
@@ -1898,7 +1894,6 @@ export class DetalleSolicitudComponent implements OnInit {
         },
       });
     });
-    return;
   }
 
 // Manejo documentos
@@ -2086,9 +2081,8 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private obtenerNombreRol(rol: string | undefined | null): string {
-    const key = String(rol || '').toUpperCase();
+    const key = String(rol ?? '').toUpperCase();
     switch (key) {
-      case 'SECRETARIA_ACADEMICA': return 'Secretaría Académica';
       case 'SECRETARIA_ACADEMICA': return 'Secretaría Académica';
       case 'SECRETARIA_GENERAL': return 'Secretaría General';
       case 'ADMIN_SGA': return 'Secretaría General';

@@ -6,7 +6,7 @@ import { ConfiguracionService } from '../services/configuracion.service';
 @Injectable({ providedIn: 'root' })
 export class PermisosUtils {
 
-  constructor(private configuracionService: ConfiguracionService) {}
+  constructor(private readonly configuracionService: ConfiguracionService) {}
 
   /**
    * Obtiene en una sola consulta si los roles dados tienen permiso sobre cada opción.
@@ -18,8 +18,15 @@ export class PermisosUtils {
     const endpoint = `perfil_x_menu_opcion?limit=-1&query=Opcion__Nombre__in:${opciones.join('|')},Perfil__Nombre__in:${roles.join('|')}`;
     return this.configuracionService.get(endpoint).pipe(
       map((response: any) => {
-        const data: any[] = Array.isArray(response?.Data) ? response.Data
-          : Array.isArray(response) ? response : [];
+        let data: any[];
+
+        if (Array.isArray(response?.Data)) {
+          data = response.Data;
+        } else if (Array.isArray(response)) {
+          data = response;
+        } else {
+          data = [];
+        }
         const concedidos = new Set(data.map((row: any) => row?.Opcion?.Nombre).filter(Boolean));
         return opciones.reduce((acc, op) => ({ ...acc, [op]: concedidos.has(op) }), {} as Record<string, boolean>);
       }),

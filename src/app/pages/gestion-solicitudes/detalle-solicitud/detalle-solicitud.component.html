@@ -346,7 +346,7 @@
     <!-- ============================
          VISTA REVISOR (no docente)
     ============================= -->
-    <ng-container *ngIf="permisosListos && permisos['revisar_solicitud'] && !cargandoDetalle">
+    <ng-container *ngIf="permisosListos && permisos['revisar_solicitud'] && !isDocente && !cargandoDetalle">
 
       <input
         #reviewerFileInput

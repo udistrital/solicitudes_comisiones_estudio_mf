@@ -2268,6 +2268,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
   
   retornarSolicitud() {
+    if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     if (this.permisosListos && !this.permisos['retornar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     if (!this.puedeRetornarRevisor) { return; }
     if (this.esSolicitudProrroga) { return; }
@@ -2290,6 +2291,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   rechazarSolicitud() {
+    if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     if (this.permisosListos && !this.permisos['rechazar_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     this.popup.confirm(
       this.translate.instant('POPUPS.RECHAZAR_MSG'),

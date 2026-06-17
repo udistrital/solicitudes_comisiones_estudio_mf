@@ -11,6 +11,11 @@
           <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-black/70">
             <span>{{ 'DETALLE.RADICADO' | translate }}: <b>{{ radicado }}</b></span>
             <span>{{ 'DETALLE.ROL' | translate }}: <b>{{ role }}</b></span>
+            <span *ngIf="isAdminSga"
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium border border-amber-300">
+              <mat-icon class="text-[13px] leading-none" style="font-size:13px;height:13px;width:13px">visibility</mat-icon>
+              {{ 'ADMIN_SGA.MODO_OBSERVADOR' | translate }}
+            </span>
             <span *ngIf="!isDocente && docenteNombre">
               {{ 'TABLE.NOMBRE_DOCENTE' | translate }}: <b>{{ docenteNombre }}</b>
             </span>
@@ -449,7 +454,7 @@
                 <div class="flex justify-center">
                   <mat-checkbox
                     [(ngModel)]="d.checked"
-                    [disabled]="d.esDocumentoRolActual || d.actualizandoEstado"
+                    [disabled]="d.esDocumentoRolActual || d.actualizandoEstado || isAdminSga"
                     (ngModelChange)="onDocCheckedChange(d)">
                   </mat-checkbox>
                 </div>
@@ -490,7 +495,7 @@
             <div class="p-3">
               <div class="text-xs text-black/60 mb-1">{{ 'DETALLE.ESCRIBE_TU_OBS' | translate }}</div>
               <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
-                <textarea matInput rows="3" [placeholder]="'DETALLE.PLACEHOLDER_OBS' | translate" [(ngModel)]="observacionRevision"></textarea>
+                <textarea matInput rows="3" [placeholder]="'DETALLE.PLACEHOLDER_OBS' | translate" [(ngModel)]="observacionRevision" [disabled]="isAdminSga"></textarea>
               </mat-form-field>
             </div>
             <div *ngIf="!isSupervisor" class="px-3 pb-1 text-xs text-black/50">
@@ -560,6 +565,7 @@
                       <mat-datepicker-toggle
                         matSuffix
                         [for]="pickerSupervisorInicio"
+                        [disabled]="isAdminSga"
                       ></mat-datepicker-toggle>
 
                       <mat-datepicker #pickerSupervisorInicio></mat-datepicker>
@@ -599,6 +605,7 @@
                       <mat-datepicker-toggle
                         matSuffix
                         [for]="pickerSupervisorFinal"
+                        [disabled]="isAdminSga"
                       ></mat-datepicker-toggle>
 
                       <mat-datepicker #pickerSupervisorFinal></mat-datepicker>
@@ -621,6 +628,7 @@
                 class="h-10 px-8 rounded-lg text-sm"
                 (click)="darInicioComision()"
                 [disabled]="
+                  isAdminSga ||
                   !fechaInicioContrato ||
                   !fechaFinalContrato ||
                   !puedeContinuarRevisor ||
@@ -691,7 +699,7 @@
                         readonly
                       />
 
-                      <mat-datepicker-toggle matSuffix [for]="pickerTerminacionProrroga"></mat-datepicker-toggle>
+                      <mat-datepicker-toggle matSuffix [for]="pickerTerminacionProrroga" [disabled]="isAdminSga"></mat-datepicker-toggle>
                       <mat-datepicker #pickerTerminacionProrroga></mat-datepicker>
                     </mat-form-field>
                   </div>
@@ -715,6 +723,7 @@
                 class="h-9 px-3.5 rounded-lg"
                 (click)="aprobarProrrogaDecano()"
                 [disabled]="
+                  isAdminSga ||
                   !fechaInicioProrroga ||
                   !fechaTerminacionProrroga ||
                   !fechasProrrogaValidas ||
@@ -756,6 +765,7 @@
                 mat-flat-button
                 color="primary"
                 class="h-10 px-6 rounded-lg"
+                [disabled]="isAdminSga"
                 (click)="revisarComision()">
 
                 <mat-icon>fact_check</mat-icon>
@@ -773,6 +783,7 @@
               <button
                 mat-stroked-button
                 class="h-10 px-5 rounded-lg border-red-300 text-red-600"
+                [disabled]="isAdminSga"
                 (click)="rechazarCierreSolicitud()">
 
                 <mat-icon>close</mat-icon>
@@ -784,6 +795,7 @@
                 mat-flat-button
                 color="primary"
                 class="h-10 px-5 rounded-lg"
+                [disabled]="isAdminSga"
                 (click)="aprobarCierreSolicitud()">
 
                 <mat-icon>check_circle</mat-icon>

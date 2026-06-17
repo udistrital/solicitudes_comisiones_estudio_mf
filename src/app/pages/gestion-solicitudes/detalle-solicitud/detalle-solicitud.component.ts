@@ -101,6 +101,7 @@ export class DetalleSolicitudComponent implements OnInit {
   role: Role = 'DOCENTE';
   roles: string[] = [];
   mode: 'EDITAR' | 'GESTIONAR' | 'VER' = 'GESTIONAR';
+  isAdminSga = false;
 
   readonly opcionesPermisos = [
     'crear_solicitud',
@@ -228,6 +229,7 @@ export class DetalleSolicitudComponent implements OnInit {
     SECRETARIA_ACADEMICA: 'APROB_SEC_ACAD',
     SECRETARIA_GENERAL: 'APROB_SEC_GRAL',
     DECANO: 'APROB_DEC',
+    ADMIN_SGA: 'APROB',
   };
 
   private readonly ESTADO_DOCUMENTO_SIGUIENTE_POR_ROL: Partial<Record<Role, EstadoDocumento>> = {
@@ -273,10 +275,18 @@ export class DetalleSolicitudComponent implements OnInit {
     const rawId = this.route.snapshot.paramMap.get('id');
 
     this.roles = getRolesUsuario();
-    this.role = resolverRolEfectivo(this.roles) ?? 'DOCENTE';
+    const rolResuelto = resolverRolEfectivo(this.roles);
     this.mode = (this.route.snapshot.queryParamMap.get('mode') as any) || 'GESTIONAR';
 
-    // Permisos: una sola consulta bulk, controlan visibilidad de secciones y acciones
+    if (rolResuelto === 'ADMIN_SGA') {
+      this.isAdminSga = true;
+      const rolEmulado = sessionStorage.getItem('admin_sga_rol_emulado') as Role | null;
+      this.role = rolEmulado ?? 'SECRETARIA_ACADEMICA';
+    } else {
+      this.role = rolResuelto ?? 'DOCENTE';
+    }
+
+    // Permisos: consulta bulk para todos los roles, incluyendo ADMIN_SGA
     this.permisosUtils.obtenerPermisos(this.roles, this.opcionesPermisos).subscribe({
       next: (permisos) => {
         this.permisos = permisos;
@@ -596,7 +606,7 @@ export class DetalleSolicitudComponent implements OnInit {
       idTipoDocumento: d.idTipoDocumento,
       descripcion: d.descripcion,
       rolUsuario: d.rolUsuario,
-      esDocumentoRolActual: this.role !== 'DOCENTE' && d.rolUsuario === this.rolDocumentalActual(),
+      esDocumentoRolActual: !this.isAdminSga && this.role !== 'DOCENTE' && d.rolUsuario === this.rolDocumentalActual(),
       pendienteCrear: false,
       subiendoArchivo: false,
     }));
@@ -1099,7 +1109,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   private navegarABandeja(): void {
-    this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+    this.router.navigate(['/solicitudes']);
   }
 
 
@@ -1446,6 +1456,7 @@ export class DetalleSolicitudComponent implements OnInit {
     SECRETARIA_ACADEMICA: 'REV_SEC_GRAL',
     SECRETARIA_GENERAL: 'REV_DEC',
     DECANO: 'APROB_EJEC',
+    ADMIN_SGA: 'NO_ENV',
   };
 
   private readonly ESTADO_RETORNAR: Partial<Record<Role, EstadoSolicitud>> = {
@@ -1459,6 +1470,7 @@ export class DetalleSolicitudComponent implements OnInit {
     SECRETARIA_ACADEMICA: 'SECRETARIA_ACADEMICA',
     SECRETARIA_GENERAL: 'SECRETARIA_GENERAL',
     DECANO: 'DECANATURA',
+    ADMIN_SGA: 'ADMIN_SGA',
   };
 
   private resolverNuevoEstado(accion: AccionEstado): EstadoSolicitud | null {
@@ -1653,7 +1665,7 @@ export class DetalleSolicitudComponent implements OnInit {
             this.cambiandoEstado = false;
             this.accionRevisionEnProceso = null;
             this.popup.alertSuccess(this.translate.instant(mensajeExito));
-            this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+            this.router.navigate(['/solicitudes']);
           },
           error: () => {
             this.cambiandoEstado = false;
@@ -1876,7 +1888,7 @@ export class DetalleSolicitudComponent implements OnInit {
           }
 
           if (redirigir) {
-            this.router.navigate(['/solicitudes'], { queryParams: { role: this.role } });
+            this.router.navigate(['/solicitudes']);
           }
         },
         error: () => {
@@ -1983,7 +1995,7 @@ export class DetalleSolicitudComponent implements OnInit {
           cargandoArchivo: false,
           pendienteCrear: false,
           rolUsuario,
-          esDocumentoRolActual: rolUsuario === this.rolDocumentalActual(),
+          esDocumentoRolActual: !this.isAdminSga && rolUsuario === this.rolDocumentalActual(),
         }
       });
 
@@ -2149,6 +2161,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   aprobarProrrogaDecano(): void {
+    if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     if (this.permisosListos && !this.permisos['dar_inicio_solicitud']) {
       this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
       return;
@@ -2311,6 +2324,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
   // ========== Acciones Supervisor / Decanatura ==========
   darInicioComision() {
+    if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     if (this.permisosListos && !this.permisos['dar_inicio_solicitud']) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     if (!this.fechaInicioContrato) {
       this.popup.alertError(this.translate.instant('POPUPS.INICIO_FECHA_REQUIRED'));
@@ -2363,6 +2377,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   revisarComision(): void {
+    if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
 
     const idComision =
       this.detalleSolicitudActual?.Solicitud?.ComisionId;
@@ -2380,6 +2395,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   aprobarCierreSolicitud(): void {
+    if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     this.popup.confirm(
       `
       Se aprobará la solicitud de cierre de comisión y se dará por finalizado el proceso asociado.
@@ -2436,6 +2452,7 @@ export class DetalleSolicitudComponent implements OnInit {
   }
 
   rechazarCierreSolicitud(): void {
+    if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     this.popup.confirm(
       `
       Se rechazará la solicitud de cierre de comisión.

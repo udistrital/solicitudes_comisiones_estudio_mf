@@ -11,6 +11,11 @@
           <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-black/70">
             <span>{{ 'DETALLE.RADICADO' | translate }}: <b>{{ radicado }}</b></span>
             <span>{{ 'DETALLE.ROL' | translate }}: <b>{{ role }}</b></span>
+            <span *ngIf="isAdminSga"
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium border border-amber-300">
+              <mat-icon class="text-[13px] leading-none" style="font-size:13px;height:13px;width:13px">visibility</mat-icon>
+              {{ 'ADMIN_SGA.MODO_OBSERVADOR' | translate }}
+            </span>
             <span *ngIf="!isDocente && docenteNombre">
               {{ 'TABLE.NOMBRE_DOCENTE' | translate }}: <b>{{ docenteNombre }}</b>
             </span>
@@ -236,7 +241,7 @@
     <ng-container *ngIf="isDocenteReadOnly && !cargandoDetalle">
 
       <!-- Tabla de documentos (solo lectura, sin eliminar) -->
-      <mat-card class="p-3 rounded-xl border border-black/10 bg-white mb-3">
+      <mat-card *ngIf="!esSolicitudCierre" class="p-3 rounded-xl border border-black/10 bg-white mb-3">
         <div class="rounded-xl border-2 border-sga overflow-hidden bg-white">
           <div class="h-2.5 bg-gradient-to-r from-sga to-sga/60" aria-hidden="true"></div>
 
@@ -341,7 +346,7 @@
     <!-- ============================
          VISTA REVISOR (no docente)
     ============================= -->
-    <ng-container *ngIf="permisosListos && permisos['revisar_solicitud'] && !cargandoDetalle">
+    <ng-container *ngIf="permisosListos && permisos['revisar_solicitud'] && !isDocente && !cargandoDetalle">
 
       <input
         #reviewerFileInput
@@ -351,7 +356,7 @@
         (change)="onReviewerFileSelected($event)"
       />
       <!-- Tabla documentos (Revisor) -->
-      <mat-card class="p-3 rounded-xl border border-black/10 bg-white mb-3">
+      <mat-card *ngIf="!esSolicitudCierre" class="p-3 rounded-xl border border-black/10 bg-white mb-3">
         <div class="rounded-xl border-2 border-sga overflow-hidden bg-white">
           <div class="h-2.5 bg-gradient-to-r from-sga to-sga/60" aria-hidden="true"></div>
 
@@ -449,7 +454,7 @@
                 <div class="flex justify-center">
                   <mat-checkbox
                     [(ngModel)]="d.checked"
-                    [disabled]="d.esDocumentoRolActual || d.actualizandoEstado"
+                    [disabled]="d.esDocumentoRolActual || d.actualizandoEstado || isAdminSga"
                     (ngModelChange)="onDocCheckedChange(d)">
                   </mat-checkbox>
                 </div>
@@ -490,7 +495,7 @@
             <div class="p-3">
               <div class="text-xs text-black/60 mb-1">{{ 'DETALLE.ESCRIBE_TU_OBS' | translate }}</div>
               <mat-form-field appearance="outline" subscriptSizing="fixed" class="w-full sga-no-notch-textarea">
-                <textarea matInput rows="3" [placeholder]="'DETALLE.PLACEHOLDER_OBS' | translate" [(ngModel)]="observacionRevision"></textarea>
+                <textarea matInput rows="3" [placeholder]="'DETALLE.PLACEHOLDER_OBS' | translate" [(ngModel)]="observacionRevision" [disabled]="isAdminSga"></textarea>
               </mat-form-field>
             </div>
             <div *ngIf="!isSupervisor" class="px-3 pb-1 text-xs text-black/50">
@@ -503,7 +508,7 @@
       <!-- ============================
           PANEL SUPERVISOR / DECANATURA
       ================================ -->
-      <mat-card *ngIf="isSupervisor && !esSolicitudProrroga" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
+      <mat-card *ngIf="isSupervisor && !esSolicitudProrroga && !esSolicitudCierre" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
 
         <!-- Tarjeta interna -->
         <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
@@ -560,6 +565,7 @@
                       <mat-datepicker-toggle
                         matSuffix
                         [for]="pickerSupervisorInicio"
+                        [disabled]="isAdminSga"
                       ></mat-datepicker-toggle>
 
                       <mat-datepicker #pickerSupervisorInicio></mat-datepicker>
@@ -599,6 +605,7 @@
                       <mat-datepicker-toggle
                         matSuffix
                         [for]="pickerSupervisorFinal"
+                        [disabled]="isAdminSga"
                       ></mat-datepicker-toggle>
 
                       <mat-datepicker #pickerSupervisorFinal></mat-datepicker>
@@ -621,6 +628,7 @@
                 class="h-10 px-8 rounded-lg text-sm"
                 (click)="darInicioComision()"
                 [disabled]="
+                  isAdminSga ||
                   !fechaInicioContrato ||
                   !fechaFinalContrato ||
                   !puedeContinuarRevisor ||
@@ -691,7 +699,7 @@
                         readonly
                       />
 
-                      <mat-datepicker-toggle matSuffix [for]="pickerTerminacionProrroga"></mat-datepicker-toggle>
+                      <mat-datepicker-toggle matSuffix [for]="pickerTerminacionProrroga" [disabled]="isAdminSga"></mat-datepicker-toggle>
                       <mat-datepicker #pickerTerminacionProrroga></mat-datepicker>
                     </mat-form-field>
                   </div>
@@ -715,6 +723,7 @@
                 class="h-9 px-3.5 rounded-lg"
                 (click)="aprobarProrrogaDecano()"
                 [disabled]="
+                  isAdminSga ||
                   !fechaInicioProrroga ||
                   !fechaTerminacionProrroga ||
                   !fechasProrrogaValidas ||
@@ -729,6 +738,78 @@
         </section>
       </mat-card>
 
+      <mat-card
+        *ngIf="isSupervisor && esSolicitudCierre"
+        class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
+
+        <section class="border border-black/10 rounded-xl overflow-hidden bg-white">
+
+          <header
+            class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
+
+            <div class="font-semibold text-sm">
+              Gestión de solicitud de cierre
+            </div>
+
+            <div class="text-xs text-black/50">
+              Revise la comisión y tome una decisión sobre la solicitud
+            </div>
+
+          </header>
+
+          <div class="px-4 pt-4 pb-3">
+
+            <!-- Acción principal -->
+            <div class="flex justify-center">
+              <button
+                mat-flat-button
+                color="primary"
+                class="h-10 px-6 rounded-lg"
+                [disabled]="isAdminSga"
+                (click)="revisarComision()">
+
+                <mat-icon>fact_check</mat-icon>
+                Revisar comisión
+
+              </button>
+            </div>
+
+            <!-- Separador -->
+            <div class="my-5 border-t border-black/10"></div>
+
+            <!-- Acciones finales -->
+            <div class="flex flex-wrap justify-center gap-3">
+
+              <button
+                mat-stroked-button
+                class="h-10 px-5 rounded-lg border-red-300 text-red-600"
+                [disabled]="isAdminSga"
+                (click)="rechazarCierreSolicitud()">
+
+                <mat-icon>close</mat-icon>
+                Rechazar solicitud
+
+              </button>
+
+              <button
+                mat-flat-button
+                color="primary"
+                class="h-10 px-5 rounded-lg"
+                [disabled]="isAdminSga"
+                (click)="aprobarCierreSolicitud()">
+
+                <mat-icon>check_circle</mat-icon>
+                Aprobar solicitud
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </mat-card>
       <mat-card *ngIf="!isSupervisor" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-3">
         <div class="flex flex-wrap items-center justify-end gap-2">
           <button mat-stroked-button class="h-9 px-3 rounded-lg border-black/20"

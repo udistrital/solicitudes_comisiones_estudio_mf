@@ -44,10 +44,6 @@ export class SolicitudesService {
     return this.apiMid.get<any>(`v1/solicitud/solicitudes_by_identificacion/${cedula}`);
   }
 
-  listarPendientesCoordinador(cedula: string) {
-    return this.apiMid.get<any>(`v1/solicitud/pendientes_coordinador/${cedula}`);
-  }
-
   listarPendientesSecretaria(cedula: string) {
     return this.apiMid.get<any>(`v1/solicitud/pendientes_secretaria/${cedula}`);
   }
@@ -88,5 +84,31 @@ export class SolicitudesService {
   obtenerDocumentoPorEnlace(enlace: string) {
     return this.apiGestorDocMid.get<any>(`v1/document/${encodeURIComponent(enlace)}`);
   }
-  
+
+  // ========== Solicitud de cierre ==========
+  aprobarCierre(payload: {
+    SolicitudId: number;
+    ComisionId: number;
+    Observacion: string;
+    TerceroId: number;
+    RolUsuario: string;
+  }) {
+    return this.apiMid.post(
+      `v1/comision/aprobar_cierre`,
+      payload
+    );
+  }
+
+  rechazarCierre(payload: {
+    SolicitudId: number;
+    Observacion: string;
+    TerceroId: number;
+    RolUsuario: string;
+  }) {
+    return this.apiMid.post(
+      `v1/comision/rechazar_cierre`,
+      payload
+    );
+  }
+
 }

@@ -2,7 +2,8 @@ export type Role =
   | 'DOCENTE'
   | 'SECRETARIA_ACADEMICA'
   | 'SECRETARIA_GENERAL'
-  | 'DECANO';
+  | 'DECANO'
+  | 'ADMIN_SGA';
 
 /** Roles válidos del sistema de comisiones, en orden de prioridad ascendente */
 export const VALID_ROLES: Role[] = [
@@ -10,6 +11,7 @@ export const VALID_ROLES: Role[] = [
   'SECRETARIA_ACADEMICA',
   'SECRETARIA_GENERAL',
   'DECANO',
+  'ADMIN_SGA',
 ];
 
 const ROLE_PRIORITY: Record<Role, number> = {
@@ -17,6 +19,7 @@ const ROLE_PRIORITY: Record<Role, number> = {
   SECRETARIA_ACADEMICA: 2,
   SECRETARIA_GENERAL: 3,
   DECANO: 4,
+  ADMIN_SGA: 99,
 };
 
 /**

@@ -174,7 +174,7 @@ export class NotificacionesService {
     if (!email) return;
     // Para redirigir TODOS los correos a una dirección de prueba, descomentar la línea
     // siguiente y reemplazar el correo. Comentarla de nuevo para restaurar el envío real:
-    // email = 'correo_prueba@ejemplo.com';
+    email = 'diagutierrezr@udistrital.edu.co';
     const destinatario = email;
     const destination: EmailDestination = {
       Destination: { ToAddresses: [destinatario] },

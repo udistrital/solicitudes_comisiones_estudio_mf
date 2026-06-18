@@ -2450,7 +2450,7 @@ export class DetalleSolicitudComponent implements OnInit {
       if (siguienteRole) {
         this.notificaciones.notificarRevisor(
           'comisiones_asignada_revisor', siguienteRole, cedula,
-          this.buildNotifData('revisor', { observaciones: obs, instancia: this.notificaciones.instanciaLabel(siguienteRole) }),
+          this.buildNotifData('revisor', { observaciones: obs, instancia: this.notificaciones.instanciaLabel(this.role) }),
         );
       }
     }

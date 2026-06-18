@@ -20,9 +20,6 @@ interface EmailDestination {
   ReplacementTemplateData: Record<string, string>;
 }
 
-/** Correo de pruebas — TODO: eliminar línea en enviar() cuando se activen correos reales */
-export const REVIEWER_EMAIL_PLACEHOLDER = 'jonathan100111a@gmail.com';
-
 @Injectable({ providedIn: 'root' })
 export class NotificacionesService {
   private readonly api: ReturnType<RequestManager['client']>;
@@ -36,7 +33,6 @@ export class NotificacionesService {
 
   private readonly SIGUIENTE_INSTANCIA_LABEL: Record<string, string> = {
     // Flujo: DOCENTE → SECRETARIA_ACADEMICA → SECRETARIA_GENERAL → DECANO
-    // (COORDINADOR eliminado del flujo — ver CLAUDE.md)
     SECRETARIA_ACADEMICA: 'Secretaría General',
     SECRETARIA_GENERAL: 'Decanatura',
   };
@@ -122,8 +118,8 @@ export class NotificacionesService {
     data: NotificacionData,
   ): void {
     this.resolverEmailRevisor(targetRole, cedulaDocente).subscribe({
-      next: (email) => this.enviar(template, email || REVIEWER_EMAIL_PLACEHOLDER, data),
-      error: () => this.enviar(template, REVIEWER_EMAIL_PLACEHOLDER, data),
+      next: (email) => { if (email) this.enviar(template, email, data); },
+      error: (err: any) => console.error(`[Notificaciones] No se pudo resolver email del revisor para ${targetRole}:`, err),
     });
   }
 
@@ -176,8 +172,10 @@ export class NotificacionesService {
 
   private enviar(template: string, email: string, data: NotificacionData): void {
     if (!email) return;
-    // TODO: eliminar esta línea cuando se activen correos reales
-    const destinatario = REVIEWER_EMAIL_PLACEHOLDER;
+    // Para redirigir TODOS los correos a una dirección de prueba, descomentar la línea
+    // siguiente y reemplazar el correo. Comentarla de nuevo para restaurar el envío real:
+    // email = 'correo_prueba@ejemplo.com';
+    const destinatario = email;
     const destination: EmailDestination = {
       Destination: { ToAddresses: [destinatario] },
       ReplacementTemplateData: { ...data },

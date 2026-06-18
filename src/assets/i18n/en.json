@@ -8,6 +8,7 @@
     "TITLE_SECRETARIA_ACADEMICA": "Pending requests - Academic Secretary",
     "TITLE_SECRETARIA_GENERAL": "Pending requests - General Secretary",
     "TITLE_DECANO": "Pending requests - Dean's Office",
+    "TITLE_ADMIN_SGA": "Support panel - Observer mode",
     "TITLE_SIN_ROL": "Request inbox",
     "SIN_ROL_MSG": "No valid role for this module was found in your session. Please verify that your account has an assigned role.",
     "CARGANDO": "Loading requests...",
@@ -20,7 +21,17 @@
     "DOCENTE": "Professor",
     "SECRETARIA_ACADEMICA": "Academic Secretary",
     "SECRETARIA_GENERAL": "General Secretary",
-    "DECANO": "Dean's Office"
+    "DECANO": "Dean's Office",
+    "ADMIN_SGA": "SGA Support"
+  },
+  "ADMIN_SGA": {
+    "ROL_EMULADO": "Emulate role",
+    "CEDULA_DOCENTE": "Professor ID",
+    "CEDULA_PLACEHOLDER": "ID number",
+    "BUSCAR": "Search",
+    "ERROR_SIN_CEDULA": "Enter an ID number to search.",
+    "CEDULAS_RECIENTES": "Recent",
+    "MODO_OBSERVADOR": "Observer mode"
   },
   "TABLE": {
     "ID_SOLICITUD": "Request ID",

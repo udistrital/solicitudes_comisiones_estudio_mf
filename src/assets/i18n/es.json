@@ -8,6 +8,7 @@
     "TITLE_SECRETARIA_ACADEMICA": "Solicitudes pendientes - Secretaria Academica",
     "TITLE_SECRETARIA_GENERAL": "Solicitudes pendientes - Secretaria General",
     "TITLE_DECANO": "Solicitudes pendientes - Decanatura",
+    "TITLE_ADMIN_SGA": "Panel de soporte - Modo observador",
     "TITLE_SIN_ROL": "Bandeja de solicitudes",
     "SIN_ROL_MSG": "No se encontro un rol valido para este modulo en su sesion. Verifique que su cuenta tiene un rol asignado.",
     "CARGANDO": "Cargando solicitudes...",
@@ -20,7 +21,17 @@
     "DOCENTE": "Docente",
     "SECRETARIA_ACADEMICA": "Secretaria Academica",
     "SECRETARIA_GENERAL": "Secretaria General",
-    "DECANO": "Decanatura"
+    "DECANO": "Decanatura",
+    "ADMIN_SGA": "Soporte SGA"
+  },
+  "ADMIN_SGA": {
+    "ROL_EMULADO": "Emular rol",
+    "CEDULA_DOCENTE": "Cedula del docente",
+    "CEDULA_PLACEHOLDER": "Numero de cedula",
+    "BUSCAR": "Buscar",
+    "ERROR_SIN_CEDULA": "Ingrese una cedula para buscar.",
+    "CEDULAS_RECIENTES": "Recientes",
+    "MODO_OBSERVADOR": "Modo observador"
   },
   "TABLE": {
     "ID_SOLICITUD": "ID Solicitud",

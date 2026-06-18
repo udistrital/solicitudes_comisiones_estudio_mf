@@ -11,8 +11,9 @@ import { estadoSolicitudClass, estadoDocumentoClass, mapEstadoNombreACodigo } fr
 import { VisorDocumentosComponent } from '../components/visor-documentos/visor-documentos.component';
 import { Fr010FormComponent } from '../components/fr010-form/fr010-form.component';
 import { SolicitudesService } from '../../../services/solicitudes.service';
-import { getDocumento, getRolesUsuario } from '../../../utils/auth.util';
+import { getDocumento, getCorreoSesion, getRolesUsuario } from '../../../utils/auth.util';
 import { PermisosUtils } from '../../../utils/role-permissions';
+import { NotificacionesService, NotificacionData } from '../../../services/notificaciones.service';
 
 type AccionEstado = 'ENVIAR' | 'RETORNAR' | 'RECHAZAR' | 'DAR_INICIO';
 
@@ -267,6 +268,7 @@ export class DetalleSolicitudComponent implements OnInit {
     private readonly translate: TranslateService,
     private readonly solicitudesService: SolicitudesService,
     private readonly permisosUtils: PermisosUtils,
+    private readonly notificaciones: NotificacionesService,
   ) {}
 
   ngOnInit(): void {
@@ -1632,6 +1634,7 @@ export class DetalleSolicitudComponent implements OnInit {
   private ejecutarCambioEstado(accion: AccionEstado, observacion: string, mensajeExito: string, fechaInicio: string = '', fechaFinal: string ='', fechaFinalAnterior: string = '',): void {
     const nuevoEstado = this.resolverNuevoEstado(accion);
     if (!nuevoEstado) return;
+    const estadoAnterior = this.estadoSolicitud;
 
     this.cargarIdTipoDocumentoGestor('DE_SOL_COM', (id) => {
       this.idTipoDocumentoGestor = id;
@@ -1664,6 +1667,7 @@ export class DetalleSolicitudComponent implements OnInit {
           next: () => {
             this.cambiandoEstado = false;
             this.accionRevisionEnProceso = null;
+            this.dispararNotificacionCambioEstado(accion, nuevoEstado!, estadoAnterior, observacion);
             this.popup.alertSuccess(this.translate.instant(mensajeExito));
             this.router.navigate(['/solicitudes']);
           },
@@ -2378,9 +2382,94 @@ export class DetalleSolicitudComponent implements OnInit {
     });
   }
 
+  // ========== Notificaciones ==========
+
+  private correoDocente(): string {
+    if (this.isDocente) {
+      return getCorreoSesion() ?? '';
+    }
+    return this.formularioRecuperado?.solicitante?.q6_correo ?? '';
+  }
+
+  private buildNotifData(target: 'docente' | 'revisor', overrides: Partial<NotificacionData> = {}): NotificacionData {
+    return {
+      nombre_docente: this.docenteNombre || this.correoDocente(),
+      id_solicitud: String(this.id),
+      tipo_solicitud: this.notificaciones.tipoSolicitudLabel(this.tipoSolicitudCodigo),
+      instancia: this.notificaciones.instanciaLabel(this.role),
+      observaciones: '',
+      url_sistema: target === 'docente'
+        ? this.notificaciones.urlDocente(this.id)
+        : this.notificaciones.urlRevisor(this.id),
+      fecha: this.notificaciones.fechaActual(),
+      ...overrides,
+    };
+  }
+
+  private dispararNotificacionCambioEstado(
+    accion: AccionEstado,
+    nuevoEstado: string,
+    estadoAnterior: string,
+    observacion: string,
+  ): void {
+    const emailDocente = this.correoDocente();
+    const cedula = String(this.identificacionDocente);
+    const obs = observacion?.trim() ?? '';
+
+    if (accion === 'RETORNAR') {
+      this.notificaciones.notificarRetornada(emailDocente, this.buildNotifData('docente', { observaciones: obs }));
+      return;
+    }
+
+    if (accion === 'RECHAZAR') {
+      this.notificaciones.notificarRechazada(emailDocente, this.buildNotifData('docente', { observaciones: obs }));
+      return;
+    }
+
+    if (accion === 'DAR_INICIO') {
+      this.notificaciones.notificarAprobada(emailDocente, this.buildNotifData('docente', { observaciones: obs }));
+      return;
+    }
+
+    if (accion === 'ENVIAR' && this.isDocente) {
+      const esReenvio = estadoAnterior.startsWith('SUBS_');
+
+      if (esReenvio) {
+        const targetRole = estadoAnterior === 'SUBS_SEC_ACAD' ? 'SECRETARIA_ACADEMICA'
+          : estadoAnterior === 'SUBS_DEC' ? 'DECANO'
+          : 'SECRETARIA_GENERAL';
+        this.notificaciones.notificarRevisor(
+          'comisiones_subsanada_revisor', targetRole, cedula,
+          this.buildNotifData('revisor', { observaciones: obs, instancia: this.notificaciones.instanciaLabel(targetRole) }),
+        );
+      } else {
+        this.notificaciones.notificarEnviadaDocente(emailDocente, this.buildNotifData('docente', { observaciones: obs }));
+        this.notificaciones.notificarRevisor(
+          'comisiones_enviada_revisor', 'SECRETARIA_ACADEMICA', cedula,
+          this.buildNotifData('revisor', { observaciones: obs, instancia: this.notificaciones.instanciaLabel('SECRETARIA_ACADEMICA') }),
+        );
+      }
+      return;
+    }
+
+    if (accion === 'ENVIAR' && !this.isDocente) {
+      const siguienteRole = this.role === 'SECRETARIA_ACADEMICA' ? 'SECRETARIA_GENERAL'
+        : this.role === 'SECRETARIA_GENERAL' ? 'DECANO'
+        : '';
+      this.notificaciones.notificarAvaladaDocente(emailDocente, this.buildNotifData('docente', { observaciones: obs }));
+      if (siguienteRole) {
+        this.notificaciones.notificarRevisor(
+          'comisiones_asignada_revisor', siguienteRole, cedula,
+          this.buildNotifData('revisor', { observaciones: obs, instancia: this.notificaciones.instanciaLabel(this.role) }),
+        );
+      }
+    }
+  }
+
+  // ========== Acciones solicitud de cierre ==========
+
   revisarComision(): void {
     if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
-
     const idComision =
       this.detalleSolicitudActual?.Solicitud?.ComisionId;
 
@@ -2424,8 +2513,7 @@ export class DetalleSolicitudComponent implements OnInit {
         TerceroId: this.identificacionDocente,
         RolUsuario: this.role
       };
-
-      console.log(payload);
+      console.log(payload)
 
       this.solicitudesService.aprobarCierre(payload).subscribe({
         next: () => {

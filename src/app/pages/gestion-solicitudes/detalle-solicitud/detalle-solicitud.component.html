@@ -226,7 +226,7 @@
           </button>
 
           <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-            [disabled]="!puedeEnviarDocente || !isFormularioDocenteEditable"
+            [disabled]="guardando || !puedeEnviarDocente || !isFormularioDocenteEditable"
             (click)="enviarDocente()">
             {{ 'ACTIONS.ENVIAR' | translate }}
           </button>

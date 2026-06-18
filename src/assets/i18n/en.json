@@ -368,7 +368,10 @@
     "FECHA_INICIO_PRORROGA_REQUIRED": "The extension start date was not found.",
     "FECHA_TERMINACION_PRORROGA_REQUIRED": "You must enter the extension end date.",
     "FECHA_TERMINACION_PRORROGA_INVALIDA": "The extension end date must be after the start date.",
-    "AVALAR_PRORROGA_MSG": "You confirm that you want to approve the extension and update the commission end date."
+    "AVALAR_PRORROGA_MSG": "You confirm that you want to approve the extension and update the commission end date.",
+    "FORMULARIO_INCOMPLETO": "You must complete all required fields in the FR-010 form before continuing.",
+    "DOCUMENTOS_INCOMPLETOS": "You must upload all required documents before submitting the request.",
+    "SOLICITUD_O_COMISION_ACTIVA": "You cannot create a new request because you have an active request or an ongoing study commission."
   },
   "TIPOS_SOLICITUD": {
     "SOL_INI": "Commission request",

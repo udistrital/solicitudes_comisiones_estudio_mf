@@ -192,6 +192,7 @@ export class DetalleSolicitudComponent implements OnInit {
   observacionesSubsanacion: ObservacionItem[] = [];
 
   fr010Json: any = null;
+  fr010Completo = false;
 
   // Cierre
   esSolicitudCierre = false;
@@ -369,11 +370,19 @@ export class DetalleSolicitudComponent implements OnInit {
           : [...docsFinales];
 
         const selectedCode = this.selectedRequiredDoc?.code;
+        const fr010Default =
+          this.requiredDocs.find((documento) => documento.code === 'FR010') ?? null;
 
         this.documentos = this.buildDocumentos(this.requiredDocs);
+
         this.selectedRequiredDoc = selectedCode
-          ? this.requiredDocs.find((d) => d.code === selectedCode) ?? null
-          : null;
+          ? this.requiredDocs.find((documento) => documento.code === selectedCode)
+              ?? fr010Default
+              ?? this.requiredDocs[0]
+              ?? null
+          : fr010Default
+              ?? this.requiredDocs[0]
+              ?? null;
 
         if (this.detalleSolicitudActual) {
           this.poblarDocumentosDesdeDetalle(this.detalleSolicitudActual);
@@ -1046,6 +1055,8 @@ export class DetalleSolicitudComponent implements OnInit {
       return;
     }
 
+    this.fr010Completo = this.fr010Comp.isFormularioCompleto();
+
     const payload = {
       meta: {
         codigo: 'GD-PR-013-FR-010',
@@ -1059,17 +1070,22 @@ export class DetalleSolicitudComponent implements OnInit {
 
     const fr = this.documentos.find((d) => d.code === 'FR010');
     if (fr) {
-      fr.estado = 'CARG';
-      fr.autorSoporte = 'Docente';
-      fr.metadatos = {
-        documento_requerido: fr.nombre,
-        codigo: fr.code,
-        cargadoPor: 'DOCENTE',
-        fechaCarga: new Date().toISOString(),
-        origen: 'FORMULARIO_DIGITAL',
-      };
+      if (this.fr010Completo) {
+        fr.estado = 'CARG';
+        fr.autorSoporte = 'Docente';
+        fr.metadatos = {
+          documento_requerido: fr.nombre,
+          codigo: fr.code,
+          cargadoPor: 'DOCENTE',
+          fechaCarga: new Date().toISOString(),
+          origen: 'FORMULARIO_DIGITAL',
+        };
+      } else {
+        fr.estado = 'PENDIENTE';
+        fr.autorSoporte = undefined;
+        fr.metadatos = undefined;
+      }
     }
-
     this.documentos = [...this.documentos];
   }
   
@@ -1143,6 +1159,28 @@ export class DetalleSolicitudComponent implements OnInit {
     
     if (!this.isFormularioDocenteEditable) {
       this.popup.error('La solicitud no puede enviarse nuevamente desde el estado actual.');
+      return;
+    }
+
+    if (this.fr010Comp) {
+      this.fr010Completo = this.fr010Comp.isFormularioCompleto();
+    }
+
+    if (!this.fr010Completo) {
+      this.fr010Comp?.form.markAllAsTouched();
+
+      this.popup.alertError(
+        this.translate.instant('POPUPS.FORMULARIO_INCOMPLETO')
+      );
+      return;
+    }
+
+    this.sincronizarBorradorFr010();
+
+    if (!this.puedeEnviarDocente) {
+      this.popup.error(
+        this.translate.instant('POPUPS.DOCUMENTOS_INCOMPLETOS')
+      );
       return;
     }
 
@@ -1419,10 +1457,20 @@ export class DetalleSolicitudComponent implements OnInit {
       this.popup.error(this.translate.instant('POPUPS.FR010_NO_LISTO'));
       return;
     }
+
+    if (!this.fr010Comp.isFormularioCompleto()) {
+      this.fr010Comp.form.markAllAsTouched();
+      this.popup.alertError(
+        this.translate.instant('POPUPS.FR010_NO_LISTO')
+      );
+      return;
+    }
+
     this.fr010Comp.save();
   }
 
   onFr010Saved(payload: any): void {
+    this.fr010Completo = true;
     this.fr010Json = payload;
     console.log('[FR-010 JSON]', payload);
 
@@ -1720,7 +1768,7 @@ export class DetalleSolicitudComponent implements OnInit {
     const formulario: any = {
       solicitante: fr010Data.solicitante || {},
       solicitud: fr010Data.solicitud || {},
-      formulario_completado: !!this.fr010Json,
+      formulario_completado: this.fr010Completo,
     };
     // Incluir secciones adicionales si existen
     if (fr010Data.financiacion_colombia) formulario.financiacion_colombia = fr010Data.financiacion_colombia;
@@ -1785,7 +1833,7 @@ export class DetalleSolicitudComponent implements OnInit {
     const formulario: any = {
       solicitante: fr010Data.solicitante || {},
       solicitud: fr010Data.solicitud || {},
-      formulario_completado: !!this.fr010Json || !!this.formularioRecuperado,
+      formulario_completado: this.fr010Completo,
     };
 
     if (fr010Data.financiacion_colombia) {

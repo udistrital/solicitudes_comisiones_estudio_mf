@@ -68,19 +68,58 @@ export class Fr010FormComponent implements OnInit {
 
     this.form = this.fb.group({
       solicitante: this.fb.group({
-        q1_fecha: [{ value: todayIso, disabled: true }],
-        q2_facultad: [{ value: '', disabled: true }],
-        q3_nombres_apellidos: [{ value: '', disabled: true }],
-        q4_documento_identificacion: [{ value: '', disabled: true }],
-        q5_edad: [{ value: '', disabled: true }],
-        q6_correo: [{ value: '', disabled: true }],
-        q7_proyecto: [{ value: '', disabled: true }],
-        q8_telefono: [{ value: '', disabled: true }],
-        q9_celular: [{ value: '', disabled: true }],
-        q10_fecha_ingreso_universidad: [{ value: null, disabled: true }],
-        q10_resolucion_rh: [{ value: '', disabled: true }],
-        q11_categoria_ingreso: [{ value: '', disabled: true }],
-        q12_categoria_actual: [{ value: '', disabled: true }],
+        q1_fecha: [
+          { value: todayIso, disabled: true },
+          [Validators.required],
+        ],
+        q2_facultad: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q3_nombres_apellidos: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q4_documento_identificacion: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q5_edad: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q6_correo: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q7_proyecto: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q8_telefono: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q9_celular: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q10_fecha_ingreso_universidad: [
+          { value: null, disabled: true },
+          [Validators.required, this.dateValueValidator()],
+        ],
+        q10_resolucion_rh: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q11_categoria_ingreso: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
+        q12_categoria_actual: [
+          { value: '', disabled: true },
+          [Validators.required],
+        ],
       }),
 
       solicitud: this.fb.group(
@@ -134,7 +173,7 @@ export class Fr010FormComponent implements OnInit {
             ],
           ],
           q19_fecha_aceptacion: [null, [Validators.required, this.dateValueValidator()]],
-          q20_num_semestres: ['', [Validators.required, this.integerRangeValidator(1, 4)]],
+          q20_num_semestres: ['', [Validators.required, this.integerRangeValidator(1, 10)]],
           q22_tipo_apoyo_requerido: ['', [Validators.required]],
           q23_fecha_inicio_estudios: [null, [Validators.required, this.dateValueValidator()]],
           q24_fecha_culminacion_estudios: [null, [Validators.required, this.dateValueValidator()]],
@@ -660,8 +699,11 @@ export class Fr010FormComponent implements OnInit {
 
     // Verificar campos clave del solicitante (disabled, no validados por Angular)
     const camposSolicitante = [
-      'q2_facultad', 'q3_nombres_apellidos', 'q4_documento_identificacion',
-      'q6_correo', 'q7_proyecto',
+      'q1_fecha', 'q2_facultad', 'q3_nombres_apellidos',
+      'q4_documento_identificacion', 'q5_edad', 'q6_correo',
+      'q7_proyecto', 'q8_telefono', 'q9_celular',
+      'q10_fecha_ingreso_universidad', 'q10_resolucion_rh',
+      'q11_categoria_ingreso','q12_categoria_actual',
     ];
     const solicitanteOk = camposSolicitante.every(
       (key) => String((raw.solicitante as any)[key] ?? '').trim().length > 0,

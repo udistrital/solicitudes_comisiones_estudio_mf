@@ -33,6 +33,41 @@
         </div>
       </mat-card>
 
+      <!-- ADMIN_SGA: selector de rol a emular -->
+      <mat-card *ngIf="isAdminSga" class="bg-white border border-black/10 rounded-xl px-4 py-3 mb-4">
+        <h3 class="m-0 mb-3 text-sm font-semibold text-black/70">{{ 'ADMIN_SGA.ROL_EMULADO' | translate }}</h3>
+        <div class="flex flex-wrap items-end gap-3">
+          <mat-form-field appearance="outline" subscriptSizing="fixed" class="min-w-[220px] sga-no-notch">
+            <mat-select [value]="rolEmulado" (selectionChange)="onRolEmuladoSeleccionado($event.value)">
+              <mat-option *ngFor="let r of rolesEmulables" [value]="r">
+                {{ 'ROLES.' + r | translate }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <ng-container *ngIf="rolEmulado === 'DOCENTE'">
+            <input type="text" [(ngModel)]="cedulaBusqueda"
+              class="h-[56px] mb-[22px] min-w-[200px] rounded-md border border-black/30 bg-white px-3 text-sm text-black/80 placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-sga/20 focus:border-sga"
+              [placeholder]="'ADMIN_SGA.CEDULA_DOCENTE' | translate"
+              (keyup.enter)="buscarComoDocente()">
+            <button mat-flat-button color="primary" class="h-[56px] px-4 rounded-lg mb-[22px]"
+              (click)="buscarComoDocente()" [disabled]="cargando">
+              <mat-icon class="mr-1 text-[18px]">search</mat-icon>
+              {{ 'ADMIN_SGA.BUSCAR' | translate }}
+            </button>
+            <!-- Cédulas recientes de la sesión -->
+            <div *ngIf="cedulasHistorial.length > 0" class="w-full flex flex-wrap items-center gap-2 mt-1">
+              <span class="text-xs text-black/50">{{ 'ADMIN_SGA.CEDULAS_RECIENTES' | translate }}:</span>
+              <button *ngFor="let c of cedulasHistorial" type="button"
+                class="inline-flex items-center rounded-full border border-sga/30 bg-sga/5 text-sga text-xs font-medium px-2.5 py-0.5 hover:bg-sga/10 transition-colors"
+                (click)="cedulaBusqueda = c; buscarComoDocente()">
+                {{ c }}
+              </button>
+            </div>
+          </ng-container>
+        </div>
+      </mat-card>
+
       <!-- Loading -->
       <div *ngIf="cargando" class="text-center py-8 text-black/60">
         <p>{{ 'BANDEJA.CARGANDO' | translate }}</p>

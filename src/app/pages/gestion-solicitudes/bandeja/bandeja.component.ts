@@ -47,6 +47,13 @@ export class BandejaComponent implements OnInit {
   readonly opcionesPermisos = ['crear_solicitud', 'ver_filtros_tabla'];
   permisos: { [key: string]: boolean } = {};
   permisosListos = false;
+  
+  tieneSolicitudActiva = false;
+  tieneComisionEnCurso = false;
+
+  get bloquearCreacionSolicitud(): boolean {
+    return this.tieneSolicitudActiva || this.tieneComisionEnCurso;
+  }
 
   constructor(
     private readonly router: Router,
@@ -313,22 +320,17 @@ export class BandejaComponent implements OnInit {
   }
 
   private procesarRespuestaDocente(resp: any, idsActivos: Set<number>): void {
-    const data: any[] = (resp?.Data || []).filter((item: any) => {
-      const solicitudId = this.extraerSolicitudIdDocente(item);
-      const comisionId = this.extraerComisionIdDocente(item);
-
-      return (solicitudId !== null && idsActivos.has(solicitudId)) || comisionId !== null;
-    });
+    const data: any[] = Array.isArray(resp?.Data) ? resp.Data : [];
 
     const filasBase = data.reduce((acc: SolicitudRow[], item: any) => {
       const solicitudId = this.extraerSolicitudIdDocente(item);
+
       if (solicitudId === null) {
         return acc;
       }
 
       const estadoObj = item.esado_solicitud || item.estado_solicitud || null;
       const estadoNombre = estadoObj?.Nombre || null;
-      const estadoCodigo = mapEstadoNombreACodigo(estadoNombre);
 
       acc.push({
         id: solicitudId,
@@ -336,7 +338,7 @@ export class BandejaComponent implements OnInit {
         docente: item.nombre || item.nombre_docente || '',
         idDocente: '',
         proyecto: item.programa || item.proyecto || '',
-        estado: estadoCodigo,
+        estado: mapEstadoNombreACodigo(estadoNombre),
         fecha: this.formatFecha(item.fecha_creacion),
         tipoSolicitudCodigo: '',
         tipoSolicitudNombre: '',
@@ -345,37 +347,66 @@ export class BandejaComponent implements OnInit {
       return acc;
     }, []);
 
+    this.tieneSolicitudActiva = filasBase.some((fila) =>
+      idsActivos.has(fila.id)
+    );
+    this.tieneComisionEnCurso = false;
+
     if (filasBase.length === 0) {
       this.rows = [];
       this.cargando = false;
       return;
     }
 
-    const detalleCalls: Record<string, ReturnType<SolicitudesService['obtenerDetalleSolicitud']>> = {};
+    const detalleCalls: Record<
+      string,
+      ReturnType<SolicitudesService['obtenerDetalleSolicitud']>
+    > = {};
 
     for (const fila of filasBase) {
-      detalleCalls[String(fila.id)] = this.solicitudesService.obtenerDetalleSolicitud(fila.id).pipe(
-        catchError(() => of(null))
-      );
+      detalleCalls[String(fila.id)] =
+        this.solicitudesService.obtenerDetalleSolicitud(fila.id).pipe(
+          catchError(() => of(null))
+        );
     }
 
     forkJoin(detalleCalls).subscribe({
       next: (detalles) => {
-        this.rows = filasBase.map((fila) => {
-          const detalle = detalles[String(fila.id)]?.Data;
-          const codigoTipo = this.extraerTipoSolicitudCodigo(detalle?.Solicitud) ?? fila.tipoSolicitudCodigo ?? '';
+        this.tieneComisionEnCurso = filasBase.some((fila) =>
+          this.esComisionEnCurso(detalles[String(fila.id)]?.Data)
+        );
 
-          return {
-            ...fila,
-            tipoSolicitudCodigo: codigoTipo,
-            tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
-          };
-        });
+        this.rows = filasBase
+          .filter((fila) => {
+            const detalle = detalles[String(fila.id)]?.Data;
+
+            return idsActivos.has(fila.id) ||
+              this.esComisionEnCurso(detalle);
+          })
+          .map((fila) => {
+            const detalle = detalles[String(fila.id)]?.Data;
+            const codigoTipo =
+              this.extraerTipoSolicitudCodigo(detalle?.Solicitud) ||
+              fila.tipoSolicitudCodigo ||
+              '';
+
+            return {
+              ...fila,
+              comisionId:
+                this.extraerComisionIdDocente(detalle) ??
+                fila.comisionId,
+              tipoSolicitudCodigo: codigoTipo,
+              tipoSolicitudNombre: this.nombreTipoSolicitud(codigoTipo),
+            };
+          });
 
         this.cargando = false;
       },
       error: () => {
-        this.rows = filasBase;
+        // Si fallan los detalles, se conserva al menos la validación
+        // de solicitudes activas obtenida desde el CRUD.
+        this.tieneComisionEnCurso = false;
+        this.rows = filasBase.filter((fila) => idsActivos.has(fila.id));
         this.cargando = false;
       },
     });
@@ -562,6 +593,10 @@ export class BandejaComponent implements OnInit {
       item.ComisionId?.id,
       item.comision?.Id,
       item.comision?.id,
+      item.Solicitud?.ComisionId?.Id,
+      item.Solicitud?.ComisionId?.id,
+      item.solicitud?.comision_id?.Id,
+      item.solicitud?.comision_id?.id,
     ];
 
     for (const candidato of candidatos) {
@@ -571,6 +606,48 @@ export class BandejaComponent implements OnInit {
     }
 
     return null;
+  }
+
+  private esComisionEnCurso(detalle: any): boolean {
+    const comision =
+      detalle?.Comision ||
+      detalle?.comision ||
+      detalle?.Solicitud?.ComisionId ||
+      detalle?.solicitud?.comision_id;
+
+    const comisionId = this.extraerComisionIdDocente(detalle);
+
+    if (!comision || comisionId === null) {
+      return false;
+    }
+
+    if (comision.Activo === false || comision.activo === false) {
+      return false;
+    }
+
+    const fechaFinalRaw =
+      comision.FechaFinal ||
+      comision.fecha_final ||
+      comision.fechaFinal;
+
+    // Si existe una comisión activa sin fecha final, se bloquea por seguridad.
+    if (!fechaFinalRaw) {
+      return true;
+    }
+
+    const fechaFinal = new Date(fechaFinalRaw);
+
+    // Una fecha no interpretable no debe permitir crear otra comisión.
+    if (isNaN(fechaFinal.getTime())) {
+      return true;
+    }
+
+    fechaFinal.setHours(23, 59, 59, 999);
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    return fechaFinal >= hoy;
   }
 
   private extraerDocenteDeDetalle(data: any): { nombre: string; documento: string } {
@@ -636,6 +713,13 @@ export class BandejaComponent implements OnInit {
   crearSolicitud(): void {
     if (this.permisosListos && !this.permisos['crear_solicitud']) {
       this.popup.error(this.translate.instant('GLOBAL.acceso_denegado'));
+      return;
+    }
+
+    if (this.bloquearCreacionSolicitud) {
+      this.popup.error(
+        this.translate.instant('POPUPS.SOLICITUD_O_COMISION_ACTIVA')
+      );
       return;
     }
 

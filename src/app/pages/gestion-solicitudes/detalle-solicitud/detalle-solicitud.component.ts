@@ -1226,7 +1226,7 @@ export class DetalleSolicitudComponent implements OnInit {
     }
     
     if (!this.puedeEditarDocumentoDocente(doc)) {
-      this.popup.alertError('Este documento ya fue aprobado por el revisor y no debe modificarse durante la subsanación.');
+      this.popup.alertError('POPUPS.DOC_APROBADO_NO_MODIFICAR');
       return;
     }
 
@@ -1322,7 +1322,7 @@ export class DetalleSolicitudComponent implements OnInit {
   eliminarDocumento(doc: DocumentoItem): void {
 
     if (this.isDocente && !this.puedeEliminarDocumentoDocente(doc)) {
-      this.popup.alertError('Este documento ya fue aprobado por el revisor y no debe modificarse durante la subsanación.');
+      this.popup.alertError('POPUPS.DOC_APROBADO_NO_MODIFICAR');
       return;
     }
 
@@ -2523,7 +2523,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
     if (!idComision) {
       this.popup.alertError(
-        'No se encontró la comisión asociada a esta solicitud.'
+        this.translate.instant('POPUPS.COMISION_NO_ENCONTRADA')
       );
       return;
     }
@@ -2536,16 +2536,10 @@ export class DetalleSolicitudComponent implements OnInit {
   aprobarCierreSolicitud(): void {
     if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     this.popup.confirm(
-      `
-      Se aprobará la solicitud de cierre de comisión y se dará por finalizado el proceso asociado.
-
-      Verifique que la información de la comisión haya sido revisada y que los soportes presentados cumplan con los requisitos establecidos.
-
-      Esta acción quedará registrada en el sistema.
-      `,
-      'Aprobar solicitud',
-      'Cancelar'
-    ).then(result => {
+        this.translate.instant('POPUPS.APROBAR_CIERRE_MSG'),
+        this.translate.instant('ACTIONS.APROBAR'),
+        this.translate.instant('ACTIONS.CANCELAR')
+      ).then(result => {
 
       if (!result.isConfirmed) {
         return;
@@ -2570,7 +2564,7 @@ export class DetalleSolicitudComponent implements OnInit {
           this.accionRevisionEnProceso = null;
 
           this.popup.alertSuccess(
-            'La solicitud de cierre fue aprobada correctamente.'
+            this.translate.instant('POPUPS.APROBAR_CIERRE_OK')
           ).then(() => {
             this.regresar();
           });
@@ -2582,7 +2576,7 @@ export class DetalleSolicitudComponent implements OnInit {
           this.accionRevisionEnProceso = null;
 
           this.popup.alertError(
-            'No fue posible aprobar la solicitud de cierre.'
+            this.translate.instant('POPUPS.APROBAR_CIERRE_ERROR')
           );
         }
       });
@@ -2592,16 +2586,10 @@ export class DetalleSolicitudComponent implements OnInit {
   rechazarCierreSolicitud(): void {
     if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     this.popup.confirm(
-      `
-      Se rechazará la solicitud de cierre de comisión.
-
-      Antes de continuar, asegúrese de que la observación registrada describa claramente los motivos del rechazo para que puedan ser consultados posteriormente.
-
-      Esta acción quedará registrada en el sistema.
-      `,
-      'Rechazar solicitud',
-      'Cancelar'
-    ).then(result => {
+        this.translate.instant('POPUPS.RECHAZAR_CIERRE_MSG'),
+        this.translate.instant('ACTIONS.RECHAZAR'),
+        this.translate.instant('ACTIONS.CANCELAR')
+      ).then(result => {
 
       if (!result.isConfirmed) {
         return;
@@ -2624,8 +2612,8 @@ export class DetalleSolicitudComponent implements OnInit {
           this.accionRevisionEnProceso = null;
 
           this.popup.alertSuccess(
-            'La solicitud de cierre fue rechazada correctamente.'
-          ).then(() => {
+              this.translate.instant('POPUPS.RECHAZAR_CIERRE_OK')
+            ).then(() => {
             this.regresar();
           });
         },
@@ -2636,7 +2624,7 @@ export class DetalleSolicitudComponent implements OnInit {
           this.accionRevisionEnProceso = null;
 
           this.popup.alertError(
-            'No fue posible rechazar la solicitud de cierre.'
+            this.translate.instant('POPUPS.RECHAZAR_CIERRE_ERROR')
           );
         }
       });

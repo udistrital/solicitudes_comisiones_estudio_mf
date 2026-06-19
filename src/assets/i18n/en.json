@@ -371,7 +371,15 @@
     "AVALAR_PRORROGA_MSG": "You confirm that you want to approve the extension and update the commission end date.",
     "FORMULARIO_INCOMPLETO": "You must complete all required fields in the FR-010 form before continuing.",
     "DOCUMENTOS_INCOMPLETOS": "You must upload all required documents before submitting the request.",
-    "SOLICITUD_O_COMISION_ACTIVA": "You cannot create a new request because you have an active request or an ongoing study commission."
+    "SOLICITUD_O_COMISION_ACTIVA": "You cannot create a new request because you have an active request or an ongoing study commission.",
+    "DOC_APROBADO_NO_MODIFICAR": "This document has already been approved by the reviewer and must not be modified during the correction process.",
+    "COMISION_NO_ENCONTRADA": "No commission associated with this request was found.",
+    "APROBAR_CIERRE_MSG": "The commission closure request will be approved and the associated process will be finalized.<br><br>Please verify that the commission information has been reviewed and that the submitted supporting documents meet the established requirements.<br><br>This action will be recorded in the system.",
+    "APROBAR_CIERRE_OK": "The closure request was approved successfully.",
+    "APROBAR_CIERRE_ERROR": "The closure request could not be approved.",
+    "RECHAZAR_CIERRE_MSG": "The commission closure request will be rejected.<br><br>Before continuing, make sure that the recorded observation clearly describes the reasons for the rejection so they can be consulted later.<br><br>This action will be recorded in the system.",
+    "RECHAZAR_CIERRE_OK": "The closure request was rejected successfully.",
+    "RECHAZAR_CIERRE_ERROR": "The closure request could not be rejected."
   },
   "TIPOS_SOLICITUD": {
     "SOL_INI": "Commission request",
@@ -387,5 +395,12 @@
   "LANG": {
     "ES": "Espaniol",
     "EN": "English"
+  },
+  "CERRAR_SOLICITUD": {
+    "TITLE": "Closure Request Management",
+    "SUBTITLE": "Review the commission and make a decision regarding the request",
+    "REVISAR_COMISION": "Review Commission",
+    "RECHAZAR_SOLICITUD": "Reject Request",
+    "APROBAR_SOLICITUD": "Approve Request"
   }
 }

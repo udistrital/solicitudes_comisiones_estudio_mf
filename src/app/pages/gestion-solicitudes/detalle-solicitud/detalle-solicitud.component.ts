@@ -192,6 +192,7 @@ export class DetalleSolicitudComponent implements OnInit {
   observacionesSubsanacion: ObservacionItem[] = [];
 
   fr010Json: any = null;
+  fr010Completo = false;
 
   // Cierre
   esSolicitudCierre = false;
@@ -369,11 +370,19 @@ export class DetalleSolicitudComponent implements OnInit {
           : [...docsFinales];
 
         const selectedCode = this.selectedRequiredDoc?.code;
+        const fr010Default =
+          this.requiredDocs.find((documento) => documento.code === 'FR010') ?? null;
 
         this.documentos = this.buildDocumentos(this.requiredDocs);
+
         this.selectedRequiredDoc = selectedCode
-          ? this.requiredDocs.find((d) => d.code === selectedCode) ?? null
-          : null;
+          ? this.requiredDocs.find((documento) => documento.code === selectedCode)
+              ?? fr010Default
+              ?? this.requiredDocs[0]
+              ?? null
+          : fr010Default
+              ?? this.requiredDocs[0]
+              ?? null;
 
         if (this.detalleSolicitudActual) {
           this.poblarDocumentosDesdeDetalle(this.detalleSolicitudActual);
@@ -1046,6 +1055,8 @@ export class DetalleSolicitudComponent implements OnInit {
       return;
     }
 
+    this.fr010Completo = this.fr010Comp.isFormularioCompleto();
+
     const payload = {
       meta: {
         codigo: 'GD-PR-013-FR-010',
@@ -1059,17 +1070,22 @@ export class DetalleSolicitudComponent implements OnInit {
 
     const fr = this.documentos.find((d) => d.code === 'FR010');
     if (fr) {
-      fr.estado = 'CARG';
-      fr.autorSoporte = 'Docente';
-      fr.metadatos = {
-        documento_requerido: fr.nombre,
-        codigo: fr.code,
-        cargadoPor: 'DOCENTE',
-        fechaCarga: new Date().toISOString(),
-        origen: 'FORMULARIO_DIGITAL',
-      };
+      if (this.fr010Completo) {
+        fr.estado = 'CARG';
+        fr.autorSoporte = 'Docente';
+        fr.metadatos = {
+          documento_requerido: fr.nombre,
+          codigo: fr.code,
+          cargadoPor: 'DOCENTE',
+          fechaCarga: new Date().toISOString(),
+          origen: 'FORMULARIO_DIGITAL',
+        };
+      } else {
+        fr.estado = 'PENDIENTE';
+        fr.autorSoporte = undefined;
+        fr.metadatos = undefined;
+      }
     }
-
     this.documentos = [...this.documentos];
   }
   
@@ -1146,6 +1162,28 @@ export class DetalleSolicitudComponent implements OnInit {
       return;
     }
 
+    if (this.fr010Comp) {
+      this.fr010Completo = this.fr010Comp.isFormularioCompleto();
+    }
+
+    if (!this.fr010Completo) {
+      this.fr010Comp?.form.markAllAsTouched();
+
+      this.popup.alertError(
+        this.translate.instant('POPUPS.FORMULARIO_INCOMPLETO')
+      );
+      return;
+    }
+
+    this.sincronizarBorradorFr010();
+
+    if (!this.puedeEnviarDocente) {
+      this.popup.error(
+        this.translate.instant('POPUPS.DOCUMENTOS_INCOMPLETOS')
+      );
+      return;
+    }
+
     this.popup.confirm(
       this.translate.instant('POPUPS.CONFIRMAR_ENVIO'),
       this.translate.instant('ACTIONS.ENVIAR'),
@@ -1188,7 +1226,7 @@ export class DetalleSolicitudComponent implements OnInit {
     }
     
     if (!this.puedeEditarDocumentoDocente(doc)) {
-      this.popup.alertError('Este documento ya fue aprobado por el revisor y no debe modificarse durante la subsanación.');
+      this.popup.alertError('POPUPS.DOC_APROBADO_NO_MODIFICAR');
       return;
     }
 
@@ -1284,7 +1322,7 @@ export class DetalleSolicitudComponent implements OnInit {
   eliminarDocumento(doc: DocumentoItem): void {
 
     if (this.isDocente && !this.puedeEliminarDocumentoDocente(doc)) {
-      this.popup.alertError('Este documento ya fue aprobado por el revisor y no debe modificarse durante la subsanación.');
+      this.popup.alertError('POPUPS.DOC_APROBADO_NO_MODIFICAR');
       return;
     }
 
@@ -1419,10 +1457,20 @@ export class DetalleSolicitudComponent implements OnInit {
       this.popup.error(this.translate.instant('POPUPS.FR010_NO_LISTO'));
       return;
     }
+
+    if (!this.fr010Comp.isFormularioCompleto()) {
+      this.fr010Comp.form.markAllAsTouched();
+      this.popup.alertError(
+        this.translate.instant('POPUPS.FR010_NO_LISTO')
+      );
+      return;
+    }
+
     this.fr010Comp.save();
   }
 
   onFr010Saved(payload: any): void {
+    this.fr010Completo = true;
     this.fr010Json = payload;
     console.log('[FR-010 JSON]', payload);
 
@@ -1720,7 +1768,7 @@ export class DetalleSolicitudComponent implements OnInit {
     const formulario: any = {
       solicitante: fr010Data.solicitante || {},
       solicitud: fr010Data.solicitud || {},
-      formulario_completado: !!this.fr010Json,
+      formulario_completado: this.fr010Completo,
     };
     // Incluir secciones adicionales si existen
     if (fr010Data.financiacion_colombia) formulario.financiacion_colombia = fr010Data.financiacion_colombia;
@@ -1785,7 +1833,7 @@ export class DetalleSolicitudComponent implements OnInit {
     const formulario: any = {
       solicitante: fr010Data.solicitante || {},
       solicitud: fr010Data.solicitud || {},
-      formulario_completado: !!this.fr010Json || !!this.formularioRecuperado,
+      formulario_completado: this.fr010Completo,
     };
 
     if (fr010Data.financiacion_colombia) {
@@ -2475,7 +2523,7 @@ export class DetalleSolicitudComponent implements OnInit {
 
     if (!idComision) {
       this.popup.alertError(
-        'No se encontró la comisión asociada a esta solicitud.'
+        this.translate.instant('POPUPS.COMISION_NO_ENCONTRADA')
       );
       return;
     }
@@ -2488,16 +2536,10 @@ export class DetalleSolicitudComponent implements OnInit {
   aprobarCierreSolicitud(): void {
     if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     this.popup.confirm(
-      `
-      Se aprobará la solicitud de cierre de comisión y se dará por finalizado el proceso asociado.
-
-      Verifique que la información de la comisión haya sido revisada y que los soportes presentados cumplan con los requisitos establecidos.
-
-      Esta acción quedará registrada en el sistema.
-      `,
-      'Aprobar solicitud',
-      'Cancelar'
-    ).then(result => {
+        this.translate.instant('POPUPS.APROBAR_CIERRE_MSG'),
+        this.translate.instant('ACTIONS.APROBAR'),
+        this.translate.instant('ACTIONS.CANCELAR')
+      ).then(result => {
 
       if (!result.isConfirmed) {
         return;
@@ -2522,7 +2564,7 @@ export class DetalleSolicitudComponent implements OnInit {
           this.accionRevisionEnProceso = null;
 
           this.popup.alertSuccess(
-            'La solicitud de cierre fue aprobada correctamente.'
+            this.translate.instant('POPUPS.APROBAR_CIERRE_OK')
           ).then(() => {
             this.regresar();
           });
@@ -2534,7 +2576,7 @@ export class DetalleSolicitudComponent implements OnInit {
           this.accionRevisionEnProceso = null;
 
           this.popup.alertError(
-            'No fue posible aprobar la solicitud de cierre.'
+            this.translate.instant('POPUPS.APROBAR_CIERRE_ERROR')
           );
         }
       });
@@ -2544,16 +2586,10 @@ export class DetalleSolicitudComponent implements OnInit {
   rechazarCierreSolicitud(): void {
     if (this.isAdminSga) { this.popup.error(this.translate.instant('GLOBAL.acceso_denegado')); return; }
     this.popup.confirm(
-      `
-      Se rechazará la solicitud de cierre de comisión.
-
-      Antes de continuar, asegúrese de que la observación registrada describa claramente los motivos del rechazo para que puedan ser consultados posteriormente.
-
-      Esta acción quedará registrada en el sistema.
-      `,
-      'Rechazar solicitud',
-      'Cancelar'
-    ).then(result => {
+        this.translate.instant('POPUPS.RECHAZAR_CIERRE_MSG'),
+        this.translate.instant('ACTIONS.RECHAZAR'),
+        this.translate.instant('ACTIONS.CANCELAR')
+      ).then(result => {
 
       if (!result.isConfirmed) {
         return;
@@ -2576,8 +2612,8 @@ export class DetalleSolicitudComponent implements OnInit {
           this.accionRevisionEnProceso = null;
 
           this.popup.alertSuccess(
-            'La solicitud de cierre fue rechazada correctamente.'
-          ).then(() => {
+              this.translate.instant('POPUPS.RECHAZAR_CIERRE_OK')
+            ).then(() => {
             this.regresar();
           });
         },
@@ -2588,7 +2624,7 @@ export class DetalleSolicitudComponent implements OnInit {
           this.accionRevisionEnProceso = null;
 
           this.popup.alertError(
-            'No fue posible rechazar la solicitud de cierre.'
+            this.translate.instant('POPUPS.RECHAZAR_CIERRE_ERROR')
           );
         }
       });

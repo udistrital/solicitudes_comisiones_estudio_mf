@@ -226,7 +226,7 @@
           </button>
 
           <button mat-flat-button color="primary" class="h-9 px-3.5 rounded-lg"
-            [disabled]="!puedeEnviarDocente || !isFormularioDocenteEditable"
+            [disabled]="guardando || !puedeEnviarDocente || !isFormularioDocenteEditable"
             (click)="enviarDocente()">
             {{ 'ACTIONS.ENVIAR' | translate }}
           </button>
@@ -748,11 +748,11 @@
             class="px-3 py-2 border-b border-black/10 border-l-[6px] border-l-sga bg-sga/5 flex items-baseline justify-between gap-3">
 
             <div class="font-semibold text-sm">
-              Gestión de solicitud de cierre
+              {{ 'CERRAR_SOLICITUD.TITLE' | translate }}
             </div>
 
             <div class="text-xs text-black/50">
-              Revise la comisión y tome una decisión sobre la solicitud
+              {{ 'CERRAR_SOLICITUD.SUBTITLE' | translate }}
             </div>
 
           </header>
@@ -761,6 +761,7 @@
 
             <!-- Acción principal -->
             <div class="flex justify-center">
+
               <button
                 mat-flat-button
                 color="primary"
@@ -769,9 +770,11 @@
                 (click)="revisarComision()">
 
                 <mat-icon>fact_check</mat-icon>
-                Revisar comisión
+
+                {{ 'CERRAR_SOLICITUD.REVISAR_COMISION' | translate }}
 
               </button>
+
             </div>
 
             <!-- Separador -->
@@ -787,7 +790,8 @@
                 (click)="rechazarCierreSolicitud()">
 
                 <mat-icon>close</mat-icon>
-                Rechazar solicitud
+
+                {{ 'CERRAR_SOLICITUD.RECHAZAR_SOLICITUD' | translate }}
 
               </button>
 
@@ -799,7 +803,8 @@
                 (click)="aprobarCierreSolicitud()">
 
                 <mat-icon>check_circle</mat-icon>
-                Aprobar solicitud
+
+                {{ 'CERRAR_SOLICITUD.APROBAR_SOLICITUD' | translate }}
 
               </button>
 

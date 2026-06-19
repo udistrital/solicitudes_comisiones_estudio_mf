@@ -368,11 +368,23 @@
     "FECHA_INICIO_PRORROGA_REQUIRED": "No se encontró la fecha inicial de la prórroga.",
     "FECHA_TERMINACION_PRORROGA_REQUIRED": "Debe ingresar la fecha de terminación de la prórroga.",
     "FECHA_TERMINACION_PRORROGA_INVALIDA": "La fecha de terminación de la prórroga debe ser posterior a la fecha inicial.",
-    "AVALAR_PRORROGA_MSG": "Usted confirma que desea aprobar la prórroga y actualizar la fecha final de la Comisión."
+    "AVALAR_PRORROGA_MSG": "Usted confirma que desea aprobar la prórroga y actualizar la fecha final de la Comisión.",
+    "FORMULARIO_INCOMPLETO": "Debe completar todos los campos obligatorios del formulario FR-010 antes de continuar.",
+    "DOCUMENTOS_INCOMPLETOS": "Debe cargar todos los documentos requeridos antes de enviar la solicitud.",
+    "SOLICITUD_O_COMISION_ACTIVA": "No puede crear una nueva solicitud porque tiene una solicitud activa o una comisión de estudios en curso.",
+    "DOC_APROBADO_NO_MODIFICAR": "Este documento ya fue aprobado por el revisor y no debe modificarse durante la subsanación.",
+    "COMISION_NO_ENCONTRADA": "No se encontró la Comisión asociada a esta solicitud.",
+    "APROBAR_CIERRE_MSG": "Se aprobará la solicitud de cierre de Comisión y se dará por finalizado el proceso asociado.<br><br>Verifique que la información de la Comisión haya sido revisada y que los soportes presentados cumplan con los requisitos establecidos.<br><br>Esta acción quedará registrada en el sistema.",
+    "APROBAR_CIERRE_OK": "La solicitud de cierre fue aprobada correctamente.",
+    "APROBAR_CIERRE_ERROR": "No fue posible aprobar la solicitud de cierre.",
+    "RECHAZAR_CIERRE_MSG": "Se rechazará la solicitud de cierre de Comisión.<br><br>Antes de continuar, asegúrese de que la observación registrada describa claramente los motivos del rechazo para que puedan ser consultados posteriormente.<br><br>Esta acción quedará registrada en el sistema.",
+    "RECHAZAR_CIERRE_OK": "La solicitud de cierre fue rechazada correctamente.",
+    "RECHAZAR_CIERRE_ERROR": "No fue posible rechazar la solicitud de cierre."
   },
   "TIPOS_SOLICITUD": {
     "SOL_INI": "Solicitud de Comisión",
-    "SOL_PRORROGA": "Solicitud de prórroga"
+    "SOL_PRORROGA": "Solicitud de prórroga",
+    "SOL_CIERRE": "Solicitud de cierre"
   },
   "AVISO_CREACION": {
     "TITLE": "Normativa del proceso",
@@ -384,5 +396,12 @@
   "LANG": {
     "ES": "Español",
     "EN": "English"
+  },
+  "CERRAR_SOLICITUD": {
+    "TITLE": "Gestión de solicitud de cierre",
+    "SUBTITLE": "Revise la comisión y tome una decisión sobre la solicitud",
+    "REVISAR_COMISION": "Revisar comisión",
+    "RECHAZAR_SOLICITUD": "Rechazar solicitud",
+    "APROBAR_SOLICITUD": "Aprobar solicitud"
   }
 }
